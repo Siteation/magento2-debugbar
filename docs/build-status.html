@@ -394,6 +394,10 @@
   .tag.active { background: var(--active-soft); color: var(--active); }
   .tag.todo { background: var(--todo-soft); color: var(--todo); }
   .tag.backlog { background: var(--backlog-soft); color: var(--backlog); }
+  .tag.closed { background: var(--backlog-soft); color: var(--backlog); }
+
+  li.closed .box { border-style: dashed; color: var(--text-faint); }
+  li.closed .task-text { color: var(--text-faint); text-decoration: line-through; }
 
   /* ---------- dialog ---------- */
 
@@ -799,13 +803,13 @@ if ($themeId) {
             <p>Any failure switches the panel off and says so, rather than breaking the
             page. It also filters out the debug bar's own plugins, which otherwise
             dominated the list.</p>` },
-      { t: 'Timer collector', s: 'backlog',
-        d: `<p>Dropped from this phase deliberately. Magento's nested profiler only
-            produces anything when <code>MAGE_PROFILER</code> is set, which most
-            developers never do, so it would be an empty panel by default.</p>
-            <p>Block timing answers the same question, where did the time go, with no
-            environment variable and better granularity. Revisit only if block, query,
-            observer and cache timings together leave a gap that matters.</p>` },
+      { t: 'Timer collector', s: 'closed',
+        d: `<p><strong>Will not be built.</strong> Magento's nested profiler only produces
+            anything when <code>MAGE_PROFILER</code> is set, which most developers never
+            do, so it would be an empty panel by default.</p>
+            <p>The 1.1 waterfall closed the question for good. It answers "where did the
+            time go" across queries and blocks, ordered, scaled and searchable, with no
+            environment variable. Magento's own profiler would add nothing on top.</p>` },
       { t: 'Lazy profile payload', s: 'done',
         d: `<p>With seven collectors an uncached homepage profile reached 364 kB, and all
             of it was embedded in every response. Only summaries travel in the page now,
@@ -926,21 +930,13 @@ if ($themeId) {
             <p>Finding that took two attempts, because Magento's static URL carries a
             version that only changes on a deploy, so the rebuilt CSS was never fetched.
             Asset URLs now carry the built file's modification time.</p>` },
-      { t: 'Syntax highlighting', s: 'todo',
-        d: `<p><code>highlight.js/lib/core</code> with only <code>sql</code>,
-            <code>json</code> and a hand rolled PHP grammar registered. Three languages
-            instead of the full bundle is about 20 kB against about 900 kB.</p>
-            <p>SQL is readable as plain monospace today, so this is legibility rather than
-            capability.</p>` },
-      { t: 'Command palette, favourites, light theme', s: 'backlog',
-        d: `<p>New Debug Bar's comfort features. Worth having, none of them unblock
-            anything, and the bar is usable every day without them.</p>
-            <p>A light theme matters more than the other two: the bar is currently dark
-            only, which sits badly on a light admin.</p>` },
-      { t: 'Full screen inspector and host locking', s: 'backlog',
-        d: `<p>Porting <code>lockHost</code> only pays off once there is a full screen
-            inspector to lock the page behind. The panel is a bottom sheet today and does
-            not need it.</p>` },
+      { t: 'Comfort and layout work moved to 1.1', s: 'closed',
+        d: `<p>Syntax highlighting, the command palette, favourites, a light theme and the
+            full screen inspector with host locking were all tracked here and are all now
+            phases of 1.1, where they belong: B. Window, C. Navigation and E. Comfort.</p>
+            <p>Left in both places they made 1.0 look permanently unfinished for work that
+            was already planned somewhere else. Counting them once is the point of
+            splitting the releases.</p>` },
       { t: 'Enforce the UX rules in review', s: 'done',
         d: `<p>Applied throughout: request, errors, query count and time lead the strip;
             hashes and raw framework detail stay out of the main view; every finding
@@ -1260,8 +1256,8 @@ const BACKLOG = [
     why: 'Read the profile header from devtools and surface profiles without injecting anything into the page at all.' }
 ];
 
-const STATUS_LABEL = { done: 'Done', active: 'In progress', todo: 'To do', backlog: 'Backlog' };
-const CHECK = { done: '✓', active: '•', todo: '', backlog: '' };
+const STATUS_LABEL = { done: 'Done', active: 'In progress', todo: 'To do', backlog: 'Backlog', closed: 'Closed' };
+const CHECK = { done: '✓', active: '•', todo: '', backlog: '', closed: '×' };
 
 /**
  * Count tasks by status across all phases.
