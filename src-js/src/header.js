@@ -7,6 +7,10 @@ import { icon } from './icons.js'
  * and interpolated into both. That is also why it carries the window controls: they mean
  * the same in either state.
  *
+ * The metrics are text, not buttons. They used to jump to their section, which made the
+ * header a second navigation over the same destinations as the sidebar and gave the row a
+ * tab bar's weight. Four of them, as New Debug Bar has, and the sidebar navigates.
+ *
  * @param {{sheet: boolean}} options
  * @returns {string}
  */
@@ -27,15 +31,15 @@ export function header({ sheet }) {
   </button>
 
   <div class="ndb-stats">
-    <button type="button" class="ndb-stat" data-ndb-on:click="select('overview')">
+    <div class="ndb-stat">
       <span class="ndb-env-dot" data-ndb-bind:class="'is-' + findingsTone"></span>
       <span>
         <span class="ndb-stat-key">Mode</span>
         <span class="ndb-stat-value" data-ndb-text="request.mode || 'unknown'"></span>
       </span>
-    </button>
+    </div>
 
-    <button type="button" class="ndb-stat" data-ndb-on:click="select('queries')">
+    <div class="ndb-stat">
       ${icon('database', 'is-accent')}
       <span>
         <span class="ndb-stat-key">Queries</span>
@@ -44,32 +48,24 @@ export function header({ sheet }) {
           <span class="ndb-dim" data-ndb-text="number(queries.duration_ms, 2) + ' ms'"></span>
         </span>
       </span>
-    </button>
+    </div>
 
-    <button type="button" class="ndb-stat" data-ndb-on:click="select('timeline')">
+    <div class="ndb-stat">
       ${icon('clock', 'is-accent')}
       <span>
         <span class="ndb-stat-key">Duration</span>
         <span class="ndb-stat-value" data-ndb-bind:class="'is-' + durationTone"
               data-ndb-text="number(metrics.duration_ms, 2) + ' ms'"></span>
       </span>
-    </button>
+    </div>
 
-    <button type="button" class="ndb-stat is-secondary" data-ndb-on:click="select('blocks')">
-      ${icon('bolt', 'is-accent')}
-      <span>
-        <span class="ndb-stat-key">Blocks</span>
-        <span class="ndb-stat-value" data-ndb-text="blocks.unique_count || 0"></span>
-      </span>
-    </button>
-
-    <button type="button" class="ndb-stat is-secondary" data-ndb-on:click="select('overview')">
+    <div class="ndb-stat is-secondary">
       ${icon('chip', 'is-accent')}
       <span>
         <span class="ndb-stat-key">Peak</span>
         <span class="ndb-stat-value" data-ndb-text="number(metrics.memory_peak_mb, 1) + ' MB'"></span>
       </span>
-    </button>
+    </div>
   </div>
 
   <div class="ndb-controls-group">
@@ -86,11 +82,6 @@ export function header({ sheet }) {
       <span data-ndb-show="theme === 'system'">${icon('monitor')}</span>
       <span data-ndb-show="theme === 'light'">${icon('sun')}</span>
       <span data-ndb-show="theme === 'dark'">${icon('moon')}</span>
-    </button>
-
-    <button type="button" class="ndb-icon-button" data-ndb-on:click="movePlacement()"
-            data-ndb-bind:title="placement === 'bottom' ? 'Move to the top' : 'Move to the bottom'">
-      ${icon('dock')}
     </button>
 
     <span class="ndb-controls-divider"></span>

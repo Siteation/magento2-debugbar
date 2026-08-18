@@ -647,6 +647,7 @@ export function debugBar() {
       this.persist()
     },
 
+    /** No control reaches this yet: the placement toggle left the header for the palette. */
     movePlacement() {
       this.placement = this.placement === 'bottom' ? 'top' : 'bottom'
       this.persist()

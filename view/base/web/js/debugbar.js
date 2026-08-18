@@ -119,7 +119,7 @@ function Vi(t) {
     t._x_cleanups.pop()();
 }
 var ke = new MutationObserver(Ce), Oe = !1;
-function Me() {
+function Te() {
   ke.observe(document, { subtree: !0, childList: !0, attributes: !0, attributeOldValue: !0 }), Oe = !0;
 }
 function An() {
@@ -141,17 +141,17 @@ function m(t) {
     return t();
   An();
   let e = t();
-  return Me(), e;
+  return Te(), e;
 }
-var Te = !1, qt = [];
+var Me = !1, qt = [];
 function Yi() {
-  Te = !0;
+  Me = !0;
 }
 function Qi() {
-  Te = !1, Ce(qt), qt = [];
+  Me = !1, Ce(qt), qt = [];
 }
 function Ce(t) {
-  if (Te) {
+  if (Me) {
     qt = qt.concat(t);
     return;
   }
@@ -248,7 +248,7 @@ function $e(t, e = () => {
   };
   return i(t);
 }
-function Mn(t, e = () => {
+function Tn(t, e = () => {
 }) {
   let n = {
     initialValue: void 0,
@@ -281,13 +281,13 @@ function de(t, e, n) {
     return t[e[0]] || (t[e[0]] = {}), de(t[e[0]], e.slice(1), n);
   }
 }
-var Tn = {};
+var Mn = {};
 function A(t, e) {
-  Tn[t] = e;
+  Mn[t] = e;
 }
 function vt(t, e) {
   let n = ts(e);
-  return Object.entries(Tn).forEach(([i, s]) => {
+  return Object.entries(Mn).forEach(([i, s]) => {
     Object.defineProperty(t, `$${i}`, {
       get() {
         return s(e, n);
@@ -297,7 +297,7 @@ function vt(t, e) {
   }), t;
 }
 function ts(t) {
-  let [e, n] = Nn(t), i = { interceptor: Mn, ...e };
+  let [e, n] = Nn(t), i = { interceptor: Tn, ...e };
   return Ae(t, n), i;
 }
 function es(t, e, n, ...i) {
@@ -578,7 +578,7 @@ function O(t, ...e) {
 }
 var Ge = !1;
 function vs() {
-  Ge && O("Alpine has already been initialized on this page. Calling Alpine.start() more than once can cause problems."), Ge = !0, document.body || O("Unable to initialize. Trying to load Alpine before `<body>` is available. Did you forget to add `defer` in Alpine's `<script>` tag?"), pt(document, "alpine:init"), pt(document, "alpine:initializing"), Me(), zi((e) => R(e, K)), Ae((e) => Q(e)), wn((e, n) => {
+  Ge && O("Alpine has already been initialized on this page. Calling Alpine.start() more than once can cause problems."), Ge = !0, document.body || O("Unable to initialize. Trying to load Alpine before `<body>` is available. Did you forget to add `defer` in Alpine's `<script>` tag?"), pt(document, "alpine:init"), pt(document, "alpine:initializing"), Te(), zi((e) => R(e, K)), Ae((e) => Q(e)), wn((e, n) => {
     Re(e, n).forEach((i) => i());
   });
   let t = (e) => !Ht(e.parentElement, !0);
@@ -724,9 +724,9 @@ function he(t, e = () => {
   };
 }
 v("transition", (t, { value: e, modifiers: n, expression: i }, { evaluate: s }) => {
-  typeof i == "function" && (i = s(i)), i !== !1 && (!i || typeof i == "boolean" ? Ts(t, n, e) : Ms(t, i, e));
+  typeof i == "function" && (i = s(i)), i !== !1 && (!i || typeof i == "boolean" ? Ms(t, n, e) : Ts(t, i, e));
 });
-function Ms(t, e, n) {
+function Ts(t, e, n) {
   Yn(t, De, ""), {
     enter: (s) => {
       t._x_transition.enter.during = s;
@@ -748,16 +748,16 @@ function Ms(t, e, n) {
     }
   }[n](e);
 }
-function Ts(t, e, n) {
+function Ms(t, e, n) {
   Yn(t, Wt);
   let i = !e.includes("in") && !e.includes("out") && !n, s = i || e.includes("in") || ["enter"].includes(n), r = i || e.includes("out") || ["leave"].includes(n);
   e.includes("in") && !i && (e = e.filter((y, G) => G < e.indexOf("out"))), e.includes("out") && !i && (e = e.filter((y, G) => G > e.indexOf("out")));
-  let a = !e.includes("opacity") && !e.includes("scale"), o = a || e.includes("opacity"), d = a || e.includes("scale"), l = o ? 0 : 1, c = d ? lt(e, "scale", 95) / 100 : 1, u = lt(e, "delay", 0) / 1e3, b = lt(e, "origin", "center"), g = "opacity, transform", M = lt(e, "duration", 150) / 1e3, f = lt(e, "duration", 75) / 1e3, _ = "cubic-bezier(0.4, 0.0, 0.2, 1)";
+  let a = !e.includes("opacity") && !e.includes("scale"), o = a || e.includes("opacity"), d = a || e.includes("scale"), l = o ? 0 : 1, c = d ? lt(e, "scale", 95) / 100 : 1, u = lt(e, "delay", 0) / 1e3, b = lt(e, "origin", "center"), g = "opacity, transform", T = lt(e, "duration", 150) / 1e3, f = lt(e, "duration", 75) / 1e3, _ = "cubic-bezier(0.4, 0.0, 0.2, 1)";
   s && (t._x_transition.enter.during = {
     transformOrigin: b,
     transitionDelay: `${u}s`,
     transitionProperty: g,
-    transitionDuration: `${M}s`,
+    transitionDuration: `${T}s`,
     transitionTimingFunction: _
   }, t._x_transition.enter.start = {
     opacity: l,
@@ -1188,7 +1188,7 @@ var nr = {
   flushAndStopDeferringMutations: Qi,
   dontAutoEvaluateFunctions: $n,
   disableEffectScheduling: Hi,
-  startObservingMutations: Me,
+  startObservingMutations: Te,
   stopObservingMutations: An,
   setReactivityEngine: Wi,
   onAttributeRemoved: Sn,
@@ -1215,7 +1215,7 @@ var nr = {
   onElRemoved: Ae,
   closestRoot: Ht,
   destroyTree: Q,
-  interceptor: Mn,
+  interceptor: Tn,
   // INTERNAL: not public API and is subject to change without major release.
   transition: be,
   // INTERNAL
@@ -1574,10 +1574,10 @@ var vr = {
     return Zt(this, "entries", (t) => (t[1] = k(this, t[1]), t));
   },
   every(t, e) {
-    return T(this, "every", t, e, void 0, arguments);
+    return M(this, "every", t, e, void 0, arguments);
   },
   filter(t, e) {
-    return T(
+    return M(
       this,
       "filter",
       t,
@@ -1587,7 +1587,7 @@ var vr = {
     );
   },
   find(t, e) {
-    return T(
+    return M(
       this,
       "find",
       t,
@@ -1597,10 +1597,10 @@ var vr = {
     );
   },
   findIndex(t, e) {
-    return T(this, "findIndex", t, e, void 0, arguments);
+    return M(this, "findIndex", t, e, void 0, arguments);
   },
   findLast(t, e) {
-    return T(
+    return M(
       this,
       "findLast",
       t,
@@ -1610,11 +1610,11 @@ var vr = {
     );
   },
   findLastIndex(t, e) {
-    return T(this, "findLastIndex", t, e, void 0, arguments);
+    return M(this, "findLastIndex", t, e, void 0, arguments);
   },
   // flat, flatMap could benefit from ARRAY_ITERATE but are not straight-forward to implement
   forEach(t, e) {
-    return T(this, "forEach", t, e, void 0, arguments);
+    return M(this, "forEach", t, e, void 0, arguments);
   },
   includes(...t) {
     return Gt(this, "includes", t);
@@ -1630,7 +1630,7 @@ var vr = {
     return Gt(this, "lastIndexOf", t);
   },
   map(t, e) {
-    return T(this, "map", t, e, void 0, arguments);
+    return M(this, "map", t, e, void 0, arguments);
   },
   pop() {
     return ct(this, "pop");
@@ -1649,7 +1649,7 @@ var vr = {
   },
   // slice could use ARRAY_ITERATE but also seems to beg for range tracking
   some(t, e) {
-    return T(this, "some", t, e, void 0, arguments);
+    return M(this, "some", t, e, void 0, arguments);
   },
   splice(...t) {
     return ct(this, "splice", t);
@@ -1678,7 +1678,7 @@ function Zt(t, e, n) {
   }), s;
 }
 var _r = Array.prototype;
-function T(t, e, n, i, s, r) {
+function M(t, e, n, i, s, r) {
   const a = Ue(t), o = a !== t && !V(t), d = a[e];
   if (d !== _r[e]) {
     const u = d.apply(t, r);
@@ -1819,7 +1819,7 @@ var gi = class {
       t
     ), !0;
   }
-}, Er = /* @__PURE__ */ new wr(), Ar = /* @__PURE__ */ new Sr(), Mt = (t) => Reflect.getPrototypeOf(t);
+}, Er = /* @__PURE__ */ new wr(), Ar = /* @__PURE__ */ new Sr(), Tt = (t) => Reflect.getPrototypeOf(t);
 function kr(t, e, n) {
   return function(...i) {
     const s = this.__v_raw, r = h(s), a = ht(r), o = t === "entries" || t === Symbol.iterator && a, d = t === "keys" && a, l = s[t](...i), c = e ? At : J;
@@ -1843,7 +1843,7 @@ function kr(t, e, n) {
     );
   };
 }
-function Tt(t) {
+function Mt(t) {
   return function(...e) {
     {
       const n = e[0] ? `on key "${e[0]}" ` : "";
@@ -1860,7 +1860,7 @@ function Or(t, e) {
     get(s) {
       const r = this.__v_raw, a = h(r), o = h(s);
       t || (D(s, o) && S(a, "get", s), S(a, "get", o));
-      const { has: d } = Mt(a), l = t ? At : J;
+      const { has: d } = Tt(a), l = t ? At : J;
       if (d.call(a, s))
         return l(r.get(s));
       if (d.call(a, o))
@@ -1883,25 +1883,25 @@ function Or(t, e) {
   return xt(
     n,
     t ? {
-      add: Tt("add"),
-      set: Tt("set"),
-      delete: Tt("delete"),
-      clear: Tt("clear")
+      add: Mt("add"),
+      set: Mt("set"),
+      delete: Mt("delete"),
+      clear: Mt("clear")
     } : {
       add(s) {
-        const r = h(this), a = Mt(r), o = h(s), d = !V(s) && !z(s) ? o : s;
+        const r = h(this), a = Tt(r), o = h(s), d = !V(s) && !z(s) ? o : s;
         return a.has.call(r, d) || D(s, d) && a.has.call(r, s) || D(o, d) && a.has.call(r, o) || (r.add(d), I(r, "add", d, d)), this;
       },
       set(s, r) {
         !V(r) && !z(r) && (r = h(r));
-        const a = h(this), { has: o, get: d } = Mt(a);
+        const a = h(this), { has: o, get: d } = Tt(a);
         let l = o.call(a, s);
         l ? rn(a, o, s) : (s = h(s), l = o.call(a, s));
         const c = d.call(a, s);
         return a.set(s, r), l ? D(r, c) && I(a, "set", s, r, c) : I(a, "add", s, r), this;
       },
       delete(s) {
-        const r = h(this), { has: a, get: o } = Mt(r);
+        const r = h(this), { has: a, get: o } = Tt(r);
         let d = a.call(r, s);
         d ? rn(r, a, s) : (s = h(s), d = a.call(r, s));
         const l = o ? o.call(r, s) : void 0, c = r.delete(s);
@@ -1935,9 +1935,9 @@ function mi(t, e) {
     r
   );
 }
-var Mr = {
+var Tr = {
   get: /* @__PURE__ */ mi(!1)
-}, Tr = {
+}, Mr = {
   get: /* @__PURE__ */ mi(!0)
 };
 function rn(t, e, n) {
@@ -1969,7 +1969,7 @@ function ze(t) {
     t,
     !1,
     Er,
-    Mr,
+    Tr,
     vi
   );
 }
@@ -1978,7 +1978,7 @@ function xe(t) {
     t,
     !0,
     Ar,
-    Tr,
+    Mr,
     _i
   );
 }
@@ -2263,9 +2263,9 @@ v("model", (t, { modifiers: e, expression: n }, { effect: i, cleanup: s }) => {
   typeof n == "string" && t.type === "radio" && m(() => {
     t.hasAttribute("name") || t.setAttribute("name", n);
   });
-  let c = e.includes("change") || e.includes("lazy"), u = e.includes("blur"), b = e.includes("enter"), g = c || u || b, M;
+  let c = e.includes("change") || e.includes("lazy"), u = e.includes("blur"), b = e.includes("enter"), g = c || u || b, T;
   if (q)
-    M = () => {
+    T = () => {
     };
   else if (g) {
     let f = [], _ = (y) => l(Ct(t, e, y, d()));
@@ -2277,16 +2277,16 @@ v("model", (t, { modifiers: e, expression: n }, { effect: i, cleanup: s }) => {
     }
     b && f.push(et(t, "keydown", e, (y) => {
       y.key === "Enter" && _(y);
-    })), M = () => f.forEach((y) => y());
+    })), T = () => f.forEach((y) => y());
   } else {
     let f = t.tagName.toLowerCase() === "select" || ["checkbox", "radio"].includes(t.type) ? "change" : "input";
-    M = et(t, f, e, (_) => {
+    T = et(t, f, e, (_) => {
       l(Ct(t, e, _, d()));
     });
   }
   if (e.includes("fill") && ([void 0, null, ""].includes(d()) || Lt(t) && Array.isArray(d()) || t.tagName.toLowerCase() === "select" && t.multiple) && l(
     Ct(t, e, { target: t }, d())
-  ), t._x_removeModelListeners || (t._x_removeModelListeners = {}), t._x_removeModelListeners.default = M, s(() => t._x_removeModelListeners.default()), t.form) {
+  ), t._x_removeModelListeners || (t._x_removeModelListeners = {}), t._x_removeModelListeners.default = T, s(() => t._x_removeModelListeners.default()), t.form) {
     let f = et(t.form, "reset", [], (_) => {
       Le(() => t._x_model && t._x_model.set(Ct(t, e, { target: t }, d())));
     });
@@ -2520,8 +2520,8 @@ function Qr(t, e, n, i) {
           return;
         }
         t.content.children.length > 1 && O("x-for templates require a single root element, additional elements will be ignored.", t);
-        let g = document.importNode(t.content, !0).firstElementChild, M = st(b);
-        kt(g, M, t), g._x_refreshXForScope = Yr(M), a.set(u, g), l.add(g), c.after(g), c = g;
+        let g = document.importNode(t.content, !0).firstElementChild, T = st(b);
+        kt(g, T, t), g._x_refreshXForScope = Yr(T), a.set(u, g), l.add(g), c.after(g), c = g;
       }), l.forEach((u) => R(u)), c !== t ? t._x_lastRenderedEl = c : delete t._x_lastRenderedEl;
     });
   });
@@ -2549,13 +2549,13 @@ function Xr(t) {
 function ta(t) {
   return typeof t == "object" && !Array.isArray(t);
 }
-function Mi() {
+function Ti() {
 }
-Mi.inline = (t, { expression: e }, { cleanup: n }) => {
+Ti.inline = (t, { expression: e }, { cleanup: n }) => {
   let i = Ht(t);
   i && (i._x_refs || (i._x_refs = {}), i._x_refs[e] = t, n(() => delete i._x_refs[e]));
 };
-v("ref", Mi);
+v("ref", Ti);
 v("if", N((t, { expression: e }, { effect: n, cleanup: i }) => {
   t.tagName.toLowerCase() !== "template" && O("x-if can only be used on a <template> tag", t);
   let s = w(t, e), r = () => {
@@ -2738,7 +2738,7 @@ function pa(t) {
 function ha(t) {
   return ua.test(String(t));
 }
-function Ti(t, e = it) {
+function Mi(t, e = it) {
   if (e !== Z)
     return Je(t, e, 0, /* @__PURE__ */ new WeakSet());
 }
@@ -2902,7 +2902,7 @@ function pn(t, e) {
   const s = $i(n, i);
   if (!s) return "Alpine would not hand over this component's scope.";
   try {
-    return JSON.stringify(Ti(s, e), null, 2);
+    return JSON.stringify(Mi(s, e), null, 2);
   } catch (r) {
     return `Could not read this component: ${r && r.message ? r.message : "threw"}`;
   }
@@ -2916,7 +2916,7 @@ function Aa(t) {
     if (r = s && typeof s == "object" ? Ye(s).length : 0, t === Z)
       return { name: i, keys: 0, value: "The value policy is set to none, so stores are not read." };
     try {
-      s = JSON.stringify(Ti(s, t), null, 2);
+      s = JSON.stringify(Mi(s, t), null, 2);
     } catch (a) {
       s = `Could not read this store: ${a && a.message ? a.message : "threw"}`;
     }
@@ -2946,7 +2946,7 @@ function Oa() {
     prefix: Ci(t)
   } : { present: !1, version: "", csp: null, source: fn(), prefix: "" };
 }
-function Ma(t, e) {
+function Ta(t, e) {
   const n = Bt.get(t);
   if (!(!n || !n.style)) {
     if (e) {
@@ -2956,7 +2956,7 @@ function Ma(t, e) {
     ut.has(t) && (n.style.outline = ut.get(t), n.style.removeProperty("outline-offset"), ut.delete(t));
   }
 }
-const Ta = 1e3, Pi = "siteation.debugbar.v1", Ca = "__PROFILE_ID__";
+const Ma = 1e3, Pi = "siteation.debugbar.v1", Ca = "__PROFILE_ID__";
 function $a() {
   const t = document.getElementById("siteation-debugbar-profile");
   if (!t) return {};
@@ -3362,6 +3362,7 @@ function Ra() {
     toggleMaximised() {
       this.maximised = !this.maximised, this.persist();
     },
+    /** No control reaches this yet: the placement toggle left the header for the palette. */
     movePlacement() {
       this.placement = this.placement === "bottom" ? "top" : "bottom", this.persist();
     },
@@ -3406,7 +3407,7 @@ function Ra() {
       if (this.alpineLiveWanted && !this.alpineTimer) {
         this.alpineTimer = setInterval(() => {
           document.hidden || this.refreshAlpine();
-        }, Ta);
+        }, Ma);
         return;
       }
       !this.alpineLiveWanted && this.alpineTimer && (clearInterval(this.alpineTimer), this.alpineTimer = null);
@@ -3436,7 +3437,7 @@ function Ra() {
      * @param {boolean} on
      */
     highlightAlpine(t, e) {
-      Ma(t, e);
+      Ta(t, e);
     },
     /**
      * @param {string} section
@@ -3524,15 +3525,15 @@ function hn({ sheet: t }) {
   </button>
 
   <div class="ndb-stats">
-    <button type="button" class="ndb-stat" data-ndb-on:click="select('overview')">
+    <div class="ndb-stat">
       <span class="ndb-env-dot" data-ndb-bind:class="'is-' + findingsTone"></span>
       <span>
         <span class="ndb-stat-key">Mode</span>
         <span class="ndb-stat-value" data-ndb-text="request.mode || 'unknown'"></span>
       </span>
-    </button>
+    </div>
 
-    <button type="button" class="ndb-stat" data-ndb-on:click="select('queries')">
+    <div class="ndb-stat">
       ${x("database", "is-accent")}
       <span>
         <span class="ndb-stat-key">Queries</span>
@@ -3541,32 +3542,24 @@ function hn({ sheet: t }) {
           <span class="ndb-dim" data-ndb-text="number(queries.duration_ms, 2) + ' ms'"></span>
         </span>
       </span>
-    </button>
+    </div>
 
-    <button type="button" class="ndb-stat" data-ndb-on:click="select('timeline')">
+    <div class="ndb-stat">
       ${x("clock", "is-accent")}
       <span>
         <span class="ndb-stat-key">Duration</span>
         <span class="ndb-stat-value" data-ndb-bind:class="'is-' + durationTone"
               data-ndb-text="number(metrics.duration_ms, 2) + ' ms'"></span>
       </span>
-    </button>
+    </div>
 
-    <button type="button" class="ndb-stat is-secondary" data-ndb-on:click="select('blocks')">
-      ${x("bolt", "is-accent")}
-      <span>
-        <span class="ndb-stat-key">Blocks</span>
-        <span class="ndb-stat-value" data-ndb-text="blocks.unique_count || 0"></span>
-      </span>
-    </button>
-
-    <button type="button" class="ndb-stat is-secondary" data-ndb-on:click="select('overview')">
+    <div class="ndb-stat is-secondary">
       ${x("chip", "is-accent")}
       <span>
         <span class="ndb-stat-key">Peak</span>
         <span class="ndb-stat-value" data-ndb-text="number(metrics.memory_peak_mb, 1) + ' MB'"></span>
       </span>
-    </button>
+    </div>
   </div>
 
   <div class="ndb-controls-group">
@@ -3583,11 +3576,6 @@ function hn({ sheet: t }) {
       <span data-ndb-show="theme === 'system'">${x("monitor")}</span>
       <span data-ndb-show="theme === 'light'">${x("sun")}</span>
       <span data-ndb-show="theme === 'dark'">${x("moon")}</span>
-    </button>
-
-    <button type="button" class="ndb-icon-button" data-ndb-on:click="movePlacement()"
-            data-ndb-bind:title="placement === 'bottom' ? 'Move to the top' : 'Move to the bottom'">
-      ${x("dock")}
     </button>
 
     <span class="ndb-controls-divider"></span>

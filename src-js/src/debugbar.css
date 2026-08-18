@@ -199,7 +199,6 @@
 .ndb-sheet .ndb-header { border-bottom: 1px solid var(--ndb-border); }
 
 .ndb-request,
-.ndb-stat,
 .ndb-icon-button {
   appearance: none;
   border: 0;
@@ -213,11 +212,9 @@
 }
 
 .ndb-request:hover,
-.ndb-stat:hover,
 .ndb-icon-button:hover { background: var(--ndb-hover); }
 
 .ndb-request:focus-visible,
-.ndb-stat:focus-visible,
 .ndb-icon-button:focus-visible,
 .ndb-tab:focus-visible,
 .ndb-chip:focus-visible,
@@ -240,11 +237,11 @@
   border-radius: 6px;
   background: var(--ndb-accent-soft);
   color: var(--ndb-accent);
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  padding: 3px 7px;
+  padding: 3px 8px;
 }
 
 .ndb-request-body { min-width: 0; }
@@ -252,7 +249,7 @@
 .ndb-path {
   display: block;
   font-family: var(--ndb-mono);
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 600;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -261,8 +258,8 @@
 
 .ndb-request-meta {
   display: flex;
-  gap: 7px;
-  font-size: 12px;
+  gap: 8px;
+  font-size: 13px;
   color: var(--ndb-dim);
   white-space: nowrap;
 }
@@ -281,35 +278,36 @@
 .ndb-stat {
   display: flex;
   align-items: center;
-  gap: 7px;
+  gap: 9px;
+  padding: 5px 8px;
   white-space: nowrap;
 }
 
 .ndb-stat-key {
   display: block;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 600;
   line-height: 1.3;
   text-transform: uppercase;
-  letter-spacing: 0.07em;
+  letter-spacing: 0.06em;
   color: var(--ndb-dim);
 }
 
 .ndb-stat-value {
   display: block;
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 700;
   line-height: 1.3;
   font-variant-numeric: tabular-nums;
 }
 
-.ndb-stat-value.is-ok { color: var(--ndb-ok); }
+/* Only trouble is coloured here. A green number for "normal" is noise on every request. */
 .ndb-stat-value.is-warn { color: var(--ndb-warn); }
 .ndb-stat-value.is-bad { color: var(--ndb-bad); }
 
 .ndb-env-dot {
-  width: 8px;
-  height: 8px;
+  width: 9px;
+  height: 9px;
   flex: none;
   border-radius: 50%;
   background: var(--ndb-ok);
@@ -327,7 +325,7 @@
 
 .ndb-controls-divider {
   width: 1px;
-  height: 20px;
+  height: 22px;
   margin: 0 4px;
   background: var(--ndb-border);
 }
@@ -336,10 +334,16 @@
   position: relative;
   display: grid;
   place-items: center;
-  width: 30px;
-  height: 30px;
+  width: 34px;
+  height: 34px;
   padding: 0;
   color: var(--ndb-dim);
+}
+
+/* A window control is the target, so its icon carries the size rather than the button. */
+.ndb-icon-button .ndb-icon {
+  width: 19px;
+  height: 19px;
 }
 
 .ndb-icon-button:hover { color: var(--ndb-text); }
@@ -348,15 +352,15 @@
 
 .ndb-badge {
   position: absolute;
-  top: 1px;
+  top: 0;
   right: 0;
-  min-width: 14px;
-  padding: 0 3px;
+  min-width: 16px;
+  padding: 0 4px;
   border-radius: 999px;
   background: currentColor;
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 700;
-  line-height: 14px;
+  line-height: 16px;
   text-align: center;
   color: var(--ndb-on-accent);
 }
@@ -384,7 +388,7 @@
 
 .ndb-panel-body {
   overflow: auto;
-  padding: 16px 18px;
+  padding: 18px 22px;
   flex: 1;
   min-height: 0;
 }
@@ -408,12 +412,12 @@
 }
 
 .ndb-nav-heading {
-  margin: 6px 0 4px;
+  margin: 8px 0 4px;
   padding: 0 8px;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.1em;
   color: var(--ndb-dim);
 }
 
@@ -446,12 +450,12 @@
   background: transparent;
   color: var(--ndb-dim);
   font: inherit;
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 600;
   cursor: pointer;
   flex: 1;
   min-width: 0;
-  height: 34px;
+  height: 36px;
   padding: 0 4px 0 8px;
   border-radius: 9px;
   display: flex;
@@ -475,7 +479,7 @@
 }
 
 .ndb-nav-count {
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 600;
   font-variant-numeric: tabular-nums;
   color: var(--ndb-dim);
@@ -514,7 +518,7 @@
 
 /* section heading and callouts */
 
-.ndb-section-head { margin-bottom: 14px; }
+.ndb-section-head { margin-bottom: 16px; }
 
 .ndb-section-head h2 {
   margin: 0;
@@ -524,9 +528,9 @@
 }
 
 .ndb-section-head p {
-  margin: 3px 0 0;
+  margin: 4px 0 0;
   color: var(--ndb-dim);
-  font-size: 14px;
+  font-size: 15px;
   max-width: 70ch;
 }
 

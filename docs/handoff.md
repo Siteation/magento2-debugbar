@@ -113,16 +113,18 @@ engineering task, and not something to push toward.
 | B. Window | 5/5 | floating glass dock, modal sheet, `lockHost`, window controls |
 | C. Navigation | 6/7 | 210px sidebar, favourites with drag, section leads, inline findings |
 | D. Alpine | 6/7 | components, stores, deferred, health, sub-tabs, value policy |
-| E. Comfort | 1/5 | light theme done; palette, highlighting, history left |
+| E. Comfort | 2/6 | light theme and the type pass done; palette, highlighting, history left |
 
 Backlog is in `build-status.html`, which is the live tracker. Open it in a browser.
 
-## Next: the interface pass Rutger asked for
+## Next
 
-Compared against New Debug Bar's own screenshot, ours reads as cramped rather than wrong:
-type is too small in places, the theme and window icons are too small, and there is a
-question about whether the header metrics and the sidebar are saying the same thing twice.
-Measure before changing anything, and mind the 12px floor.
+The command palette is the last thing the header is waiting on: it is where the placement
+toggle went, and where search belongs. After that, syntax highlighting and a history
+section.
+
+One duplication is still open. The findings icon and the mode dot both go amber for the
+same reason, so the header says "something is wrong" twice.
 
 ## Decided in D, worth not relitigating
 
@@ -153,7 +155,8 @@ Beyond the three stale artifact traps, the ones most likely to bite again:
 * Inside a shadow root, `rem` resolves against the **document** root. Size in `px`.
 * A shadow root isolates the bar from the page, not from itself. Generic class names
   collide; `.ndb-facts` was defined twice and the header broke.
-* Do not use tiny type. 15px body, 14px mono, 12px floor.
+* Do not use tiny type. 15px body, 14px mono, 12px floor. The uppercase micro label in this
+  bar is 12px, everywhere.
 * An `x-for` variable that shares a name with a component property silently redirects every
   write inside the loop. `select(id) { this.section = id }` wrote to the loop's `section`,
   which blanked the row's own label and never changed the panel. Nothing throws.

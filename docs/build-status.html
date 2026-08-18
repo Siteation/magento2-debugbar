@@ -1316,6 +1316,23 @@ inspect_debug_queries       slowest first, with call sites</code></pre>
     name: 'E. Comfort',
     goal: 'Nothing here unblocks anything, which is why it is last.',
     tasks: [
+      { t: 'Type, icons and a header that stopped being a second menu', s: 'done',
+        d: `<p>Measured rather than judged from a screenshot, which at this display scale
+            makes 15px look like 10px.</p>
+            <p>The header was the only place still using 11px labels; everywhere else the
+            uppercase micro label is 12px, so the method badge, the metric labels and the
+            sidebar headings moved up to match. The path, the metric values, the sidebar
+            rows and the section lead are 15px. Window control icons went from 16px in a
+            30px button to 19px in a 34px button.</p>
+            <p>The metrics were buttons that jumped to their section, so the header was a
+            second navigation over the same places as the sidebar, with a tab bar's weight.
+            They are text now. Blocks left the header and the placement toggle left with
+            it, which lands on four metrics and five icons, the same count New Debug Bar
+            carries.</p>
+            <p>A green number for a normal duration is noise on every request, so only
+            warn and bad are coloured.</p>
+            <p>Placement is still stored and still applied; nothing reaches
+            <code>movePlacement()</code> until the palette does.</p>` },
       { t: 'Search and the command palette', s: 'todo',
         d: `<p>The header carried a search icon that opened findings, which was a lie about
             what the control did. It is a warning icon now, and search waits until the
