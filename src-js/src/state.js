@@ -68,6 +68,8 @@ export function debugBar() {
     observerSearch: '',
     blockSearch: '',
     pluginSearch: '',
+    timelineFilter: 'key',
+    timelineSearch: '',
     payloads: {},
     loading: false,
     loadError: '',
@@ -278,6 +280,11 @@ export function debugBar() {
     },
 
     /** @returns {object} */
+    get timeline() {
+      return this.summaryOf('timeline')
+    },
+
+    /** @returns {object} */
     get metrics() {
       return this.profile.metrics || {}
     },
@@ -313,6 +320,32 @@ export function debugBar() {
     /** @returns {Array<object>} */
     get visibleBlocks() {
       return search(this.itemsOf('blocks'), this.blockSearch, ['name', 'template', 'class'])
+    },
+
+    /**
+     * Key activity hides the long tail of fast points, which on a Magento page is most of
+     * the list and none of the answer.
+     *
+     * @returns {Array<object>}
+     */
+    get visibleTimeline() {
+      const items = this.timelineFilter === 'key'
+        ? this.itemsOf('timeline').filter(
+          (entry) => entry.kind === 'milestone' || Number(entry.duration_ms || 0) >= 1
+        )
+        : this.itemsOf('timeline')
+
+      return search(items, this.timelineSearch, ['label', 'section'])
+    },
+
+    /** @returns {Array<object>} */
+    get timelineAxis() {
+      const scale = Number(this.timeline.scale_ms || 0)
+
+      return [0, 0.25, 0.5, 0.75, 1].map((fraction) => ({
+        percent: fraction * 100,
+        label: `${(scale * fraction).toFixed(scale < 10 ? 1 : 0)} ms`,
+      }))
     },
 
     /** @returns {Array<object>} */

@@ -14,7 +14,7 @@ namespace Siteation\DebugBar\Collector;
  */
 class BlockCollector extends AbstractCollector
 {
-    /** @var list<array{name: string, startedAt: float, childMs: float}> */
+    /** @var list<array{name: string, startedAt: float, atMs: float, childMs: float}> */
     private array $stack = [];
 
     /** @var array<string, array<string, mixed>> */
@@ -42,7 +42,12 @@ class BlockCollector extends AbstractCollector
 
     public function begin(string $name): void
     {
-        $this->stack[] = ['name' => $name, 'startedAt' => microtime(true), 'childMs' => 0.0];
+        $this->stack[] = [
+            'name' => $name,
+            'startedAt' => microtime(true),
+            'atMs' => $this->clock->elapsedMs(),
+            'childMs' => 0.0,
+        ];
     }
 
     public function finish(string $name, string $class, ?string $template): void
@@ -76,6 +81,10 @@ class BlockCollector extends AbstractCollector
                 'count' => 0,
                 'total_ms' => 0.0,
                 'own_ms' => 0.0,
+                // The first render. A block rendered twice is one row in the list but the
+                // waterfall only needs somewhere honest to put it.
+                'at_ms' => round($frame['atMs'] + $totalMs, 3),
+                'start_ms' => $frame['atMs'],
             ];
         }
 

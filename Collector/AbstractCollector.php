@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Siteation\DebugBar\Collector;
 
 use Siteation\DebugBar\Api\CollectorInterface;
+use Siteation\DebugBar\Model\Clock;
 use Siteation\DebugBar\Model\Redactor;
 
 /**
@@ -25,6 +26,7 @@ abstract class AbstractCollector implements CollectorInterface
 
     public function __construct(
         protected readonly Redactor $redactor,
+        protected readonly Clock $clock,
         protected readonly int $maxItems = 500
     ) {
     }
@@ -40,6 +42,10 @@ abstract class AbstractCollector implements CollectorInterface
     {
         /** @var array<string, mixed> $safe */
         $safe = $this->redactor->clean($item);
+
+        // When it happened, not just how long it took. Collectors that already know their
+        // own offset, because they timed a span themselves, keep theirs.
+        $safe['at_ms'] ??= $this->clock->elapsedMs();
 
         $this->track($safe);
 

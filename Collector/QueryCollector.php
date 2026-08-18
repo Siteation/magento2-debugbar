@@ -7,6 +7,7 @@ namespace Siteation\DebugBar\Collector;
 use Magento\Framework\DB\LoggerInterface;
 use Siteation\DebugBar\Model\CallSiteResolver;
 use Siteation\DebugBar\Model\Config;
+use Siteation\DebugBar\Model\Clock;
 use Siteation\DebugBar\Model\Redactor;
 
 /**
@@ -24,11 +25,12 @@ class QueryCollector extends AbstractCollector
 
     public function __construct(
         Redactor $redactor,
+        Clock $clock,
         private readonly Config $config,
         private readonly CallSiteResolver $callSites,
         int $maxItems = 500
     ) {
-        parent::__construct($redactor, $maxItems);
+        parent::__construct($redactor, $clock, $maxItems);
     }
 
     public function key(): string
@@ -54,14 +56,22 @@ class QueryCollector extends AbstractCollector
     }
 
     /**
+     * Every query arrives here twice.
+     *
+     * LoggerInterface resolves to LoggerProxy, which delegates to an inner logger that
+     * also implements LoggerInterface, so both are intercepted and both report the same
+     * query. The adapter always calls startTimer() before logStats(), so a call with no
+     * marked start is the delegated copy rather than a query.
+     *
      * @param array<array-key, mixed> $bindings
      */
     public function recordQuery(string $type, string $sql, array $bindings): void
     {
-        $durationMs = $this->startedAt === null
-            ? 0.0
-            : round((microtime(true) - $this->startedAt) * 1000, 3);
+        if ($this->startedAt === null) {
+            return;
+        }
 
+        $durationMs = round((microtime(true) - $this->startedAt) * 1000, 3);
         $this->startedAt = null;
 
         if ($type !== LoggerInterface::TYPE_QUERY) {

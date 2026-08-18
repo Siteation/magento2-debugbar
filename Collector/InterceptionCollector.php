@@ -7,6 +7,7 @@ namespace Siteation\DebugBar\Collector;
 use Magento\Framework\Interception\PluginListInterface;
 use ReflectionClass;
 use ReflectionMethod;
+use Siteation\DebugBar\Model\Clock;
 use Siteation\DebugBar\Model\Redactor;
 use Throwable;
 
@@ -33,10 +34,11 @@ class InterceptionCollector extends AbstractCollector
 
     public function __construct(
         Redactor $redactor,
+        Clock $clock,
         private readonly PluginListInterface $pluginList,
         int $maxItems = 500
     ) {
-        parent::__construct($redactor, $maxItems);
+        parent::__construct($redactor, $clock, $maxItems);
     }
 
     public function key(): string

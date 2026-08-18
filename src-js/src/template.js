@@ -19,6 +19,10 @@ export const template = `
       </button>
       <button type="button" class="ndb-tab" data-ndb-on:click="select('overview')"
               data-ndb-bind:class="isSection('overview') && 'is-active'">Overview</button>
+      <button type="button" class="ndb-tab" data-ndb-on:click="select('timeline')"
+              data-ndb-bind:class="isSection('timeline') && 'is-active'">
+        Timeline <span class="ndb-pill" data-ndb-text="timeline.count || 0"></span>
+      </button>
       <button type="button" class="ndb-tab" data-ndb-on:click="select('queries')"
               data-ndb-bind:class="isSection('queries') && 'is-active'">
         Queries <span class="ndb-pill" data-ndb-text="queries.count || 0"></span>
@@ -133,6 +137,63 @@ export const template = `
           </dd></div>
           <div><dt>Profile</dt><dd class="ndb-mono ndb-dim" data-ndb-text="profile.id"></dd></div>
         </dl>
+      </div>
+
+      <div data-ndb-show="isSection('timeline')">
+        <p class="ndb-section-lead">
+          Follow important work in the order it happened across the request.
+        </p>
+
+        <div class="ndb-controls">
+          <button type="button" class="ndb-chip" data-ndb-on:click="timelineFilter = 'key'"
+                  data-ndb-bind:class="timelineFilter === 'key' && 'is-active'">Key activity</button>
+          <button type="button" class="ndb-chip" data-ndb-on:click="timelineFilter = 'all'"
+                  data-ndb-bind:class="timelineFilter === 'all' && 'is-active'">Everything</button>
+          <input class="ndb-search" type="search" placeholder="Filter activity"
+                 data-ndb-model="timelineSearch">
+          <span class="ndb-dim ndb-count">
+            <span data-ndb-text="visibleTimeline.length"></span> of
+            <span data-ndb-text="timeline.count || 0"></span> across
+            <span data-ndb-text="number(timeline.scale_ms, 0)"></span> ms
+          </span>
+        </div>
+
+        <div class="ndb-wf">
+          <div class="ndb-wf-head">
+            <span class="ndb-wf-activity">Activity</span>
+            <span class="ndb-wf-track">
+              <template data-ndb-for="(tick, index) in timelineAxis" data-ndb-bind:key="index">
+                <span class="ndb-wf-tick" data-ndb-bind:style="'left:' + tick.percent + '%'"
+                      data-ndb-text="tick.label"></span>
+              </template>
+            </span>
+            <span class="ndb-wf-timing">Timing</span>
+          </div>
+
+          <template data-ndb-for="(entry, index) in visibleTimeline" data-ndb-bind:key="index">
+            <div class="ndb-wf-row" data-ndb-bind:class="'is-' + entry.kind">
+              <span class="ndb-wf-activity">
+                <span class="ndb-wf-label" data-ndb-text="entry.label"></span>
+                <small class="ndb-wf-section" data-ndb-text="entry.section"></small>
+              </span>
+              <span class="ndb-wf-track">
+                <span class="ndb-wf-grid"></span>
+                <span class="ndb-wf-bar" data-ndb-show="entry.kind === 'span'"
+                      data-ndb-bind:style="'left:' + entry.start_percent + '%;width:' + Math.max(entry.duration_percent, 0.4) + '%'"></span>
+                <span class="ndb-wf-dot" data-ndb-show="entry.kind !== 'span'"
+                      data-ndb-bind:style="'left:' + entry.at_percent + '%'"></span>
+              </span>
+              <span class="ndb-wf-timing">
+                <span class="ndb-wf-duration"
+                      data-ndb-text="entry.duration_ms === null ? number(entry.at_ms, 1) + ' ms' : number(entry.duration_ms, 2) + ' ms'"></span>
+                <small class="ndb-dim" data-ndb-show="entry.kind === 'span'"
+                       data-ndb-text="number(entry.start_ms, 1) + '–' + number(entry.at_ms, 1) + ' ms'"></small>
+              </span>
+            </div>
+          </template>
+        </div>
+
+        <p class="ndb-empty" data-ndb-show="visibleTimeline.length === 0">No activity matches.</p>
       </div>
 
       <div data-ndb-show="isSection('queries')">
@@ -391,6 +452,11 @@ export const template = `
       <span class="ndb-metric-value" data-ndb-bind:class="'is-' + durationTone">
         <span data-ndb-text="number(metrics.duration_ms, 0)"></span> ms
       </span>
+    </button>
+
+    <button type="button" class="ndb-metric is-secondary" data-ndb-on:click="select('timeline')">
+      <span class="ndb-metric-key">Timeline</span>
+      <span class="ndb-metric-value" data-ndb-text="timeline.count || 0"></span>
     </button>
 
     <button type="button" class="ndb-metric" data-ndb-on:click="select('queries')">

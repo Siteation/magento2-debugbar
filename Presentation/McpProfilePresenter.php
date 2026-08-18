@@ -21,6 +21,7 @@ class McpProfilePresenter
     /** @var list<string> */
     private const SECTIONS = [
         'request', 'queries', 'events', 'observers', 'blocks', 'cache', 'interception',
+        'timeline',
     ];
 
     public function __construct(

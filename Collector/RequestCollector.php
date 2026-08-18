@@ -9,6 +9,7 @@ use Magento\Framework\App\Response\HttpInterface as HttpResponse;
 use Magento\Framework\App\ResponseInterface;
 use Magento\Framework\App\State;
 use Siteation\DebugBar\Model\Config;
+use Siteation\DebugBar\Model\Clock;
 use Siteation\DebugBar\Model\Redactor;
 use Throwable;
 
@@ -27,12 +28,13 @@ class RequestCollector extends AbstractCollector
 
     public function __construct(
         Redactor $redactor,
+        Clock $clock,
         private readonly HttpRequest $httpRequest,
         private readonly State $appState,
         private readonly Config $config,
         int $maxItems = 1
     ) {
-        parent::__construct($redactor, $maxItems);
+        parent::__construct($redactor, $clock, $maxItems);
     }
 
     public function key(): string

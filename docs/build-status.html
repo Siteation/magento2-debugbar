@@ -1075,15 +1075,27 @@ inspect_debug_queries       slowest first, with call sites</code></pre>
     name: 'A. Timeline',
     goal: 'Make a waterfall possible. No interface work, but everything else depends on it.',
     tasks: [
-      { t: 'Stamp at_ms on every captured item', s: 'todo',
-        d: `<p>The one change that reaches back into the collectors. New Debug Bar's
-            waterfall works because every item carries its offset from the start of the
-            request. Ours record how long something took but never when it happened, so a
-            waterfall cannot be built from what we store today.</p>
-            <p><code>ProfileManager</code> exposes <code>elapsedMs()</code> and
+      { t: 'Stamp at_ms on every captured item', s: 'done',
+        d: `<p>A <code>Clock</code> started by <code>ProfileManager::begin()</code>, and
             <code>AbstractCollector::record()</code> stamps <code>at_ms</code> unless the
-            item already carries one.</p>` },
-      { t: 'Analysis/TimelineBuilder', s: 'todo',
+            item already carries one. The clock is a separate object rather than a method
+            on the manager, because the manager is constructed <em>with</em> the collectors
+            and injecting it back into them would be circular.</p>
+            <p><code>BlockCollector</code> stamps both ends, since it already keeps a stack
+            and knows where each render began.</p>` },
+      { t: 'Fixed: every query was counted twice', s: 'done',
+        d: `<p>Building the waterfall exposed a bug that had been there since the POC.
+            Every query appeared as a span and again as a point a fraction of a millisecond
+            later, exactly half of them with zero duration.</p>
+            <p><code>LoggerInterface</code> resolves to <code>LoggerProxy</code>, which
+            delegates to an inner logger that <em>also</em> implements
+            <code>LoggerInterface</code>. Both are intercepted, so the plugin fired twice
+            per query. Every query count reported before this was double the truth: a warm
+            cart page reads 8, not 16.</p>
+            <p>The adapter always calls <code>startTimer()</code> before
+            <code>logStats()</code>, so a report with no marked start is the delegated copy
+            rather than a query. Covered by a regression test.</p>` },
+      { t: 'Analysis/TimelineBuilder', s: 'done',
         d: `<p>Merges every section into one ordered list of three kinds, following
             <code>src/Analysis/TimelineBuilder.php</code>:</p>
             <ul>
@@ -1094,10 +1106,10 @@ inspect_debug_queries       slowest first, with call sites</code></pre>
             <p>Each is then scaled against the largest <code>at_ms</code> to give
             <code>at_percent</code>, <code>start_percent</code> and
             <code>duration_percent</code>, which is all the view needs.</p>` },
-      { t: 'Timeline section and MCP exposure', s: 'todo',
+      { t: 'Timeline section and MCP exposure', s: 'done',
         d: `<p>A new <code>timeline</code> section in the profile, readable through
             <code>get_debug_profile_section</code> like any other.</p>` },
-      { t: 'Waterfall view', s: 'todo',
+      { t: 'Waterfall view', s: 'done',
         d: `<p>Activity column with name and section, a time axis with gridlines, bars for
             spans and dots for points, and a timing column showing duration and range.
             Filter by key activity, and search by event or section.</p>` }

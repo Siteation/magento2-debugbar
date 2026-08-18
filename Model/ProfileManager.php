@@ -7,6 +7,7 @@ namespace Siteation\DebugBar\Model;
 use Magento\Framework\App\ResponseInterface;
 use Siteation\DebugBar\Api\CollectorInterface;
 use Siteation\DebugBar\Analysis\ProfileAnalyzer;
+use Siteation\DebugBar\Analysis\TimelineBuilder;
 use Siteation\DebugBar\Collector\InterceptionCollector;
 use Siteation\DebugBar\Collector\RequestCollector;
 
@@ -30,12 +31,16 @@ class ProfileManager
      */
     public function __construct(
         private readonly ProfileAnalyzer $analyzer,
+        private readonly TimelineBuilder $timeline,
+        private readonly Clock $clock,
         private readonly array $collectors = []
     ) {
     }
 
     public function begin(): void
     {
+        $this->clock->start();
+
         foreach ($this->collectors as $collector) {
             $collector->reset();
         }
@@ -102,6 +107,15 @@ class ProfileManager
                 'memory_peak_mb' => round(memory_get_peak_usage(true) / 1048576, 2),
             ],
             'sections' => $sections,
+        ];
+
+        // Built from the finished sections, so it must come before the analyzer sees the
+        // profile and after every collector has stopped.
+        $timeline = $this->timeline->build($profile);
+        $profile['sections']['timeline'] = [
+            'label' => 'Timeline',
+            'summary' => $timeline['summary'],
+            'payload' => ['items' => $timeline['items']],
         ];
 
         $profile['findings'] = $this->analyzer->analyze($profile);

@@ -33,7 +33,10 @@ class GetSection implements McpToolInterface
                 'profile_id' => ['type' => 'string'],
                 'section' => [
                     'type' => 'string',
-                    'enum' => ['request', 'queries', 'events', 'observers', 'blocks', 'cache', 'interception'],
+                    'enum' => [
+                        'request', 'queries', 'events', 'observers', 'blocks', 'cache',
+                        'interception', 'timeline',
+                    ],
                 ],
                 'cursor' => ['type' => 'integer', 'minimum' => 0, 'default' => 0],
                 'limit' => [

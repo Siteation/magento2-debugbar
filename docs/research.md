@@ -1140,7 +1140,50 @@ A truncated measurement is worse than no measurement: it looks like data and is 
 
 Metrics now size to content, only the path shrinks, and the strip scrolls if it has to.
 
-### 13.20 Smaller confirmations
+### 13.20 Every query was counted twice, for months
+
+Building the waterfall exposed it immediately: each query appeared as a span and again as a
+point a fraction of a millisecond later, and exactly half the recorded queries had a
+duration of zero.
+
+`Magento\Framework\DB\LoggerInterface` resolves to `LoggerProxy`, a hand written class
+rather than a generated one, which is why it is interceptable at all. It delegates to an
+inner logger, `File` or `Quiet`, which **also** implements `LoggerInterface` and is
+therefore also intercepted. The plugin fired on both.
+
+Every query count reported before this was double the truth. A warm cart page reads 8, not
+16.
+
+The adapter always calls `startTimer()` before `logStats()`, on every path including
+connects and transactions, so a report arriving with no marked start is the delegated copy
+rather than a query:
+
+```php
+if ($this->startedAt === null) {
+    return;
+}
+```
+
+That is more robust than targeting `LoggerProxy` directly, because it holds however many
+layers delegate. A regression test pins it.
+
+The general lesson: an interface plugin fires once per implementing object in the chain,
+not once per logical operation. Any interface with a delegating implementation has this
+shape.
+
+### 13.21 Developer mode does not regenerate interceptors
+
+Adding a constructor argument to a controller produced a 500 with
+`Too few arguments ... 4 passed in generated/code/.../Interceptor.php`. Generated
+interceptors are created on demand and then never checked again, so a changed constructor
+leaves a stale one behind.
+
+`rm -rf generated/code/<Vendor>` fixes it. That is now three separate stale artifact traps
+in this project: static assets served from a URL that only changes on deploy, the
+interception cache that `cache:clean config` does not reach, and this. All three cost time
+looking for a bug that was not there.
+
+### 13.22 Smaller confirmations
 
 * One `aroundLaunch` plugin really does cover frontend, adminhtml, GraphQL and REST.
   Verified: all four return `X-Siteation-DebugBar-Profile`.

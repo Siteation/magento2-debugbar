@@ -484,6 +484,144 @@
 .ndb-pill.is-bad { background: var(--ndb-bad); color: #14181f; }
 .ndb-pill.is-warn { background: var(--ndb-warn); color: #14181f; }
 
+/* waterfall */
+
+.ndb-section-lead {
+  margin: 0 0 14px;
+  color: var(--ndb-dim);
+  font-size: 14px;
+  max-width: 70ch;
+}
+
+.ndb-wf {
+  font-size: 14px;
+}
+
+.ndb-wf-head,
+.ndb-wf-row {
+  display: grid;
+  grid-template-columns: minmax(9rem, 22rem) 1fr minmax(6rem, 8rem);
+  gap: 14px;
+  align-items: center;
+}
+
+.ndb-wf-head {
+  padding-bottom: 7px;
+  border-bottom: 1px solid var(--ndb-border);
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--ndb-dim);
+}
+
+.ndb-wf-head .ndb-wf-track {
+  position: relative;
+  height: 14px;
+}
+
+.ndb-wf-tick {
+  position: absolute;
+  top: 0;
+  transform: translateX(-50%);
+  white-space: nowrap;
+}
+
+.ndb-wf-tick:first-child { transform: none; }
+
+.ndb-wf-row {
+  padding: 7px 0;
+  border-bottom: 1px solid var(--ndb-border);
+}
+
+.ndb-wf-row:last-child { border-bottom: 0; }
+
+.ndb-wf-label {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ndb-wf-row.is-milestone .ndb-wf-label {
+  font-weight: 700;
+}
+
+.ndb-wf-section {
+  display: block;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--ndb-dim);
+}
+
+.ndb-wf-track {
+  position: relative;
+  height: 18px;
+  min-width: 8rem;
+}
+
+.ndb-wf-grid {
+  position: absolute;
+  inset: 0;
+  background-image: repeating-linear-gradient(
+    to right,
+    var(--ndb-border) 0 1px,
+    transparent 1px 25%
+  );
+  opacity: 0.55;
+}
+
+.ndb-wf-bar {
+  position: absolute;
+  top: 50%;
+  height: 8px;
+  transform: translateY(-50%);
+  border-radius: 999px;
+  background: var(--ndb-accent);
+  min-width: 2px;
+}
+
+.ndb-wf-dot {
+  position: absolute;
+  top: 50%;
+  width: 7px;
+  height: 7px;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: var(--ndb-ok);
+}
+
+.ndb-wf-row.is-milestone .ndb-wf-dot {
+  width: 2px;
+  height: 16px;
+  border-radius: 1px;
+  background: var(--ndb-text);
+}
+
+.ndb-wf-timing {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.ndb-wf-duration {
+  display: block;
+  font-weight: 600;
+}
+
+.ndb-wf-timing small {
+  display: block;
+  font-size: 11px;
+}
+
+@media (max-width: 720px) {
+  .ndb-wf-head,
+  .ndb-wf-row {
+    grid-template-columns: 1fr minmax(5rem, 6rem);
+  }
+
+  .ndb-wf-track { display: none; }
+}
+
 /* tables */
 
 .ndb-table {
