@@ -475,7 +475,17 @@
     padding: 0.85rem 1rem;
   }
 
+  .lede {
+    max-width: 70ch;
+    margin: -0.35rem 0 0.9rem;
+    color: var(--text-dim);
+    font-size: 0.88rem;
+  }
+
+  .lede .tag { display: inline-block; margin: 0; vertical-align: baseline; }
+
   .backlog-card h4 { margin: 0 0 0.3rem; font-size: 0.92rem; }
+  .backlog-card h4 .tag { margin-left: 0.35rem; vertical-align: middle; }
   .backlog-card p { margin: 0; color: var(--text-dim); font-size: 0.85rem; }
 
   footer.page {
@@ -512,6 +522,20 @@
   <div class="cards" id="cards"></div>
 
   <div id="releases"></div>
+
+  <h2 class="section" style="margin-top:2.25rem">What is left</h2>
+  <p class="lede">
+    Four items are to do, and one is parked. Anything marked
+    <span class="tag closed">Closed</span> is a decision that was taken rather than work
+    that was dropped: moved into another phase, superseded, or deliberately not built.
+    Those are listed underneath so the reasoning stays findable. The
+    <span class="tag backlog">Backlog</span> further down is a different thing again:
+    ideas worth keeping that were never scheduled.
+  </p>
+  <div class="backlog-grid" id="remaining"></div>
+
+  <h3 class="section" style="margin-top:1.75rem;font-size:0.95rem">Closed on purpose</h3>
+  <div class="backlog-grid" id="decided"></div>
 
   <h2 class="section" style="margin-top:2.25rem">Backlog</h2>
   <div class="backlog-grid" id="backlog"></div>
@@ -1413,6 +1437,54 @@ const BACKLOG = [
     why: 'Read the profile header from devtools and surface profiles without injecting anything into the page at all.' }
 ];
 
+/**
+ * The open items, and the ones that look open but are not. Kept beside the phases rather
+ * than derived from them, because the reason a thing is still open is the useful part and
+ * a status word cannot carry it.
+ */
+const REMAINING = [
+  { name: 'Tag 1.0.0 and publish', phase: '1.0, Hardening', status: 'todo',
+    why: 'Not an engineering task. Packagist can only read a public repository, and making '
+      + 'this one public is Rutger\'s decision. Everything it would ship is built, tested '
+      + 'and verified against a running store.' },
+  { name: 'Search and the command palette', phase: '1.1, E. Comfort', status: 'todo',
+    why: 'Cmd/Ctrl Shift P over sections and settings. It is also where the dock placement '
+      + 'toggle went when it left the header, so it is the one open item another piece is '
+      + 'already waiting on.' },
+  { name: 'Syntax highlighting', phase: '1.1, E. Comfort', status: 'todo',
+    why: 'SQL, JSON and a small PHP grammar through highlight.js/lib/core, about 20 kB '
+      + 'rather than the 900 kB of the full package. Nothing depends on it.' },
+  { name: 'History section', phase: '1.1, E. Comfort', status: 'todo',
+    why: 'Recent profiles as a list, so the request switcher is not the only way back to an '
+      + 'earlier request. It is also what cross request comparison needs first.' },
+  { name: 'Magento integration test suite', phase: '1.0, Hardening', status: 'backlog',
+    why: 'Deferred until the interface stops moving. What it would assert is covered today '
+      + 'by dev/smoke over HTTP, 24 assertions against a running store, without needing the '
+      + 'integration framework or a second database.' }
+];
+
+/**
+ * Items that read as unfinished and are not.
+ */
+const DECIDED = [
+  { name: 'Timer collector', phase: '1.0, Collection',
+    why: 'The timeline built from every collector\'s at_ms stamp answers the same question '
+      + 'with data already being captured, so a separate collector would have measured the '
+      + 'same work twice.' },
+  { name: 'Comfort and layout work', phase: '1.0, The bar',
+    why: 'Moved wholesale into 1.1, which is the phase that adopts New Debug Bar\'s '
+      + 'interface. Splitting it across two releases would have meant building the same '
+      + 'header twice.' },
+  { name: 'Sub-tabs within a section', phase: '1.1, C. Navigation',
+    why: 'Moved into D and built there, because that is where the first section with '
+      + 'something to switch between arrived. Building the control in C would have meant '
+      + 'building it empty.' },
+  { name: 'MCP visibility for the Alpine section', phase: '1.1, D. Alpine',
+    why: 'Would need a write endpoint to post a browser snapshot back, on a module whose '
+      + 'entire safety story is that it only ever reads. The section has to prove itself '
+      + 'first, and an agent can already ask a browser for the page\'s Alpine state.' }
+];
+
 const STATUS_LABEL = { done: 'Done', active: 'In progress', todo: 'To do', backlog: 'Backlog', closed: 'Closed' };
 const CHECK = { done: '✓', active: '•', todo: '', backlog: '', closed: '×' };
 
@@ -1571,6 +1643,22 @@ function renderReleases() {
   document.getElementById('releases').innerHTML = RELEASES.map(renderRelease).join('');
 }
 
+function renderRemaining() {
+  document.getElementById('remaining').innerHTML = REMAINING.map((item) =>
+    `<div class="backlog-card">
+      <h4>${item.name} <span class="tag ${item.status}">${STATUS_LABEL[item.status]}</span></h4>
+      <p><strong>${item.phase}.</strong> ${item.why}</p>
+    </div>`
+  ).join('');
+
+  document.getElementById('decided').innerHTML = DECIDED.map((item) =>
+    `<div class="backlog-card">
+      <h4>${item.name} <span class="tag closed">Closed</span></h4>
+      <p><strong>${item.phase}.</strong> ${item.why}</p>
+    </div>`
+  ).join('');
+}
+
 function renderBacklog() {
   document.getElementById('backlog').innerHTML = BACKLOG.map((item) =>
     `<div class="backlog-card"><h4>${item.name}</h4><p>${item.why}</p></div>`
@@ -1620,6 +1708,7 @@ function syncThemeButton() {
 
 renderCards();
 renderReleases();
+renderRemaining();
 renderBacklog();
 syncThemeButton();
 </script>
