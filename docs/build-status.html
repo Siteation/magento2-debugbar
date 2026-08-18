@@ -1189,29 +1189,41 @@ inspect_debug_queries       slowest first, with call sites</code></pre>
     name: 'C. Navigation',
     goal: 'A sidebar with favourites, and sections that explain themselves.',
     tasks: [
-      { t: '210px sidebar instead of tabs', s: 'todo',
-        d: `<p>Name left, count right, <code>h-9 rounded-lg px-2.5 text-xs
-            font-semibold</code>. Becomes an off canvas drawer under 640px at
-            <code>w-[82vw] max-w-[280px]</code>.</p>` },
-      { t: 'Favourites, drag to reorder', s: 'todo',
-        d: `<p>Pinned sections group above the list under a Favorites heading. The indigo
-            <code>h-1 rounded-full</code> bars in their inspector are drop indicators, not
-            decoration. Persisted with the other preferences.</p>` },
-      { t: 'A sentence per section', s: 'todo',
-        d: `<p>Every section opens with a title and one line saying what it is for.
-            "Follow important work in the order it happened across the request." Cheap, and
-            it is the difference between a panel a developer explores and one they guess
-            at.</p>` },
-      { t: 'Findings inline per section', s: 'todo',
-        d: `<p>Each section shows its own findings at the top in a callout, while the
-            Findings section keeps the full ranked list. Theirs renders a green "No clear
-            problem found" box when a section is clean, which is worth copying.</p>` },
-      { t: 'Sub-tabs within a section', s: 'todo',
-        d: `<p>Pill buttons, as their Livewire section does with Overview, Components and
-            Events. Needed for Alpine and Request.</p>` }
+      { t: '210px sidebar instead of tabs', s: 'done',
+        d: `<p>Name left, count right. Nine sections in a scrolling tab row was already
+            uncomfortable and the Alpine section would have made it worse.</p>
+            <p>Counts show nothing rather than zero where a section has nothing worth
+            counting, so Overview carries no misleading badge.</p>` },
+      { t: 'One list drives everything', s: 'done',
+        d: `<p><code>sections.js</code> holds the id, label and one line description for
+            each section, and the sidebar, the headings and the counts all read from it. A
+            section cannot appear in the navigation under a different name than it has at
+            the top of its own panel.</p>` },
+      { t: 'Favourites, drag to reorder', s: 'done',
+        d: `<p>Pinned sections group above the rest under their own heading, dragging one
+            onto another reorders it, and the order is remembered. The drop indicator is a
+            bar in the accent colour, as theirs is.</p>
+            <p>The pin only appears on hover, or when it is already set, so the sidebar
+            stays quiet until you reach for it.</p>` },
+      { t: 'Findings inline per section', s: 'done',
+        d: `<p>Each section shows the findings that belong to it in a callout under its
+            heading, so the conclusion and the evidence sit together rather than in two
+            places. The Findings section keeps the full ranked list.</p>
+            <p>A section with nothing against it says "No clear problem found" rather than
+            showing nothing, which is their idea and a good one: silence is ambiguous.</p>` },
+      { t: 'Off canvas drawer under 720px', s: 'done',
+        d: `<p>The sidebar becomes a drawer behind a toggle that names the current section,
+            with a scrim to close it.</p>
+            <p>Verified by applying the drawer rules directly, because the browser window
+            would not resize in this environment. That exercises the markup and the rules
+            but not the breakpoint value itself, which is worth a look on a real narrow
+            window.</p>` },
+      { t: 'Sub-tabs within a section', s: 'closed',
+        d: `<p>Moved into D, where the Alpine section will actually have components,
+            stores, deferred and health to switch between. Building the control now would
+            mean building something with nothing to put in it.</p>` }
     ]
   },
-
   {
     release: '1.1',
     id: 'alpine',

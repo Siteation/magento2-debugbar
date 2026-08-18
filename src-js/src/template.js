@@ -1,4 +1,6 @@
 import { header } from './header.js'
+import { navigation } from './nav.js'
+import { icon } from './icons.js'
 
 /**
  * The bar's markup, rendered into the shadow root before Alpine initialises it.
@@ -29,46 +31,40 @@ export const template = `
          data-ndb-on:keydown="trapFocus($event)">
       ${header({ sheet: true })}
 
-      <nav class="ndb-tabs">
-      <button type="button" class="ndb-tab" data-ndb-on:click="select('findings')"
-              data-ndb-bind:class="isSection('findings') && 'is-active'">
-        Findings
-        <span class="ndb-pill" data-ndb-bind:class="'is-' + findingsTone"
-              data-ndb-text="findings.length"></span>
-      </button>
-      <button type="button" class="ndb-tab" data-ndb-on:click="select('overview')"
-              data-ndb-bind:class="isSection('overview') && 'is-active'">Overview</button>
-      <button type="button" class="ndb-tab" data-ndb-on:click="select('timeline')"
-              data-ndb-bind:class="isSection('timeline') && 'is-active'">
-        Timeline <span class="ndb-pill" data-ndb-text="timeline.count || 0"></span>
-      </button>
-      <button type="button" class="ndb-tab" data-ndb-on:click="select('queries')"
-              data-ndb-bind:class="isSection('queries') && 'is-active'">
-        Queries <span class="ndb-pill" data-ndb-text="queries.count || 0"></span>
-      </button>
-      <button type="button" class="ndb-tab" data-ndb-on:click="select('events')"
-              data-ndb-bind:class="isSection('events') && 'is-active'">
-        Events <span class="ndb-pill" data-ndb-text="events.unique_count || 0"></span>
-      </button>
-      <button type="button" class="ndb-tab" data-ndb-on:click="select('observers')"
-              data-ndb-bind:class="isSection('observers') && 'is-active'">
-        Observers <span class="ndb-pill" data-ndb-text="observers.unique_count || 0"></span>
-      </button>
-      <button type="button" class="ndb-tab" data-ndb-on:click="select('blocks')"
-              data-ndb-bind:class="isSection('blocks') && 'is-active'">
-        Blocks <span class="ndb-pill" data-ndb-text="blocks.unique_count || 0"></span>
-      </button>
-      <button type="button" class="ndb-tab" data-ndb-on:click="select('cache')"
-              data-ndb-bind:class="isSection('cache') && 'is-active'">
-        Cache <span class="ndb-pill" data-ndb-text="cache.count || 0"></span>
-      </button>
-      <button type="button" class="ndb-tab" data-ndb-on:click="select('plugins')"
-              data-ndb-bind:class="isSection('plugins') && 'is-active'">
-        Plugins <span class="ndb-pill" data-ndb-text="interception.plugin_count || 0"></span>
-      </button>
-      </nav>
+      <div class="ndb-body">
+        <button type="button" class="ndb-nav-toggle" data-ndb-on:click="navOpen = !navOpen"
+                title="Sections">
+          ${icon('menu')}
+          <span data-ndb-text="currentSection.label"></span>
+        </button>
+
+        ${navigation()}
+
+        <div class="ndb-nav-scrim" data-ndb-show="navOpen"
+             data-ndb-on:click="navOpen = false"></div>
 
     <div class="ndb-panel-body">
+
+      <header class="ndb-section-head">
+        <h2 data-ndb-text="currentSection.label"></h2>
+        <p data-ndb-text="currentSection.lead"></p>
+      </header>
+
+      <div class="ndb-callout is-warn" data-ndb-show="sectionFindings.length > 0">
+        <template data-ndb-for="(finding, index) in sectionFindings" data-ndb-bind:key="index">
+          <p>
+            <strong data-ndb-text="finding.message"></strong>
+            <span data-ndb-text="finding.why"></span>
+          </p>
+        </template>
+      </div>
+
+      <div class="ndb-callout is-clear"
+           data-ndb-show="section !== 'findings' && sectionFindings.length === 0">
+        <p><strong>No clear problem found.</strong>
+          Nothing in this section matched a rule.</p>
+      </div>
+
 
       <div class="ndb-requests" data-ndb-show="requests.length > 0">
         <span class="ndb-requests-label">Requests</span>
@@ -439,6 +435,8 @@ export const template = `
         <p class="ndb-empty" data-ndb-show="visiblePlugins.length === 0">No plugins match.</p>
       </div>
 
+      </div>
+      </div>
     </div>
   </div>
 

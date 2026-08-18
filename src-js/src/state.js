@@ -1,5 +1,6 @@
 import { watchRequests } from './requests.js'
 import { keepFocusWithin, lockHost, unlockHost } from './host.js'
+import { SECTIONS, countFor } from './sections.js'
 
 const STORAGE_KEY = 'siteation.debugbar.v1'
 const ID_PLACEHOLDER = '__PROFILE_ID__'
@@ -67,6 +68,10 @@ export function debugBar() {
     theme: 'system',
     resolvedTheme: 'dark',
     stopWatchingScheme: null,
+    favourites: [],
+    draggingId: null,
+    dropTargetId: null,
+    navOpen: false,
     // Deliberately not persisted. Hiding the bar for good with no way back would be a
     // trap, so closing it lasts until the next page load.
     dismissed: false,
@@ -101,6 +106,9 @@ export function debugBar() {
       this.theme = ['system', 'light', 'dark'].includes(preferences.theme)
         ? preferences.theme
         : 'system'
+      this.favourites = Array.isArray(preferences.favourites)
+        ? preferences.favourites.filter((id) => SECTIONS.some((s) => s.id === id))
+        : []
       this.watchColorScheme()
 
       if (this.open) this.$nextTick(() => this.lock())
@@ -432,6 +440,84 @@ export function debugBar() {
         && Number(this.events.count || 0) === 0
     },
 
+    /** @returns {Array<object>} every section with its count resolved */
+    get sections() {
+      return SECTIONS.map((section) => ({ ...section, count: countFor(section.id, this) }))
+    },
+
+    /** @returns {Array<object>} pinned sections, in the order they were arranged */
+    get favouriteSections() {
+      return this.favourites
+        .map((id) => this.sections.find((section) => section.id === id))
+        .filter(Boolean)
+    },
+
+    /** @returns {Array<object>} */
+    get otherSections() {
+      return this.sections.filter((section) => !this.favourites.includes(section.id))
+    },
+
+    /** @returns {object} */
+    get currentSection() {
+      return this.sections.find((section) => section.id === this.section) || this.sections[0]
+    },
+
+    /**
+     * A section shows its own findings at the top, so the evidence and the conclusion sit
+     * together rather than in two different places.
+     *
+     * @returns {Array<object>}
+     */
+    get sectionFindings() {
+      if (this.section === 'findings') return []
+
+      return this.findings.filter((finding) => finding.section === this.section)
+    },
+
+    /** @param {string} id */
+    isFavourite(id) {
+      return this.favourites.includes(id)
+    },
+
+    /** @param {string} id */
+    toggleFavourite(id) {
+      this.favourites = this.isFavourite(id)
+        ? this.favourites.filter((favourite) => favourite !== id)
+        : [...this.favourites, id]
+
+      this.persist()
+    },
+
+    /** @param {string} id */
+    startDrag(id) {
+      this.draggingId = id
+    },
+
+    /** @param {string} id */
+    dragOver(id) {
+      if (this.draggingId && id !== this.draggingId) this.dropTargetId = id
+    },
+
+    /** @param {string} id */
+    drop(id) {
+      const from = this.favourites.indexOf(this.draggingId)
+      const to = this.favourites.indexOf(id)
+
+      if (from > -1 && to > -1 && from !== to) {
+        const next = [...this.favourites]
+        next.splice(to, 0, next.splice(from, 1)[0])
+        this.favourites = next
+        this.persist()
+      }
+
+      this.endDrag()
+    },
+
+    endDrag() {
+      this.draggingId = null
+      this.dropTargetId = null
+    },
+
     /**
      * System is the default, so the bar follows the developer's own setting until they
      * say otherwise. The media query stays watched, so changing the OS theme while a page
@@ -519,6 +605,7 @@ export function debugBar() {
     /** @param {string} section */
     select(section) {
       this.section = section
+      this.navOpen = false
       this.openInspector()
       this.persist()
     },
@@ -556,6 +643,7 @@ export function debugBar() {
           placement: this.placement,
           maximised: this.maximised,
           theme: this.theme,
+          favourites: this.favourites,
         }))
       } catch {
         // A blocked localStorage is not a reason to lose the bar.
