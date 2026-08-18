@@ -1470,6 +1470,28 @@ inspect_debug_queries       slowest first, with call sites</code></pre>
             survives it.</p>
             <p>Cost: 60 kB raw, 18 kB gzipped. The plan guessed 20 kB, which was optimistic
             about the core and about SQL's keyword list.</p>` },
+      { t: 'Cross request comparison', s: 'done',
+        d: `<p>The reason to keep profiles at all. A number alone says a page took 300 ms;
+            only a second number says whether that is the change you just made. Twelve
+            metrics with a delta, a percentage and a verdict, findings that appeared or
+            went away, and the query shapes that were added, removed or now run a different
+            number of times.</p>
+            <p>Each metric is judged by its own direction. Lower is better for duration and
+            queries, higher for the cache hit rate, and neither for events dispatched or
+            blocks rendered, which are different rather than worse. A percentage against a
+            baseline of zero is reported as unanswerable rather than as infinity.</p>
+            <p>Queries are matched by <code>QueryAnalyzer</code>'s fingerprint, not by
+            string equality, so a statement that differs only by its bound ids counts as
+            the same shape on both sides. That is what turns "eighty statements differ"
+            into "this added forty queries". Doing it in PHP is the whole reason the diff
+            is server side: a second definition of "the same query" in JavaScript would
+            have drifted.</p>
+            <p>It lives beside the history list as a sub-tab, and defaults to the most
+            recent other profile for the same path, because that is what the question
+            usually means.</p>
+            <p>The same differ is an MCP tool, <code>compare_debug_profiles</code>. An
+            agent measuring what its own change cost is the case this project exists for,
+            and the answer is 5 kB.</p>` },
       { t: 'History section', s: 'done',
         d: `<p>Every profile still on disk, newest first, with its area, query count,
             findings, status, duration and age. Clicking one loads it and lands on the
@@ -1500,8 +1522,6 @@ const BACKLOG = [
 
   { name: 'Ignition integration',
     why: 'Detect swissup/module-ignition, hand exceptions to it, and inject our profile id and a link into its error page. Its optional dependency is the one thing that would justify a second package, which would simply be its own repository.' },
-  { name: 'Cross request comparison',
-    why: 'Diff two stored profiles to show what a change cost. Follows the History section in the 1.1 plan, and is what makes keeping profiles worth it.' },
   { name: 'Message queue and cron profiling',
     why: 'Consumers and cron run outside App\\Http, so they need their own entry hook on AppInterface. Clearly useful, entirely separate from the request path.' },
   { name: 'MCP over HTTP or SSE',

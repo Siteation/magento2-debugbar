@@ -52,6 +52,9 @@ These cost hours each. Check them before believing a bug is real.
 3. **Generated interceptors.** Developer mode creates them once and never rechecks, so
    changing a constructor gives `Too few arguments ... generated/code/.../Interceptor.php`.
    Fix with `rm -rf generated/code/Siteation`.
+4. **`generated/metadata`.** Adding an item to a `di.xml` argument array, an MCP tool for
+   instance, survived both `rm -rf generated/code/Siteation` and `cache:flush`. It took
+   `rm -rf generated/metadata` as well before the new tool existed.
 
 ## Architecture
 
@@ -81,11 +84,16 @@ bind every handler twice. See `research.md` 13.3.
 **Only summaries are embedded** in the page, about 1.5 kB. Section payloads are fetched from
 `siteation_debugbar/profile/view` on first open.
 
-**Two endpoints**, both behind the same gate as the bar: `profile/view` for one profile,
-`profile/history` for the list the history section reads. Anything that hands out profile
-ids sits behind the same address check as the thing that hands out profiles.
+**Three endpoints**, all behind the same gate as the bar: `profile/view` for one profile,
+`profile/history` for the list the history section reads, `profile/compare` for the diff
+between two. Anything that hands out profile ids sits behind the same address check as the
+thing that hands out profiles.
 
-**MCP** is `bin/magento siteation:debugbar:mcp`, hand rolled JSON-RPC 2.0 over stdio, four
+**Comparison** is `Analysis\ProfileComparer`, server side because it fingerprints query
+shapes through `QueryAnalyzer`, and a second definition of "the same query" in JavaScript
+would drift. The bar and the MCP tool both read it.
+
+**MCP** is `bin/magento siteation:debugbar:mcp`, hand rolled JSON-RPC 2.0 over stdio, five
 read only tools. Starts in about 0.2 seconds because it only reads files. Registered in
 Claude Code as `siteation-debugbar`.
 
@@ -95,9 +103,9 @@ Claude Code as `siteation-debugbar`.
 bin/magento cache:flush                                        # after any plugin change
 vendor/bin/phpcs  --standard=<pkg>/phpcs.xml.dist <pkg>
 vendor/bin/phpstan analyse -c <pkg>/phpstan.neon.dist
-vendor/bin/phpunit --configuration <pkg>/phpunit.xml.dist      # 71 tests
-<pkg>/dev/smoke https://mage-debugbar.test magedebugbar_admin  # 25 assertions
-cd <pkg>/src-js && npm test                                    # 34 tests, no dependency
+vendor/bin/phpunit --configuration <pkg>/phpunit.xml.dist      # 78 tests
+<pkg>/dev/smoke https://mage-debugbar.test magedebugbar_admin  # 27 assertions
+cd <pkg>/src-js && npm test                                    # 36 tests, no dependency
 cd <pkg>/src-js && npm run build                               # output is committed
 ```
 
@@ -124,9 +132,10 @@ Backlog is in `build-status.html`, which is the live tracker. Open it in a brows
 
 ## Next
 
-1.1 is done bar the interface polish Rutger keeps finding, which is the point of him
-looking. The backlog's next real item is cross request comparison, which the history
-section was the prerequisite for.
+1.1 is done, and so is the backlog item it was leading to. What is left is Rutger's:
+tagging 1.0.0, which needs the repository public. The backlog still holds Ignition
+integration, message queue and cron profiling, open in editor links and a browser
+extension, none of them started.
 
 ## Decided in D, worth not relitigating
 

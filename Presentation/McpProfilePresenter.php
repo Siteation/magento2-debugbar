@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Siteation\DebugBar\Presentation;
 
+use Siteation\DebugBar\Analysis\ProfileComparer;
 use Siteation\DebugBar\Model\ProfileStore;
 
 /**
@@ -27,6 +28,7 @@ class McpProfilePresenter
     public function __construct(
         private readonly ProfileStore $store,
         private readonly ProfileSummary $summary,
+        private readonly ProfileComparer $comparer,
         private readonly int $maxItems = 50,
         private readonly int $maxBytes = 100000
     ) {
@@ -141,6 +143,31 @@ class McpProfilePresenter
             ]),
             $page
         );
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    /**
+     * What changed between two requests. The comparison itself is bounded already, so this
+     * only has to say which profiles it read.
+     *
+     * @return array<string, mixed>
+     */
+    public function compare(string $baselineId, string $subjectId): array
+    {
+        $baseline = $this->store->get($baselineId);
+        $subject = $this->store->get($subjectId);
+
+        if ($baseline === null) {
+            return $this->notFound($baselineId);
+        }
+
+        if ($subject === null) {
+            return $this->notFound($subjectId);
+        }
+
+        return $this->envelope($this->comparer->compare($baseline, $subject));
     }
 
     /**

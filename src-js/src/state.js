@@ -124,6 +124,11 @@ export function debugBar() {
     historyLoading: false,
     historyError: '',
     historyLoaded: false,
+    historyTab: 'recent',
+    baselineId: '',
+    comparison: null,
+    comparing: false,
+    compareError: '',
     activeId: null,
     pageProfile: {},
 
@@ -160,6 +165,13 @@ export function debugBar() {
       })
 
       if (this.open && this.section === 'history') this.loadHistory()
+
+      // The comparison is against whatever is on screen, so switching profiles invalidates
+      // it rather than leaving a diff labelled with the wrong request.
+      this.$watch('activeId', () => {
+        this.comparison = null
+        this.baselineId = ''
+      })
 
       // On the document, not on the bar: the shortcut has to work while the page has
       // focus, which is most of the time. Events from the shadow root are composed, so
@@ -258,6 +270,86 @@ export function debugBar() {
       } finally {
         this.historyLoading = false
       }
+    },
+
+    /**
+     * The request to compare against, chosen for the reader: the most recent other profile
+     * for the same path, because that is what "what did my change cost" means. Failing
+     * that, whatever came before this one.
+     *
+     * @returns {string}
+     */
+    suggestedBaseline() {
+      const others = this.history.filter((entry) => entry.profile_id !== this.activeId)
+      const path = this.request.path
+      const samePath = others.find((entry) => entry.path === path)
+
+      return (samePath || others[0])?.profile_id || ''
+    },
+
+    /** @returns {Array<object>} everything except the profile being looked at */
+    get baselineChoices() {
+      return this.history.filter((entry) => entry.profile_id !== this.activeId)
+    },
+
+    /**
+     * @returns {Promise<void>}
+     */
+    async compareProfiles() {
+      const template = this.rootElement()?.dataset.compareUrl
+      const baseline = this.baselineId || this.suggestedBaseline()
+
+      if (!template || !baseline || !this.activeId || baseline === this.activeId) return
+
+      this.baselineId = baseline
+      this.comparing = true
+      this.compareError = ''
+
+      const url = `${template}baseline/${encodeURIComponent(baseline)}`
+        + `/subject/${encodeURIComponent(this.activeId)}/`
+
+      try {
+        const response = await fetch(url, { headers: { Accept: 'application/json' } })
+        const body = await response.json()
+
+        if (!response.ok) throw new Error(body.error || `HTTP ${response.status}`)
+
+        this.comparison = body
+      } catch (error) {
+        this.comparison = null
+        this.compareError = String(error.message || error)
+      } finally {
+        this.comparing = false
+      }
+    },
+
+    /**
+     * @param {object} metric
+     * @returns {string} the change, signed, in the metric's own unit
+     */
+    deltaLabel(metric) {
+      if (!metric || metric.delta === 0) return 'no change'
+
+      const sign = metric.delta > 0 ? '+' : '-'
+      const size = metric.unit === 'B'
+        ? this.bytes(Math.abs(metric.delta))
+        : `${this.number(Math.abs(metric.delta), metric.decimals)}${metric.unit ? ` ${metric.unit}` : ''}`
+
+      return `${sign}${size}`
+    },
+
+    /**
+     * @param {object} metric
+     * @returns {string}
+     */
+    metricValue(metric, side) {
+      const value = metric[side]
+
+      if (value === null || value === undefined) return 'none'
+
+      return metric.unit === 'B'
+        ? this.bytes(value)
+        : `${this.number(value, metric.decimals)}${metric.unit ? ` ${metric.unit}` : ''}`
     },
 
     /**

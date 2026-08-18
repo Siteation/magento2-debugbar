@@ -83,6 +83,7 @@
                 <item name="get_findings" xsi:type="object">Siteation\DebugBar\Mcp\Tool\GetFindings</item>
                 <item name="get_section" xsi:type="object">Siteation\DebugBar\Mcp\Tool\GetSection</item>
                 <item name="inspect_queries" xsi:type="object">Siteation\DebugBar\Mcp\Tool\InspectQueries</item>
+                <item name="compare_profiles" xsi:type="object">Siteation\DebugBar\Mcp\Tool\CompareProfiles</item>
             </argument>
         </arguments>
     </type>

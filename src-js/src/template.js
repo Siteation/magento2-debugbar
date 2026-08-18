@@ -505,6 +505,12 @@ export const template = `
       </div>
 
       <div data-ndb-show="isSection('history')">
+        ${subTabs('historyTab', [
+          { id: 'recent', label: 'Recent', count: 'history.length' },
+          { id: 'compare', label: 'Compare' },
+        ])}
+
+        <div data-ndb-show="historyTab === 'recent'">
         <div class="ndb-subhead">
           <div>
             <h3>Recent requests</h3>
@@ -556,6 +562,172 @@ export const template = `
         <p class="ndb-empty" data-ndb-show="!historyLoading && history.length === 0">
           Nothing stored yet.
         </p>
+        </div>
+
+        <div data-ndb-show="historyTab === 'compare'">
+          <div class="ndb-subhead">
+            <div>
+              <h3>What changed</h3>
+              <p>
+                The request on screen, measured against an earlier one. Query shapes are
+                matched by fingerprint, so the same statement with different ids counts
+                once.
+              </p>
+            </div>
+          </div>
+
+          <div class="ndb-fields">
+            <div class="ndb-field is-search">
+              <span class="ndb-field-label">Compare against</span>
+              <select class="ndb-search" data-ndb-model="baselineId">
+                <template data-ndb-for="choice in baselineChoices"
+                          data-ndb-bind:key="choice.profile_id">
+                  <option data-ndb-bind:value="choice.profile_id"
+                          data-ndb-text="choice.method + ' ' + choice.path + '  ·  '
+                            + number(choice.duration_ms, 0) + ' ms  ·  ' + ago(choice.started_at)"></option>
+                </template>
+              </select>
+            </div>
+
+            <div class="ndb-field">
+              <span class="ndb-field-label">&nbsp;</span>
+              <button type="button" class="ndb-chip is-active"
+                      data-ndb-on:click="compareProfiles()">Compare</button>
+            </div>
+          </div>
+
+          <p class="ndb-note" data-ndb-show="comparing">Comparing.</p>
+          <p class="ndb-note" data-ndb-show="compareError">
+            Could not compare: <span data-ndb-text="compareError"></span>
+          </p>
+          <p class="ndb-empty" data-ndb-show="!comparison && !comparing && !compareError">
+            Pick a request and compare. Nothing is fetched until you do.
+          </p>
+
+          <div data-ndb-show="comparison">
+            <div class="ndb-callout is-warn" data-ndb-show="comparison && !comparison.same_path">
+              <p class="ndb-callout-title">These are different pages</p>
+              <p>Comparing unlike requests measures the difference between the pages, not
+                the difference a change made.</p>
+            </div>
+
+            <table class="ndb-table ndb-compare">
+              <thead>
+                <tr>
+                  <th>Metric</th>
+                  <th class="ndb-num">Before</th>
+                  <th class="ndb-num">Now</th>
+                  <th class="ndb-num">Change</th>
+                </tr>
+              </thead>
+              <tbody>
+                <template data-ndb-for="metric in comparison.metrics"
+                          data-ndb-bind:key="metric.key">
+                  <tr>
+                    <td data-ndb-text="metric.label"></td>
+                    <td class="ndb-num ndb-dim" data-ndb-text="metricValue(metric, 'baseline')"></td>
+                    <td class="ndb-num" data-ndb-text="metricValue(metric, 'subject')"></td>
+                    <td class="ndb-num ndb-delta" data-ndb-bind:class="'is-' + metric.verdict">
+                      <span data-ndb-text="deltaLabel(metric)"></span>
+                      <small data-ndb-show="metric.percent !== null && metric.delta !== 0"
+                             data-ndb-text="(metric.percent > 0 ? '+' : '') + metric.percent + '%'"></small>
+                    </td>
+                  </tr>
+                </template>
+              </tbody>
+            </table>
+
+            <div class="ndb-subhead" data-ndb-show="comparison
+                 && (comparison.findings.new.length || comparison.findings.resolved.length)">
+              <div>
+                <h3>Findings</h3>
+                <p>
+                  <span data-ndb-text="comparison.findings.unchanged"></span> unchanged.
+                </p>
+              </div>
+            </div>
+
+            <ol class="ndb-list">
+              <template data-ndb-for="(finding, index) in comparison.findings.new"
+                        data-ndb-bind:key="'new' + index">
+                <li class="ndb-finding" data-ndb-bind:class="'is-' + finding.severity">
+                  <div class="ndb-finding-head">
+                    <span class="ndb-severity" data-ndb-bind:class="'is-' + finding.severity">new</span>
+                    <span class="ndb-finding-message" data-ndb-text="finding.message"></span>
+                  </div>
+                </li>
+              </template>
+              <template data-ndb-for="(finding, index) in comparison.findings.resolved"
+                        data-ndb-bind:key="'gone' + index">
+                <li class="ndb-finding">
+                  <div class="ndb-finding-head">
+                    <span class="ndb-severity is-clear">gone</span>
+                    <span class="ndb-finding-message" data-ndb-text="finding.message"></span>
+                  </div>
+                </li>
+              </template>
+            </ol>
+
+            <div class="ndb-subhead">
+              <div>
+                <h3>Query shapes</h3>
+                <p>
+                  <span data-ndb-text="comparison.queries.shapes_before"></span> before,
+                  <span data-ndb-text="comparison.queries.shapes_after"></span> after.
+                  <span data-ndb-text="comparison.queries.added_total"></span> added,
+                  <span data-ndb-text="comparison.queries.removed_total"></span> gone,
+                  <span data-ndb-text="comparison.queries.changed_total"></span> run a
+                  different number of times.
+                </p>
+              </div>
+            </div>
+
+            <p class="ndb-empty" data-ndb-show="comparison
+               && !comparison.queries.added_total && !comparison.queries.removed_total
+               && !comparison.queries.changed_total">
+              The same statements ran the same number of times.
+            </p>
+
+            <ol class="ndb-list">
+              <template data-ndb-for="(row, index) in comparison.queries.added"
+                        data-ndb-bind:key="'add' + index">
+                <li class="ndb-query">
+                  <div class="ndb-query-head">
+                    <span class="ndb-delta is-worse"
+                          data-ndb-text="'+' + row.count"></span>
+                    <span class="ndb-query-type">added</span>
+                  </div>
+                  <code class="ndb-query-sql" data-ndb-html="highlight(row.sql, 'sql')"></code>
+                </li>
+              </template>
+
+              <template data-ndb-for="(row, index) in comparison.queries.changed"
+                        data-ndb-bind:key="'chg' + index">
+                <li class="ndb-query">
+                  <div class="ndb-query-head">
+                    <span class="ndb-delta"
+                          data-ndb-bind:class="row.delta > 0 ? 'is-worse' : 'is-better'"
+                          data-ndb-text="(row.delta > 0 ? '+' : '') + row.delta"></span>
+                    <span class="ndb-query-type"
+                          data-ndb-text="row.baseline_count + ' to ' + row.count + ' runs'"></span>
+                  </div>
+                  <code class="ndb-query-sql" data-ndb-html="highlight(row.sql, 'sql')"></code>
+                </li>
+              </template>
+
+              <template data-ndb-for="(row, index) in comparison.queries.removed"
+                        data-ndb-bind:key="'rem' + index">
+                <li class="ndb-query">
+                  <div class="ndb-query-head">
+                    <span class="ndb-delta is-better" data-ndb-text="row.delta"></span>
+                    <span class="ndb-query-type">gone</span>
+                  </div>
+                  <code class="ndb-query-sql" data-ndb-html="highlight(row.sql, 'sql')"></code>
+                </li>
+              </template>
+            </ol>
+          </div>
+        </div>
       </div>
 
       <div data-ndb-show="isSection('alpine')">

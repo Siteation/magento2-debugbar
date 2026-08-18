@@ -985,6 +985,9 @@
   margin-bottom: 14px;
 }
 
+/* One heading after another block of content needs air above it, the first does not. */
+.ndb-subhead:not(:first-child) { margin-top: 24px; }
+
 .ndb-subhead h3 {
   margin: 0;
   font-size: 16px;
@@ -1691,3 +1694,35 @@
 .hljs-title,
 .hljs-title.function_,
 .hljs-variable { color: var(--ndb-text); }
+
+/* comparison */
+
+.ndb-compare td { vertical-align: middle; }
+
+.ndb-delta {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.ndb-delta.is-better { color: var(--ndb-ok); }
+.ndb-delta.is-worse { color: var(--ndb-bad); }
+.ndb-delta.is-same { color: var(--ndb-dim); font-weight: 400; }
+
+.ndb-delta small {
+  display: block;
+  font-size: 12px;
+  font-weight: 400;
+  opacity: 0.8;
+}
+
+.ndb-severity.is-clear {
+  background: color-mix(in srgb, var(--ndb-ok) 20%, transparent);
+  color: var(--ndb-ok);
+}
+
+/* A select is right here: the list is as long as the history. */
+select.ndb-search {
+  cursor: pointer;
+  max-width: 100%;
+}

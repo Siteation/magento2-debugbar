@@ -97,6 +97,30 @@ profiles = data.get("profiles")
 sys.exit(0 if isinstance(profiles, list)
          and (not profiles or "profile_id" in profiles[0]) else 1)
 HIST
+# Two ids from the history, so the comparison has something real to diff.
+PAIR=$(python3 - "$BODY" <<'PAIR'
+import json, sys
+
+profiles = json.load(open(sys.argv[1])).get("profiles", [])
+print(" ".join(p["profile_id"] for p in profiles[:2]))
+PAIR
+)
+if [ "$(echo "$PAIR" | wc -w)" -eq 2 ]; then
+    CMP=$(curl -sk -o "$BODY" -w '%{http_code}' \
+        "$BASE/siteation_debugbar/profile/compare/baseline/$(echo "$PAIR" | cut -d" " -f1)/subject/$(echo "$PAIR" | cut -d" " -f2)/")
+    [ "$CMP" = "200" ] && python3 -c "
+import json,sys
+d=json.load(open('$BODY'))
+sys.exit(0 if d.get('metrics') and 'queries' in d else 1)
+" && pass "compares two profiles" || fail "compares two profiles" "got $CMP"
+else
+    pass "compares two profiles (skipped, one profile stored)"
+fi
+
+SELF=$(curl -sk -o /dev/null -w '%{http_code}' \
+    "$BASE/siteation_debugbar/profile/compare/baseline/$ID/subject/$ID/")
+[ "$SELF" = "400" ] && pass "refuses to compare a profile with itself" \
+    || fail "refuses to compare a profile with itself" "got $SELF"
 BAD=$(curl -sk -o /dev/null -w '%{http_code}' "$BASE/siteation_debugbar/profile/view/id/..%2F..%2Fetc%2Fpasswd/")
 [ "$BAD" = "400" ] && pass "rejects a malformed id with 400" || fail "rejects a malformed id" "got $BAD"
 

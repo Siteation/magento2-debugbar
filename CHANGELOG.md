@@ -17,6 +17,9 @@ entries for the work that led up to it.
   opened.
 * Renders in a shadow root with its own bundled Alpine, so it cannot collide with the
   theme's styles or its Alpine, and still works on a page whose own JavaScript failed.
+* Cross request comparison: diff two stored profiles for what changed in duration, memory,
+  queries, cache and findings, with query shapes matched by fingerprint. In the bar beside
+  the history, and over MCP as `compare_debug_profiles`.
 * A history section listing every profile still on disk, so an earlier request is one
   click away rather than a header away.
 * Syntax highlighting for SQL, for Alpine state and for component expressions.

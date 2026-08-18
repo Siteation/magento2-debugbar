@@ -55,8 +55,12 @@ Profiles are written to `var/siteation_debugbar/`, kept at 20 files and 60 minut
 ## Use it from a coding agent
 
 The same profiles are readable over MCP, so an agent inspects exact data instead of
-guessing. Four read only tools: `list_debug_profiles`, `get_debug_findings`,
-`get_debug_profile_section`, `inspect_debug_queries`.
+guessing. Five read only tools: `list_debug_profiles`, `get_debug_findings`,
+`get_debug_profile_section`, `inspect_debug_queries`, `compare_debug_profiles`.
+
+The last one answers "what did my change cost": profile a page, change something, profile
+it again, and compare the two. Duration, memory, queries, cache and findings, plus the
+query shapes that were added or removed, in about 5 kB.
 
 Claude Code:
 

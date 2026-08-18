@@ -131,7 +131,7 @@ class BarInjector
 
         $markup = sprintf(
             '<div id="%s" data-css="%s" data-profile-url="%s" data-front-name="%s"'
-            . ' data-value-policy="%s" data-history-url="%s"></div>'
+            . ' data-value-policy="%s" data-history-url="%s" data-compare-url="%s"></div>'
             . '<script type="application/json" id="%s">%s</script>'
             . '<script type="module" src="%s" defer></script>',
             self::ROOT_ID,
@@ -140,6 +140,7 @@ class BarInjector
             RequestEligibility::FRONT_NAME,
             $this->escape($this->config->valuePolicy()),
             $this->escape($this->url->getUrl('siteation_debugbar/profile/history', ['_secure' => true])),
+            $this->escape($this->url->getUrl('siteation_debugbar/profile/compare', ['_secure' => true])),
             self::DATA_ID,
             $json === false ? '{}' : $json,
             $this->escape($this->assets->for('js/debugbar.js'))
