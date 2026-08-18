@@ -104,6 +104,15 @@ function appearanceCommands(state) {
 function windowCommands(state) {
   return [
     {
+      id: 'copy',
+      group: 'Window',
+      label: 'Copy this request for an AI',
+      hint: 'markdown',
+      keywords: 'copy clipboard ai assistant chatgpt claude markdown report share',
+      kind: 'copy',
+      arg: '',
+    },
+    {
       id: 'inspector',
       group: 'Window',
       label: state.open ? 'Minimise the inspector' : 'Open the inspector',

@@ -109,6 +109,7 @@ test('every command carries a kind the dispatcher handles', () => {
   // that does nothing when it is chosen.
   const handled = new Set([
     'section', 'theme', 'placement', 'favourite', 'inspector', 'maximise', 'dismiss',
+    'copy',
   ])
 
   commandsFor(state()).forEach((command) => {

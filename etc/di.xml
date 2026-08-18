@@ -92,6 +92,7 @@
         <arguments>
             <argument name="commands" xsi:type="array">
                 <item name="siteation_debugbar_mcp" xsi:type="object">Siteation\DebugBar\Console\McpServerCommand</item>
+                <item name="siteation_debugbar_report" xsi:type="object">Siteation\DebugBar\Console\ReportCommand</item>
             </argument>
         </arguments>
     </type>

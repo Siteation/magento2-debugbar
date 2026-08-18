@@ -91,6 +91,22 @@ together under 3% of the raw document.
 `docs/SKILL.md` is an agent skill describing how to use the tools well. Point your agent at
 it, or copy it into your own skills directory.
 
+### For an assistant that cannot call MCP
+
+A browser tab, a chat window, or a coding agent that has a shell but no MCP server
+configured. Any of them can read the same profile as markdown:
+
+```
+bin/magento siteation:debugbar:report                       # the newest profile
+bin/magento siteation:debugbar:report --id=<profile-id>
+bin/magento siteation:debugbar:report --id=<after> --baseline=<before>
+```
+
+The bar has a **Copy for AI** button on the Overview that puts the same report on the
+clipboard, and `siteation_debugbar/profile/view/id/<id>/format/markdown/` serves it over
+HTTP. Findings first, then cost, then the slowest queries with their call sites. About
+3 kB for a cart page.
+
 ## What it captures, and what it does not
 
 The bar is off until you turn it on, and production mode refuses regardless of the

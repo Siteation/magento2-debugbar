@@ -132,6 +132,17 @@ export const template = `
             <span data-ndb-text="statusPhrase"></span>
           </span>
           <span class="ndb-summary-note" data-ndb-text="outcomePhrase"></span>
+          <button type="button" class="ndb-chip ndb-summary-copy"
+                  data-ndb-bind:class="copyState && 'is-active'"
+                  data-ndb-on:click="copyReport()"
+                  title="Put this request on the clipboard as markdown, for an assistant"
+                  data-ndb-text="copyLabel"></button>
+        </div>
+
+        <div class="ndb-note" data-ndb-show="copyFallback">
+          <p>This browser would not take the clipboard. Select this and copy it by hand.</p>
+          <textarea class="ndb-copy-fallback" readonly rows="6" data-ndb-model="copyFallback"
+                    data-ndb-on:focus="$event.target.select()"></textarea>
         </div>
 
         <p class="ndb-note" data-ndb-show="looksLikeFullPageCacheHit">

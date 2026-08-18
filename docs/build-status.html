@@ -1470,6 +1470,33 @@ inspect_debug_queries       slowest first, with call sites</code></pre>
             survives it.</p>
             <p>Cost: 60 kB raw, 18 kB gzipped. The plan guessed 20 kB, which was optimistic
             about the core and about SQL's keyword list.</p>` },
+      { t: 'A report an assistant can read', s: 'done',
+        d: `<p>The MCP server already serves an agent that can call it. This is for the
+            ones that cannot: an assistant in a browser tab, a colleague in a chat window,
+            a coding agent with a shell but no MCP server configured. That last case is the
+            common one, because no agent can use a server nobody wired up.</p>
+            <p>One renderer, <code>Presentation\ProfileReport</code>, and three consumers:
+            <code>bin/magento siteation:debugbar:report</code> for anything with a shell,
+            <code>format/markdown</code> on the existing profile endpoint, and a Copy for
+            AI button in the bar. A second renderer would have drifted from the first, the
+            way two profile summarizers would have.</p>
+            <p>Findings first, then cost, then the slowest queries with their call sites,
+            then where the rest of the time went. Bounded like everything else: about 3 kB
+            for a cart page. <code>--baseline</code> adds the comparison, so an agent can be
+            handed what a change cost in one paste.</p>
+            <p>The clipboard is allowed to refuse: an unfocused document or a missing
+            permission is not our failure, so the report goes on screen to be selected by
+            hand rather than being lost behind "could not copy".</p>` },
+      { t: 'Fixed: a span that lasted nothing', s: 'done',
+        d: `<p>Writing the report surfaced it. Block entries reached the timeline as spans
+            with a start and an end but no <code>duration_ms</code>, because a block records
+            its time as <code>own_ms</code> and <code>total_ms</code> and the builder only
+            looked for the one name.</p>
+            <p>Nothing looked broken: the waterfall drew the bars from start and end, and
+            the timing column quietly fell back to showing when a block ran instead of how
+            long it took. It only became visible when something tried to rank spans by
+            duration and got a list of zeroes.</p>
+            <p>A span's duration is now the distance it covers.</p>` },
       { t: 'Cross request comparison', s: 'done',
         d: `<p>The reason to keep profiles at all. A number alone says a page took 300 ms;
             only a second number says whether that is the change you just made. Twelve
@@ -1520,28 +1547,14 @@ const BACKLOG = [
   { name: 'Integration tests',
     why: 'The last gap in 1.0. Assert a profile is produced for every area and that a collector which throws leaves the response untouched. Verified by hand today, not automated.' },
 
-  { name: 'Ignition integration',
-    why: 'Detect swissup/module-ignition, hand exceptions to it, and inject our profile id and a link into its error page. Its optional dependency is the one thing that would justify a second package, which would simply be its own repository.' },
+  { name: 'Capture the exception on a 5xx',
+    why: 'A finding that says a request failed should say what threw. The exception class and message belong in the request collector. Chosen over Ignition integration, which would only have restated the profile id the response header already carries, for a third party dependency.' },
   { name: 'Message queue and cron profiling',
     why: 'Consumers and cron run outside App\\Http, so they need their own entry hook on AppInterface. Clearly useful, entirely separate from the request path.' },
   { name: 'MCP over HTTP or SSE',
-    why: 'The hand rolled stdio loop covers local agents. Revisit php-mcp/server only if a remote or multiplexed transport is actually needed.' },
+    why: 'The hand rolled stdio loop covers local agents, and the markdown report covers the ones that cannot call it at all. A debug endpoint on the network is a security question before it is a feature, so this waits for a case that needs it. Dropped along the way: Ignition integration, which restated the response header, and a browser extension, which bought little for a store listing and a second codebase to maintain forever.' },
   { name: 'Open in editor links',
     why: 'Turn call sites into phpstorm:// or vscode:// links, with a remote to local path map for Docker and Valet setups, as Ignition does.' },
-  { name: 'Browser extension',
-    why: 'Read the profile header from devtools and surface profiles without injecting anything into the page at all.' }
-];
-
-/**
- * The open items, and the ones that look open but are not. Kept beside the phases rather
- * than derived from them, because the reason a thing is still open is the useful part and
- * a status word cannot carry it.
- */
-const REMAINING = [
-  { name: 'Tag 1.0.0 and publish', phase: '1.0, Hardening', status: 'todo',
-    why: 'Not an engineering task. Packagist can only read a public repository, and making '
-      + 'this one public is Rutger\'s decision. Everything it would ship is built, tested '
-      + 'and verified against a running store.' },
   { name: 'Magento integration test suite', phase: '1.0, Hardening', status: 'backlog',
     why: 'Deferred until the interface stops moving. What it would assert is covered today '
       + 'by dev/smoke over HTTP, 24 assertions against a running store, without needing the '

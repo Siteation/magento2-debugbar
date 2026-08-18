@@ -129,6 +129,8 @@ export function debugBar() {
     comparison: null,
     comparing: false,
     compareError: '',
+    copyState: '',
+    copyFallback: '',
     activeId: null,
     pageProfile: {},
 
@@ -269,6 +271,59 @@ export function debugBar() {
         this.historyError = String(error.message || error)
       } finally {
         this.historyLoading = false
+      }
+    },
+
+    /** @returns {string} */
+    get copyLabel() {
+      if (this.copyState === 'working') return 'Copying'
+      if (this.copyState === 'done') return 'Copied'
+      if (this.copyState === 'failed') return 'Copy it yourself'
+      if (this.copyState === 'error') return 'Report unavailable'
+
+      return 'Copy for AI'
+    },
+
+    /**
+     * The profile as markdown, on the clipboard, for an assistant that cannot call the MCP
+     * server: a browser tab, a chat window, a colleague. The rendering happens in PHP so
+     * there is one definition of the report rather than one per consumer.
+     *
+     * @returns {Promise<void>}
+     */
+    async copyReport() {
+      const url = this.profileUrlFor(this.activeId || this.profile.id || '')
+
+      if (!url) return
+
+      this.copyState = 'working'
+      this.copyFallback = ''
+
+      let report = ''
+
+      try {
+        const response = await fetch(`${url}format/markdown/`, { headers: { Accept: 'text/markdown' } })
+
+        if (!response.ok) throw new Error(`HTTP ${response.status}`)
+
+        report = await response.text()
+      } catch {
+        this.copyState = 'error'
+        setTimeout(() => { this.copyState = '' }, 2500)
+
+        return
+      }
+
+      try {
+        await navigator.clipboard.writeText(report)
+        this.copyState = 'done'
+        setTimeout(() => { this.copyState = '' }, 2500)
+      } catch {
+        // A browser refuses the clipboard for reasons that have nothing to do with us: an
+        // unfocused document, a permission not granted. The report is still worth having,
+        // so it goes on screen to be selected by hand rather than being lost.
+        this.copyState = 'failed'
+        this.copyFallback = report
       }
     },
 
@@ -1077,6 +1132,7 @@ export function debugBar() {
         case 'inspector': this.toggle(); break
         case 'maximise': this.toggleMaximised(); break
         case 'dismiss': this.dismiss(); break
+        case 'copy': this.copyReport(); break
         default: break
       }
     },

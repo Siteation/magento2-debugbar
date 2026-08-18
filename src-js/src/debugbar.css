@@ -698,6 +698,21 @@
   padding-left: 10px;
 }
 
+.ndb-summary-copy { margin-left: auto; }
+
+.ndb-copy-fallback {
+  width: 100%;
+  margin-top: 8px;
+  padding: 8px 10px;
+  border: 1px solid var(--ndb-border);
+  border-radius: 8px;
+  background: var(--ndb-bg);
+  color: var(--ndb-text);
+  font-family: var(--ndb-mono);
+  font-size: 13px;
+  resize: vertical;
+}
+
 .ndb-steps {
   list-style: none;
   margin: 0;

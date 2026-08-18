@@ -80,6 +80,13 @@ import json,sys
 d=json.load(open('$BODY'))
 sys.exit(0 if isinstance(d.get('findings'), list) else 1)
 " 2>/dev/null && pass "serves findings" || fail "serves findings" ""
+
+    MD=$(curl -sk "$BASE/siteation_debugbar/profile/view/id/$ID/format/markdown/")
+    case "$MD" in
+        "# "*) pass "renders a profile as markdown" ;;
+        *) fail "renders a profile as markdown" "got ${MD:0:40}" ;;
+    esac
+
 else
     fail "profile endpoint" "skipped, no profile id"
 fi

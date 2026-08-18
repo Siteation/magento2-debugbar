@@ -93,6 +93,10 @@ thing that hands out profiles.
 shapes through `QueryAnalyzer`, and a second definition of "the same query" in JavaScript
 would drift. The bar and the MCP tool both read it.
 
+**The markdown report** is `Presentation\ProfileReport`, for assistants that cannot call
+MCP. Three consumers, one renderer: `bin/magento siteation:debugbar:report`,
+`format/markdown` on the profile endpoint, and the bar's Copy for AI button.
+
 **MCP** is `bin/magento siteation:debugbar:mcp`, hand rolled JSON-RPC 2.0 over stdio, five
 read only tools. Starts in about 0.2 seconds because it only reads files. Registered in
 Claude Code as `siteation-debugbar`.
@@ -103,8 +107,8 @@ Claude Code as `siteation-debugbar`.
 bin/magento cache:flush                                        # after any plugin change
 vendor/bin/phpcs  --standard=<pkg>/phpcs.xml.dist <pkg>
 vendor/bin/phpstan analyse -c <pkg>/phpstan.neon.dist
-vendor/bin/phpunit --configuration <pkg>/phpunit.xml.dist      # 78 tests
-<pkg>/dev/smoke https://mage-debugbar.test magedebugbar_admin  # 27 assertions
+vendor/bin/phpunit --configuration <pkg>/phpunit.xml.dist      # 79 tests
+<pkg>/dev/smoke https://mage-debugbar.test magedebugbar_admin  # 28 assertions
 cd <pkg>/src-js && npm test                                    # 36 tests, no dependency
 cd <pkg>/src-js && npm run build                               # output is committed
 ```
@@ -132,10 +136,18 @@ Backlog is in `build-status.html`, which is the live tracker. Open it in a brows
 
 ## Next
 
-1.1 is done, and so is the backlog item it was leading to. What is left is Rutger's:
-tagging 1.0.0, which needs the repository public. The backlog still holds Ignition
-integration, message queue and cron profiling, open in editor links and a browser
-extension, none of them started.
+**Open in editor links**, which Rutger scheduled. A URL template in config
+(`phpstorm://open?file=%f&line=%l`, `vscode://file/%f:%l`, `cursor://file/%f:%l`) plus a
+second field mapping a container path to a host path, then a link renderer over the call
+sites already collected. The editor spread is not the problem; a template setting is how
+Ignition, Whoops and Laravel all solve it.
+
+After that the backlog holds: capturing the exception on a 5xx, message queue and cron
+profiling (parked until async work is what you are debugging), MCP over HTTP, and the
+integration suite. Tagging 1.0.0 remains Rutger's, and needs the repository public.
+
+Dropped, with the reasoning in `build-status.html`: Ignition integration and a browser
+extension.
 
 ## Decided in D, worth not relitigating
 
