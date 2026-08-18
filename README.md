@@ -161,6 +161,7 @@ vendor/bin/phpcs --standard=package-source/siteation/magento2-debugbar/phpcs.xml
 
 ## Documentation
 
+* `docs/handoff.md` — start here if you are picking this up cold
 * `docs/plan.md` — the build plan, phase by phase
 * `docs/research.md` — prior art, verified framework hooks, and the traps found in them
 * `docs/build-status.html` — progress tracker
