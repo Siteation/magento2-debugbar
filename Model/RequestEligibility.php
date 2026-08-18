@@ -28,7 +28,22 @@ class RequestEligibility
             return false;
         }
 
+        if (!$this->config->allowsIp($this->clientIp())) {
+            return false;
+        }
+
         return !$this->isOwnRequest();
+    }
+
+    /**
+     * Deliberately ignores X-Forwarded-For. An allowlist that trusts a client supplied
+     * header is not an allowlist.
+     */
+    public function clientIp(): ?string
+    {
+        $ip = $this->request->getServer('REMOTE_ADDR');
+
+        return is_string($ip) && $ip !== '' ? $ip : null;
     }
 
     private function isOwnRequest(): bool

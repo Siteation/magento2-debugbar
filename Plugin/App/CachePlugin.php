@@ -45,6 +45,7 @@ class CachePlugin
 
     /**
      * @param array<int, string> $tags
+     * @param int|null $lifeTime left untyped to match CacheInterface::save()
      */
     public function aroundSave(
         CacheInterface $subject,

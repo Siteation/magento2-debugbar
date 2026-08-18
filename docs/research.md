@@ -1063,7 +1063,43 @@ Two stdio rules matter and neither is obvious:
 * Echo the client's `protocolVersion` back when it is one you support. Clients disconnect
   on an unexpected version rather than negotiating down.
 
-### 13.14 Smaller confirmations
+### 13.14 Key based redaction cannot reach a positional binding
+
+Sending a request carrying a password, an API token, an email address and a session cookie
+showed the key rules working exactly as designed: password, token and cookie never reached
+the profile. The search term did, five times, once in request parameters and four times in
+query bindings.
+
+That is the limit of the approach rather than a bug in it. Magento bindings are positional,
+so a value a customer typed arrives as an anonymous entry in a list with no key to judge
+it by. No cleverer pattern fixes that.
+
+The answer is a policy rather than a pretence: keep values, mask them, or drop them, with
+keeping as the default because reading the real value is the entire point on a developer
+machine, and say plainly in the README what is stored.
+
+### 13.15 Measuring overhead badly is easy
+
+The first measurement said the bar made pages 74% faster. The disabled runs simply went
+first, against colder application caches, and everything was warm by the time the enabled
+runs happened.
+
+An honest number needs the two states interleaved with warmup between them. Three rounds
+gave tight, consistent samples and a real answer: **+5.9 ms, about 4%** on an uncached
+category page with roughly 860 queries. Most of it is the backtrace taken per query.
+
+No wall clock assertion went into the test suite. A timing test on a developer machine
+fails for reasons that have nothing to do with the code.
+
+### 13.16 PHPStan found two things review did not
+
+Level 6 flagged `AbstractBlock::getTemplate()` as undefined. It is: the method lives on
+`Template`, and on anything else it resolved through `DataObject`'s magic `__call` and
+happened to return the right thing. It also flagged the injector calling `getContent()` and
+`isRedirect()` on `App\Response\HttpInterface`, which declares neither. Both worked at
+runtime and both were wrong.
+
+### 13.17 Smaller confirmations
 
 * One `aroundLaunch` plugin really does cover frontend, adminhtml, GraphQL and REST.
   Verified: all four return `X-Siteation-DebugBar-Profile`.

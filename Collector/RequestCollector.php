@@ -8,6 +8,7 @@ use Magento\Framework\App\Request\Http as HttpRequest;
 use Magento\Framework\App\Response\HttpInterface as HttpResponse;
 use Magento\Framework\App\ResponseInterface;
 use Magento\Framework\App\State;
+use Siteation\DebugBar\Model\Config;
 use Siteation\DebugBar\Model\Redactor;
 use Throwable;
 
@@ -28,6 +29,7 @@ class RequestCollector extends AbstractCollector
         Redactor $redactor,
         private readonly HttpRequest $httpRequest,
         private readonly State $appState,
+        private readonly Config $config,
         int $maxItems = 1
     ) {
         parent::__construct($redactor, $maxItems);
@@ -83,7 +85,10 @@ class RequestCollector extends AbstractCollector
     {
         return [
             'items' => [],
-            'query_params' => $this->redactor->clean($this->httpRequest->getQueryValue() ?? []),
+            'query_params' => $this->redactor->cleanValues(
+                (array) ($this->httpRequest->getQueryValue() ?? []),
+                $this->config->valuePolicy()
+            ),
         ];
     }
 

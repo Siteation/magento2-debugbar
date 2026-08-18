@@ -6,6 +6,7 @@ namespace Siteation\DebugBar\Plugin\View;
 
 use Closure;
 use Magento\Framework\View\Element\AbstractBlock;
+use Magento\Framework\View\Element\Template;
 use Siteation\DebugBar\Collector\BlockCollector;
 use Siteation\DebugBar\Model\ProfileManager;
 
@@ -35,10 +36,13 @@ class BlockPlugin
         try {
             return $proceed();
         } finally {
+            // Only Template blocks have a template. On anything else getTemplate()
+            // resolves through DataObject's magic __call, which happens to work and is
+            // not something to depend on.
             $this->blocks->finish(
                 $name,
                 get_class($subject),
-                $subject->getTemplate() ?: null
+                $subject instanceof Template ? ($subject->getTemplate() ?: null) : null
             );
         }
     }

@@ -78,6 +78,49 @@ together under 3% of the raw document.
 `docs/SKILL.md` is an agent skill describing how to use the tools well. Point your agent at
 it, or copy it into your own skills directory.
 
+## What it captures, and what it does not
+
+The bar is off until you turn it on, and production mode refuses regardless of the
+setting. Profiles are written `0600` in a `0700` directory, kept for 20 requests or 60
+minutes, whichever comes first.
+
+Redacted at record time, never stored:
+
+* Values behind a sensitive looking key: passwords, tokens, API keys, authorization,
+  cookies, session ids, form keys, card numbers, CVV, IBAN.
+* String literals in SQL, so a `WHERE` clause cannot carry an email address.
+* Request headers and cookies are not collected at all.
+
+**Stored by default:** query bindings and request parameters. Bindings are positional, so
+a value a customer typed arrives as an anonymous value with no key to judge it by. That is
+the right default on a developer machine, where seeing the real value is the point. If the
+instance is shared, set **Captured Values** to *Masked* or *None*:
+
+```
+bin/magento config:set dev/siteation_debugbar/value_policy masked
+```
+
+An IP allowlist covers both the bar and the profile endpoint:
+
+```
+bin/magento config:set dev/siteation_debugbar/allowed_ips 127.0.0.1
+```
+
+## What it costs
+
+Measured on this instance against an uncached category page with roughly 860 queries,
+1,300 observer runs and 126 blocks, alternating between enabled and disabled across three
+rounds:
+
+| | |
+| --- | --- |
+| Bar off | 156.6 ms |
+| Bar on | 162.5 ms |
+| Overhead | **+5.9 ms, about 4%** |
+
+Most of that is the backtrace taken per query to find its call site. On a light page the
+difference is around 2%.
+
 ## How it works
 
 | Concern | Hook |

@@ -11,7 +11,17 @@ namespace Siteation\DebugBar\Model;
 class Redactor
 {
     public const REDACTED = '[redacted]';
+    public const MASKED = '[masked]';
     public const TRUNCATED = '[maximum depth reached]';
+
+    /** Keep captured values. Correct on a developer machine, which is where this runs. */
+    public const POLICY_FULL = 'full';
+
+    /** Keep the shape, drop the content. For an unusual shared environment. */
+    public const POLICY_MASKED = 'masked';
+
+    /** Store no values at all. */
+    public const POLICY_NONE = 'none';
 
     /**
      * Matched against array keys, case insensitively.
@@ -64,20 +74,78 @@ class Redactor
     }
 
     /**
+     * Bindings are usually positional, so there is no key to judge them by. Anything a
+     * customer typed arrives here as an anonymous value, which is why the policy exists
+     * rather than a cleverer key rule.
+     *
      * @param array<array-key, mixed> $bindings
      * @return array<array-key, mixed>
      */
-    public function cleanBindings(array $bindings): array
+    public function cleanBindings(array $bindings, string $policy = self::POLICY_FULL): array
     {
+        if ($policy === self::POLICY_NONE) {
+            return [];
+        }
+
         $clean = [];
 
         foreach ($bindings as $key => $value) {
-            $clean[$key] = $this->isSensitiveKey((string) $key)
-                ? self::REDACTED
+            if ($this->isSensitiveKey((string) $key)) {
+                $clean[$key] = self::REDACTED;
+
+                continue;
+            }
+
+            $clean[$key] = $policy === self::POLICY_MASKED
+                ? $this->mask($value)
                 : $this->clean($value, 1);
         }
 
         return $clean;
+    }
+
+    /**
+     * @param array<array-key, mixed> $values
+     * @return array<array-key, mixed>
+     */
+    public function cleanValues(array $values, string $policy = self::POLICY_FULL): array
+    {
+        if ($policy === self::POLICY_NONE) {
+            return [];
+        }
+
+        $clean = [];
+
+        foreach ($values as $key => $value) {
+            if ($this->isSensitiveKey((string) $key)) {
+                $clean[$key] = self::REDACTED;
+
+                continue;
+            }
+
+            $clean[$key] = $policy === self::POLICY_MASKED
+                ? $this->mask($value)
+                : $this->clean($value, 1);
+        }
+
+        return $clean;
+    }
+
+    /**
+     * Numbers and booleans stay: they carry little on their own and losing them makes a
+     * query impossible to read at all.
+     */
+    private function mask(mixed $value): mixed
+    {
+        if (is_string($value)) {
+            return $value === '' ? '' : self::MASKED;
+        }
+
+        if (is_array($value)) {
+            return array_map(fn (mixed $item): mixed => $this->mask($item), $value);
+        }
+
+        return $this->clean($value, 1);
     }
 
     /**

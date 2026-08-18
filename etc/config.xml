@@ -4,10 +4,16 @@
     <default>
         <dev>
             <siteation_debugbar>
-                <!-- Production mode disables the bar regardless of this flag -->
-                <enabled>1</enabled>
+                <!--
+                    Off until asked for. The bar stores SQL, bindings, cache keys and
+                    request data, so installing the module must not start collecting it.
+                    Production mode refuses regardless of this flag.
+                -->
+                <enabled>0</enabled>
                 <slow_query_ms>100</slow_query_ms>
                 <slow_request_ms>1000</slow_request_ms>
+                <allowed_ips/>
+                <value_policy>full</value_policy>
             </siteation_debugbar>
         </dev>
     </default>

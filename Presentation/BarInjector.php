@@ -6,6 +6,7 @@ namespace Siteation\DebugBar\Presentation;
 
 use Magento\Framework\App\Response\HttpInterface as HttpResponse;
 use Magento\Framework\App\ResponseInterface;
+use Magento\Framework\HTTP\PhpEnvironment\Response as ReadableResponse;
 use Magento\Framework\UrlInterface;
 use Siteation\DebugBar\Model\RequestEligibility;
 
@@ -51,7 +52,9 @@ class BarInjector
 
         $response->setHeader(self::PROFILE_HEADER, (string) $profile['id'], true);
 
-        if (!$this->supports($response)) {
+        // The header rides on anything. Reading and rewriting a body needs the concrete
+        // response, because App\Response\HttpInterface declares no getter for it.
+        if (!$response instanceof ReadableResponse || !$this->supports($response)) {
             return;
         }
 
@@ -62,7 +65,7 @@ class BarInjector
         $response->clearHeader('Content-Length');
     }
 
-    private function supports(HttpResponse $response): bool
+    private function supports(ReadableResponse $response): bool
     {
         if ($response->isRedirect()) {
             return false;
@@ -110,6 +113,9 @@ class BarInjector
         );
     }
 
+    /**
+     * @param array<string, mixed> $profile
+     */
     private function insertBody(string $html, array $profile): string
     {
         $json = json_encode(

@@ -71,7 +71,7 @@ class QueryCollector extends AbstractCollector
         $this->record([
             'type' => $type,
             'sql' => $this->redactor->cleanSql($sql),
-            'bindings' => $this->redactor->cleanBindings($bindings),
+            'bindings' => $this->redactor->cleanBindings($bindings, $this->config->valuePolicy()),
             'duration_ms' => $durationMs,
             'slow' => $durationMs >= $this->config->slowQueryMs(),
             'callsite' => $this->callSites->resolve(),

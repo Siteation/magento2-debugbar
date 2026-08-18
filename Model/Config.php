@@ -25,6 +25,8 @@ class Config
     private const XML_PATH_ENABLED = 'dev/siteation_debugbar/enabled';
     private const XML_PATH_SLOW_QUERY_MS = 'dev/siteation_debugbar/slow_query_ms';
     private const XML_PATH_SLOW_REQUEST_MS = 'dev/siteation_debugbar/slow_request_ms';
+    private const XML_PATH_ALLOWED_IPS = 'dev/siteation_debugbar/allowed_ips';
+    private const XML_PATH_VALUE_POLICY = 'dev/siteation_debugbar/value_policy';
 
     private const DEFAULT_SLOW_QUERY_MS = 100.0;
     private const DEFAULT_SLOW_REQUEST_MS = 1000.0;
@@ -36,6 +38,11 @@ class Config
     private float $slowQueryMs = self::DEFAULT_SLOW_QUERY_MS;
 
     private float $slowRequestMs = self::DEFAULT_SLOW_REQUEST_MS;
+
+    /** @var list<string> */
+    private array $allowedIps = [];
+
+    private string $valuePolicy = Redactor::POLICY_FULL;
 
     public function __construct(
         private readonly ScopeConfigInterface $scopeConfig,
@@ -95,6 +102,33 @@ class Config
     }
 
     /**
+     * An empty list allows everyone, which is the normal case on a developer machine.
+     *
+     * @return list<string>
+     */
+    public function allowedIps(): array
+    {
+        return $this->allowedIps;
+    }
+
+    /**
+     * Whether captured values are kept, masked, or dropped.
+     */
+    public function valuePolicy(): string
+    {
+        return $this->valuePolicy;
+    }
+
+    public function allowsIp(?string $ip): bool
+    {
+        if ($this->allowedIps === []) {
+            return true;
+        }
+
+        return $ip !== null && in_array($ip, $this->allowedIps, true);
+    }
+
+    /**
      * Deploy mode comes from env.php, so the primary gate costs no cache or database read.
      */
     private function resolve(): bool
@@ -115,8 +149,31 @@ class Config
             $this->scopeConfig->getValue(self::XML_PATH_SLOW_REQUEST_MS),
             self::DEFAULT_SLOW_REQUEST_MS
         );
+        $this->allowedIps = $this->ipList($this->scopeConfig->getValue(self::XML_PATH_ALLOWED_IPS));
+        $this->valuePolicy = $this->policy($this->scopeConfig->getValue(self::XML_PATH_VALUE_POLICY));
 
         return true;
+    }
+
+    private function policy(mixed $value): string
+    {
+        $allowed = [Redactor::POLICY_FULL, Redactor::POLICY_MASKED, Redactor::POLICY_NONE];
+
+        return is_string($value) && in_array($value, $allowed, true)
+            ? $value
+            : Redactor::POLICY_FULL;
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function ipList(mixed $value): array
+    {
+        if (!is_string($value) || trim($value) === '') {
+            return [];
+        }
+
+        return array_values(array_filter(array_map('trim', explode(',', $value))));
     }
 
     private function positiveFloat(mixed $value, float $fallback): float

@@ -1,0 +1,10 @@
+parameters:
+    level: 6
+    paths:
+        - .
+    excludePaths:
+        analyseAndScan:
+            - src-js
+            - view
+            - Test
+    treatPhpDocTypesAsCertain: false
