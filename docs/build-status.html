@@ -1470,6 +1470,34 @@ inspect_debug_queries       slowest first, with call sites</code></pre>
             survives it.</p>
             <p>Cost: 60 kB raw, 18 kB gzipped. The plan guessed 20 kB, which was optimistic
             about the core and about SQL's keyword list.</p>` },
+      { t: 'Which query repeated, and how often', s: 'done',
+        d: `<p>The finding said a query ran more than once and left you scanning sixty
+            statements to find it. Its "Review queries" action mapped
+            <code>repeated</code> straight to <code>all</code>, which is no filter at all,
+            and the evidence naming the exact SQL was already in the profile and rendered
+            nowhere.</p>
+            <p>Three fixes. Every query item is stamped with how often its shape ran, by
+            QueryAnalyzer, so "the same query" means one thing in the profile, the findings
+            and the comparison; the collector asks the analyzer for the fingerprint rather
+            than re-normalising the SQL itself. The Repeated filter is now real. And a
+            finding renders the evidence it was already carrying, so the SQL sits under the
+            sentence about it.</p>
+            <p>That surfaced a contradiction: the message said "ran more than once" while
+            the rule only counts a shape at three or more. It says three now. Rows tag every
+            repeat, amber only from three, which is where the rule starts caring: two runs
+            of the same statement is ordinary.</p>` },
+      { t: 'Fixed: a chip that could not clip', s: 'done',
+        d: `<p>A REST path wrapped to three lines inside a pill. There was already a rule
+            capping the chip at <code>28rem</code>, and inside a shadow root
+            <code>rem</code> resolves against the document root, so the cap was 448px and
+            clipped nothing. In px now, with the path cut and the whole URL on the title.</p>
+            <p>Nearly made it worse: the first attempt added a second
+            <code>.ndb-requests .ndb-chip</code> rule beside the one already there, which
+            is the collision this file has had before. The two remaining rem lengths went
+            too.</p>
+            <p>A long path also keeps its last two segments rather than its first, since
+            <code>.../shipping-information</code> says what a request was and
+            <code>/rest/default/V1/carts</code> does not.</p>` },
       { t: 'A count that means trouble stops looking like one that does not', s: 'done',
         d: `<p>The Health tab's badge showed twelve expression errors in exactly the style
             that Components uses to show eighty-seven components. Same weight, same colour,

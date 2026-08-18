@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Siteation\DebugBar\Collector;
 
 use Magento\Framework\DB\LoggerInterface;
+use Siteation\DebugBar\Analysis\QueryAnalyzer;
 use Siteation\DebugBar\Model\CallSiteResolver;
 use Siteation\DebugBar\Model\Config;
 use Siteation\DebugBar\Model\Clock;
@@ -28,6 +29,7 @@ class QueryCollector extends AbstractCollector
         Clock $clock,
         private readonly Config $config,
         private readonly CallSiteResolver $callSites,
+        private readonly QueryAnalyzer $analyzer,
         int $maxItems = 500
     ) {
         parent::__construct($redactor, $clock, $maxItems);
@@ -36,6 +38,35 @@ class QueryCollector extends AbstractCollector
     public function key(): string
     {
         return 'queries';
+    }
+
+    /**
+     * Each query is told how many times its shape ran.
+     *
+     * A finding can say two queries repeated; only the item itself can say which two. The
+     * count comes from QueryAnalyzer rather than from anything counting here, so "the same
+     * query" means one thing in the profile, in the findings and in the comparison.
+     *
+     * @return array<string, mixed>
+     */
+    public function payload(): array
+    {
+        $items = parent::payload()['items'];
+        $counts = [];
+
+        foreach ($this->analyzer->analyze($items)['groups'] as $group) {
+            $counts[(string) $group['fingerprint']] = (int) $group['count'];
+        }
+
+        $analyzer = $this->analyzer;
+
+        return ['items' => array_map(
+            static fn (array $item): array => [
+                ...$item,
+                'repeat_count' => $counts[$analyzer->fingerprint((string) ($item['sql'] ?? ''))] ?? 1,
+            ],
+            $items
+        )];
     }
 
     public function label(): string

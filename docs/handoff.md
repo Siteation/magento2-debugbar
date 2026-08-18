@@ -178,7 +178,9 @@ Beyond the three stale artifact traps, the ones most likely to bite again:
   another implementer, so every query was counted twice for months.
 * `preg_replace` reads backslashes in the **replacement** as escapes. Injecting a payload
   containing PHP class names corrupts it silently. Use `preg_replace_callback`.
-* Inside a shadow root, `rem` resolves against the **document** root. Size in `px`.
+* Inside a shadow root, `rem` resolves against the **document** root. Size in `px`. Three
+  `rem` lengths survived until 2026-08-19, one of them a `max-width` that was a third larger
+  than intended and therefore capped nothing.
 * A shadow root isolates the bar from the page, not from itself. Generic class names
   collide; `.ndb-facts` was defined twice and the header broke.
 * The header is built once and used twice, and the difference is the `sheet` flag. Metrics

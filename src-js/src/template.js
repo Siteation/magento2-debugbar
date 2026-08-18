@@ -81,9 +81,10 @@ export const template = `
         <template data-ndb-for="(entry, index) in requests" data-ndb-bind:key="index">
           <button type="button" class="ndb-chip"
                   data-ndb-on:click="showProfile(entry.id)"
-                  data-ndb-bind:class="activeId === entry.id && 'is-active'">
+                  data-ndb-bind:class="activeId === entry.id && 'is-active'"
+                  data-ndb-bind:title="entry.method + ' ' + entry.url">
             <span data-ndb-text="entry.method"></span>
-            <span class="ndb-mono" data-ndb-text="shortUrl(entry.url)"></span>
+            <span class="ndb-mono ndb-truncate" data-ndb-text="shortUrl(entry.url)"></span>
             <span class="ndb-dim" data-ndb-text="entry.status"></span>
           </button>
         </template>
@@ -120,6 +121,33 @@ export const template = `
                 <code data-ndb-show="!locationUrl(finding.location)"
                       data-ndb-text="finding.location"></code>
               </p>
+              <template data-ndb-if="finding.evidence && finding.evidence.groups">
+                <ol class="ndb-evidence">
+                  <template data-ndb-for="(group, groupIndex) in finding.evidence.groups"
+                            data-ndb-bind:key="groupIndex">
+                    <li>
+                      <span class="ndb-tag is-warn"
+                            data-ndb-text="'ran ' + group.count + ' times'"></span>
+                      <span class="ndb-dim"
+                            data-ndb-text="number(group.duration_ms, 2) + ' ms'"></span>
+                      <code class="ndb-query-sql" data-ndb-html="highlight(group.sql, 'sql')"></code>
+                    </li>
+                  </template>
+                </ol>
+              </template>
+
+              <template data-ndb-if="finding.evidence && finding.evidence.sql
+                                     && !finding.evidence.groups">
+                <ol class="ndb-evidence">
+                  <li>
+                    <span class="ndb-tag is-warn"
+                          data-ndb-text="'ran ' + finding.evidence.count + ' times'"></span>
+                    <code class="ndb-query-sql"
+                          data-ndb-html="highlight(finding.evidence.sql, 'sql')"></code>
+                  </li>
+                </ol>
+              </template>
+
               <button type="button" class="ndb-chip" data-ndb-show="finding.action"
                       data-ndb-on:click="follow(finding.action)"
                       data-ndb-text="finding.action ? finding.action.label : ''"></button>
@@ -304,6 +332,13 @@ export const template = `
                   data-ndb-bind:class="queryFilter === 'slow' && 'is-active'">
             Slow <span class="ndb-pill" data-ndb-text="queries.slow_count || 0"></span>
           </button>
+          <button type="button" class="ndb-chip" data-ndb-show="repeatedCount"
+                  data-ndb-on:click="queryFilter = 'repeated'"
+                  data-ndb-bind:class="queryFilter === 'repeated' && 'is-active'"
+                  title="Statements whose shape ran more than once. Findings are stricter and
+                         only speak up at three.">
+            Repeated <span class="ndb-pill" data-ndb-text="repeatedCount"></span>
+          </button>
           <input class="ndb-search" type="search" placeholder="Filter SQL"
                  data-ndb-model="querySearch">
           <span class="ndb-dim ndb-count">
@@ -322,6 +357,9 @@ export const template = `
               <div class="ndb-query-head">
                 <span class="ndb-query-time" data-ndb-text="number(query.duration_ms, 2) + ' ms'"></span>
                 <span class="ndb-query-type" data-ndb-text="query.type"></span>
+                <span class="ndb-tag" data-ndb-show="query.repeat_count > 1"
+                      data-ndb-bind:class="query.repeat_count >= 3 && 'is-warn'"
+                      data-ndb-text="'ran ' + query.repeat_count + ' times'"></span>
               </div>
               <code class="ndb-query-sql" data-ndb-html="highlight(query.sql, 'sql')"></code>
 

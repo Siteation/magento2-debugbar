@@ -921,10 +921,18 @@
   color: var(--ndb-dim);
 }
 
+/*
+ * A REST path is longer than a chip. It is cut, not wrapped, and the whole URL is on the
+ * title. px, because rem inside a shadow root resolves against the document root: 28rem
+ * was 448px here and clipped nothing.
+ */
 .ndb-requests .ndb-chip {
-  max-width: 28rem;
+  max-width: 340px;
   overflow: hidden;
+  white-space: nowrap;
 }
+
+.ndb-requests .ndb-chip .ndb-truncate { min-width: 0; }
 
 /* findings */
 
@@ -967,7 +975,7 @@
   font-size: 15px;
   font-weight: 600;
   flex: 1;
-  min-width: 12rem;
+  min-width: 192px;
 }
 
 .ndb-finding-id {
@@ -1162,7 +1170,7 @@
 .ndb-wf-track {
   position: relative;
   height: 18px;
-  min-width: 8rem;
+  min-width: 128px;
 }
 
 .ndb-wf-grid {
@@ -1776,3 +1784,28 @@ select.ndb-search {
 }
 
 .ndb-callsite-link:hover { border-bottom-style: solid; }
+
+/* the evidence behind a finding */
+
+.ndb-evidence {
+  list-style: none;
+  margin: 10px 0;
+  padding: 0;
+}
+
+.ndb-evidence li {
+  padding: 8px 10px;
+  margin-bottom: 6px;
+  border-radius: 8px;
+  background: var(--ndb-bg-2);
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  flex-wrap: wrap;
+  font-size: 13px;
+}
+
+.ndb-evidence .ndb-query-sql {
+  flex-basis: 100%;
+  margin: 0;
+}

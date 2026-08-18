@@ -84,9 +84,10 @@ class RepeatedQueryRule implements RuleInterface
                 Finding::SEVERITY_INFO,
                 'queries',
                 sprintf(
-                    '%d %s ran more than once, %d executions above the minimum.',
+                    '%d %s ran %d or more times, %d executions above one run each.',
                     count($repeated),
                     count($repeated) === 1 ? 'query' : 'queries',
+                    $this->minRepeats,
                     $extra
                 ),
                 sprintf(

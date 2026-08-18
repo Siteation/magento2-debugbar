@@ -7,6 +7,7 @@ namespace Siteation\DebugBar\Test\Unit\Collector;
 use Magento\Framework\DB\LoggerInterface;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
+use Siteation\DebugBar\Analysis\QueryAnalyzer;
 use Siteation\DebugBar\Collector\QueryCollector;
 use Siteation\DebugBar\Model\CallSiteResolver;
 use Siteation\DebugBar\Model\Clock;
@@ -29,7 +30,13 @@ class QueryCollectorTest extends TestCase
         $clock = new Clock();
         $clock->start();
 
-        $this->collector = new QueryCollector(new Redactor(), $clock, $config, $callSites);
+        $this->collector = new QueryCollector(
+            new Redactor(),
+            $clock,
+            $config,
+            $callSites,
+            new QueryAnalyzer()
+        );
     }
 
     #[Test]
@@ -103,4 +110,18 @@ class QueryCollectorTest extends TestCase
             $this->collector->payload()['items'][0]['sql']
         );
     }
+    #[Test]
+    public function itTellsEachQueryHowOftenItsShapeRan(): void
+    {
+        // Placeholders and quoted values are what a prepared statement leaves behind, so
+        // the same query with different ids arrives here already looking the same.
+        $this->collector->record(['sql' => 'SELECT * FROM t WHERE id = ?', 'duration_ms' => 1.0]);
+        $this->collector->record(['sql' => "SELECT  *  FROM t\n WHERE id = ?", 'duration_ms' => 1.0]);
+        $this->collector->record(['sql' => 'SELECT * FROM other', 'duration_ms' => 1.0]);
+
+        $counts = array_column($this->collector->payload()['items'], 'repeat_count');
+
+        $this->assertSame([2, 2, 1], $counts, 'A finding can say two repeated; only this says which.');
+    }
+
 }

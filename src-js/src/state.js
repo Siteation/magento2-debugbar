@@ -447,15 +447,29 @@ export function debugBar() {
     },
 
     /**
+     * A path short enough to sit in a chip.
+     *
+     * A REST call carries a masked cart id in the middle and its meaning at the end, so a
+     * long path keeps its last two segments rather than its first: `.../shipping-information`
+     * says what the request was, `/rest/default/V1/carts` does not.
+     *
      * @param {string} url
      * @returns {string}
      */
     shortUrl(url) {
+      let path = url
+
       try {
-        return new URL(url, window.location.origin).pathname
+        path = new URL(url, window.location.origin).pathname
       } catch {
         return url
       }
+
+      if (path.length <= 42) return path
+
+      const segments = path.split('/').filter(Boolean)
+
+      return segments.length > 2 ? `…/${segments.slice(-2).join('/')}` : path
     },
 
     /**
@@ -583,11 +597,19 @@ export function debugBar() {
 
     /** @returns {Array<object>} */
     get visibleQueries() {
-      const items = this.queryFilter === 'slow'
-        ? this.itemsOf('queries').filter((query) => query.slow)
-        : this.itemsOf('queries')
+      const items = this.itemsOf('queries').filter((query) => {
+        if (this.queryFilter === 'slow') return query.slow
+        if (this.queryFilter === 'repeated') return Number(query.repeat_count || 1) > 1
+
+        return true
+      })
 
       return search(items, this.querySearch, ['sql'])
+    },
+
+    /** @returns {number} how many statements ran a shape that ran more than once */
+    get repeatedCount() {
+      return this.itemsOf('queries').filter((query) => Number(query.repeat_count || 1) > 1).length
     },
 
     /** @returns {Array<object>} */
@@ -958,7 +980,7 @@ export function debugBar() {
       if (!action) return
 
       if (action.filter && action.section === 'queries') {
-        this.queryFilter = action.filter === 'repeated' ? 'all' : action.filter
+        this.queryFilter = action.filter
         this.querySearch = ''
       }
 

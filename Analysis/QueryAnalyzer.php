@@ -27,7 +27,7 @@ class QueryAnalyzer
         foreach ($queries as $query) {
             $sql = (string) ($query['sql'] ?? '');
             $normalized = $this->normalize($sql);
-            $fingerprint = substr(hash('sha256', $normalized), 0, 16);
+            $fingerprint = $this->fingerprint($sql);
             $durationMs = (float) ($query['duration_ms'] ?? 0);
             $totalMs += $durationMs;
 
@@ -91,6 +91,15 @@ class QueryAnalyzer
                 && $bindingsVary
                 && $sharedCallSite,
         ];
+    }
+
+    /**
+     * What makes two queries the same one. Public because more than one thing needs to
+     * agree on it, and agreeing by having the same code twice is how they stop agreeing.
+     */
+    public function fingerprint(string $sql): string
+    {
+        return substr(hash('sha256', $this->normalize($sql)), 0, 16);
     }
 
     private function normalize(string $sql): string
