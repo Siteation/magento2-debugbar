@@ -6,6 +6,7 @@ namespace Siteation\DebugBar\Presentation;
 
 use Magento\Framework\App\Response\HttpInterface as HttpResponse;
 use Magento\Framework\App\ResponseInterface;
+use Magento\Framework\UrlInterface;
 
 /**
  * Adds the bar to HTML responses, and the profile id to every profiled response.
@@ -27,7 +28,8 @@ class BarInjector
     private const DATA_ID = 'siteation-debugbar-profile';
 
     public function __construct(
-        private readonly AssetUrl $assets
+        private readonly AssetUrl $assets,
+        private readonly UrlInterface $url
     ) {
     }
 
@@ -79,16 +81,17 @@ class BarInjector
     private function insertBody(string $html, array $profile): string
     {
         $json = json_encode(
-            $profile,
+            $this->slim($profile),
             JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP
         );
 
         $markup = sprintf(
-            '<div id="%s" data-css="%s"></div>'
+            '<div id="%s" data-css="%s" data-profile-url="%s"></div>'
             . '<script type="application/json" id="%s">%s</script>'
             . '<script type="module" src="%s" defer></script>',
             self::ROOT_ID,
             $this->escape($this->assets->for('css/debugbar.css')),
+            $this->escape($this->profileUrl((string) $profile['id'])),
             self::DATA_ID,
             $json === false ? '{}' : $json,
             $this->escape($this->assets->for('js/debugbar.js'))
@@ -103,6 +106,33 @@ class BarInjector
             $html,
             1
         );
+    }
+
+    /**
+     * Summaries only. A busy uncached page produces a profile of several hundred
+     * kilobytes, and adding that to every response while developing would be worse than
+     * the problem the bar solves. The bar fetches a section's items when it is opened.
+     *
+     * @param array<string, mixed> $profile
+     * @return array<string, mixed>
+     */
+    private function slim(array $profile): array
+    {
+        $sections = [];
+
+        foreach ((array) ($profile['sections'] ?? []) as $key => $section) {
+            $sections[$key] = [
+                'label' => $section['label'] ?? $key,
+                'summary' => $section['summary'] ?? [],
+            ];
+        }
+
+        return [...$profile, 'sections' => $sections, 'lazy' => true];
+    }
+
+    private function profileUrl(string $id): string
+    {
+        return $this->url->getUrl('siteation_debugbar/profile/view', ['id' => $id, '_secure' => true]);
     }
 
     private function escape(string $value): string

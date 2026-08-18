@@ -999,7 +999,21 @@ cannot: per block timing. Keeping a stack separates own time from total time, wh
 matters because a parent's time includes everything it renders, so containers always look
 like the slowest thing on the page.
 
-### 13.10 Smaller confirmations
+### 13.10 Embedding the whole profile does not scale
+
+The POC embedded the full profile as JSON in the page. That was fine at 76 queries and
+stopped being fine as collectors were added: an uncached homepage reached **364 kB**, added
+to every response while developing.
+
+Embedding summaries only brings that to about 1.5 kB, and the bar fetches section payloads
+from a controller the first time it is opened. Two things this needs:
+
+* The id must be validated against the UUID pattern before it reaches the filesystem. The
+  store already does this, which is exactly why that rule was worth porting.
+* The bar's own endpoint must be excluded from profiling, or fetching a profile stores
+  another one and a few clicks push the real profiles out of the ring buffer.
+
+### 13.11 Smaller confirmations
 
 * One `aroundLaunch` plugin really does cover frontend, adminhtml, GraphQL and REST.
   Verified: all four return `X-Siteation-DebugBar-Profile`.

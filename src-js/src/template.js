@@ -41,6 +41,11 @@ export const template = `
 
     <div class="ndb-panel-body">
 
+      <p class="ndb-note" data-ndb-show="loading">Loading profile details.</p>
+      <p class="ndb-note" data-ndb-show="loadError">
+        Could not load profile details: <span data-ndb-text="loadError"></span>
+      </p>
+
       <div data-ndb-show="isSection('overview')">
         <p class="ndb-note" data-ndb-show="looksLikeFullPageCacheHit">
           No queries and no events. This page was almost certainly served from the full

@@ -8,9 +8,9 @@ use Closure;
 use Magento\Framework\App\Http as AppHttp;
 use Magento\Framework\App\ResponseInterface;
 use Psr\Log\LoggerInterface;
-use Siteation\DebugBar\Model\Config;
 use Siteation\DebugBar\Model\ProfileManager;
 use Siteation\DebugBar\Model\ProfileStore;
+use Siteation\DebugBar\Model\RequestEligibility;
 use Siteation\DebugBar\Presentation\BarInjector;
 use Throwable;
 
@@ -33,7 +33,7 @@ use Throwable;
 class HttpPlugin
 {
     public function __construct(
-        private readonly Config $config,
+        private readonly RequestEligibility $eligibility,
         private readonly ProfileManager $manager,
         private readonly ProfileStore $store,
         private readonly BarInjector $injector,
@@ -43,7 +43,7 @@ class HttpPlugin
 
     public function aroundLaunch(AppHttp $subject, Closure $proceed): ResponseInterface
     {
-        if (!$this->config->isEnabled()) {
+        if (!$this->eligibility->allows()) {
             return $proceed();
         }
 

@@ -65,6 +65,9 @@ export function debugBar() {
     observerSearch: '',
     blockSearch: '',
     pluginSearch: '',
+    payloads: {},
+    loading: false,
+    loadError: '',
 
     init() {
       this.profile = readProfile()
@@ -72,6 +75,45 @@ export function debugBar() {
       const preferences = readPreferences()
       this.open = preferences.open
       this.section = preferences.section
+
+      if (this.open) this.loadPayloads()
+    },
+
+    /**
+     * Only summaries travel in the page. The items behind them are fetched once, the
+     * first time the bar is opened, because a busy uncached page profiles to several
+     * hundred kilobytes and that has no business on every response.
+     *
+     * @returns {Promise<void>}
+     */
+    async loadPayloads() {
+      if (!this.profile.lazy || this.loading || Object.keys(this.payloads).length) return
+
+      const url = document.getElementById('siteation-debugbar')?.dataset.profileUrl
+
+      if (!url) return
+
+      this.loading = true
+      this.loadError = ''
+
+      try {
+        const response = await fetch(url, { headers: { Accept: 'application/json' } })
+
+        if (!response.ok) throw new Error(`HTTP ${response.status}`)
+
+        const full = await response.json()
+        const payloads = {}
+
+        Object.entries(full.sections || {}).forEach(([key, section]) => {
+          payloads[key] = section.payload || {}
+        })
+
+        this.payloads = payloads
+      } catch (error) {
+        this.loadError = String(error.message || error)
+      } finally {
+        this.loading = false
+      }
     },
 
     /**
@@ -87,7 +129,9 @@ export function debugBar() {
      * @returns {Array<object>}
      */
     itemsOf(key) {
-      return this.profile.sections?.[key]?.payload?.items || []
+      return this.payloads[key]?.items
+        || this.profile.sections?.[key]?.payload?.items
+        || []
     },
 
     /** @returns {object} */
@@ -221,6 +265,8 @@ export function debugBar() {
     toggle() {
       this.open = !this.open
       this.persist()
+
+      if (this.open) this.loadPayloads()
     },
 
     /** @param {string} section */
@@ -228,6 +274,7 @@ export function debugBar() {
       this.section = section
       this.open = true
       this.persist()
+      this.loadPayloads()
     },
 
     /**
