@@ -211,6 +211,14 @@
 
   /* ---------- stepper ---------- */
 
+  .release { margin-bottom: 2.5rem; }
+
+  .release-blurb {
+    margin: -0.4rem 0 1.1rem;
+    color: var(--text-dim);
+    max-width: 60rem;
+  }
+
   h2.section {
     font-size: 0.8rem;
     text-transform: uppercase;
@@ -499,40 +507,10 @@
 
   <div class="cards" id="cards"></div>
 
-  <div class="progress">
-    <div class="top">
-      <span><strong id="pctText">0%</strong> complete</span>
-      <span id="progressDetail"></span>
-    </div>
-    <div class="bar">
-      <span class="seg-done" id="segDone"></span>
-      <span class="seg-active" id="segActive"></span>
-    </div>
-  </div>
-
-  <h2 class="section">Workflow</h2>
-  <div class="stepper" id="stepper"></div>
-
-  <h2 class="section">Phases</h2>
-  <div id="phases"></div>
+  <div id="releases"></div>
 
   <h2 class="section" style="margin-top:2.25rem">Backlog</h2>
   <div class="backlog-grid" id="backlog"></div>
-
-  <div class="progress" style="margin-top:2.25rem">
-    <div class="top">
-      <span><strong>Next: 1.1, the interface</strong></span>
-      <span>docs/plan-1.1.md</span>
-    </div>
-    <p style="margin:0.4rem 0 0;color:var(--text-dim);font-size:0.9rem">
-      Adopts New Debug Bar's layout: a floating glass window, a 210px sidebar with
-      favourites, sections that explain themselves, and a real waterfall. Plus an Alpine.js
-      section, which is ours and which no debug bar has. The waterfall comes first, because
-      it needs every collector to stamp when things happened, and retrofitting that under a
-      finished interface would be worse.
-    </p>
-  </div>
-
   <footer class="page">
     Source of truth for scope is <code>docs/plan.md</code>, and <code>docs/plan-1.1.md</code> for what comes next. Prior art, verified framework
     hooks and extracted code are in <code>docs/research.md</code>. Update the
@@ -561,6 +539,7 @@
  */
 const PHASES = [
   {
+    release: '1.0',
     id: 'research',
     name: 'Research',
     goal: 'Read the prior art from source, verify every framework hook against 2.4.9.',
@@ -604,6 +583,7 @@ $result = $this->performQuery(fn () => parent::query($sql, $bind));
     ]
   },
   {
+    release: '1.0',
     id: 'plan',
     name: 'Plan',
     goal: 'Settle the four architectural decisions and write the build plan.',
@@ -642,6 +622,7 @@ Alpine.start()</code></pre>
     ]
   },
   {
+    release: '1.0',
     id: 'poc',
     name: 'POC',
     goal: 'Prove the spine end to end on one collector. Thin, but real. Done and verified in the browser.',
@@ -754,6 +735,7 @@ if ($themeId) {
     ]
   },
   {
+    release: '1.0',
     id: 'collection',
     name: 'Collection',
     goal: 'All remaining collectors behind one interface, registered through di.xml.',
@@ -844,6 +826,7 @@ if ($themeId) {
     ]
   },
   {
+    release: '1.0',
     id: 'analysis',
     name: 'Analysis',
     goal: 'Turn raw collected data into ranked, clickable findings. The differentiator.',
@@ -902,6 +885,7 @@ if ($themeId) {
     ]
   },
   {
+    release: '1.0',
     id: 'bar',
     name: 'The bar',
     goal: 'The viewer itself. Mostly built while the collectors were, so what is left is polish plus one real gap.',
@@ -966,6 +950,7 @@ if ($themeId) {
     ]
   },
   {
+    release: '1.0',
     id: 'mcp',
     name: 'MCP',
     goal: 'Four read only tools over stdio, so an agent reads exact data instead of guessing.',
@@ -1013,6 +998,7 @@ inspect_debug_queries       slowest first, with call sites</code></pre>
     ]
   },
   {
+    release: '1.0',
     id: 'hardening',
     name: 'Hardening',
     goal: 'The gap between working on one machine and being installable by someone else.',
@@ -1081,8 +1067,185 @@ inspect_debug_queries       slowest first, with call sites</code></pre>
             repository root, and this package lives in a subdirectory, so publishing needs
             a read only subtree split first.</p>` }
     ]
-  }
+  },
 
+  {
+    release: '1.1',
+    id: 'timeline',
+    name: 'A. Timeline',
+    goal: 'Make a waterfall possible. No interface work, but everything else depends on it.',
+    tasks: [
+      { t: 'Stamp at_ms on every captured item', s: 'todo',
+        d: `<p>The one change that reaches back into the collectors. New Debug Bar's
+            waterfall works because every item carries its offset from the start of the
+            request. Ours record how long something took but never when it happened, so a
+            waterfall cannot be built from what we store today.</p>
+            <p><code>ProfileManager</code> exposes <code>elapsedMs()</code> and
+            <code>AbstractCollector::record()</code> stamps <code>at_ms</code> unless the
+            item already carries one.</p>` },
+      { t: 'Analysis/TimelineBuilder', s: 'todo',
+        d: `<p>Merges every section into one ordered list of three kinds, following
+            <code>src/Analysis/TimelineBuilder.php</code>:</p>
+            <ul>
+              <li><code>milestone</code>: request started and finished, <code>at_ms</code> only</li>
+              <li><code>span</code>: anything with a duration, so <code>start_ms = at_ms - duration_ms</code></li>
+              <li><code>point</code>: anything without one</li>
+            </ul>
+            <p>Each is then scaled against the largest <code>at_ms</code> to give
+            <code>at_percent</code>, <code>start_percent</code> and
+            <code>duration_percent</code>, which is all the view needs.</p>` },
+      { t: 'Timeline section and MCP exposure', s: 'todo',
+        d: `<p>A new <code>timeline</code> section in the profile, readable through
+            <code>get_debug_profile_section</code> like any other.</p>` },
+      { t: 'Waterfall view', s: 'todo',
+        d: `<p>Activity column with name and section, a time axis with gridlines, bars for
+            spans and dots for points, and a timing column showing duration and range.
+            Filter by key activity, and search by event or section.</p>` }
+    ]
+  },
+
+  {
+    release: '1.1',
+    id: 'window',
+    name: 'B. Window',
+    goal: 'The floating glass window and the modal sheet, which is most of why theirs reads as a tool.',
+    tasks: [
+      { t: 'Floating, centered, glass toolbar', s: 'todo',
+        d: `<p>Theirs does not touch the viewport edge:</p>
+            <pre><code>fixed left-1/2 -translate-x-1/2 bottom-3
+w-[calc(100vw-24px)] max-w-5xl
+rounded-[18px] border border-white/70 bg-white/80
+backdrop-blur-xl backdrop-brightness-110 backdrop-saturate-125
+shadow-[0_18px_60px_-18px_rgba(24,24,27,0.4)]</code></pre>
+            <p>Also supports <code>top-3</code>, so it can move out of the way of a fixed
+            footer. Persist the choice with the other preferences.</p>` },
+      { t: 'Rebuild the header', s: 'todo',
+        d: `<p>Method badge, path, and a second line with status and response size on the
+            left. Metrics on the right as icon plus stacked label and value: label
+            <code>11px uppercase tracking-wider</code>, value
+            <code>12px bold tabular-nums</code>. Environment gets a dot, emerald normally
+            and amber when something is wrong.</p>
+            <p>Ours gives label and value the same weight and no icons, which is why the
+            strip reads as a wall of numbers.</p>` },
+      { t: 'Modal sheet with backdrop and focus trap', s: 'todo',
+        d: `<p>Not an expanding panel. <code>role="dialog" aria-modal="true"</code>, a
+            dimmed backdrop, and a slide up from <code>translate-y-full</code> over 200ms,
+            sized <code>h-[min(82vh,780px)]</code> with <code>rounded-t-2xl</code>.</p>
+            <p><strong>Port lockHost here.</strong> It was pointless until there was
+            something to lock the page behind.</p>` },
+      { t: 'Window controls', s: 'todo',
+        d: `<p>Maximise, minimise and close, with the choice remembered.</p>` }
+    ]
+  },
+
+  {
+    release: '1.1',
+    id: 'navigation',
+    name: 'C. Navigation',
+    goal: 'A sidebar with favourites, and sections that explain themselves.',
+    tasks: [
+      { t: '210px sidebar instead of tabs', s: 'todo',
+        d: `<p>Name left, count right, <code>h-9 rounded-lg px-2.5 text-xs
+            font-semibold</code>. Becomes an off canvas drawer under 640px at
+            <code>w-[82vw] max-w-[280px]</code>.</p>` },
+      { t: 'Favourites, drag to reorder', s: 'todo',
+        d: `<p>Pinned sections group above the list under a Favorites heading. The indigo
+            <code>h-1 rounded-full</code> bars in their inspector are drop indicators, not
+            decoration. Persisted with the other preferences.</p>` },
+      { t: 'A sentence per section', s: 'todo',
+        d: `<p>Every section opens with a title and one line saying what it is for.
+            "Follow important work in the order it happened across the request." Cheap, and
+            it is the difference between a panel a developer explores and one they guess
+            at.</p>` },
+      { t: 'Findings inline per section', s: 'todo',
+        d: `<p>Each section shows its own findings at the top in a callout, while the
+            Findings section keeps the full ranked list. Theirs renders a green "No clear
+            problem found" box when a section is clean, which is worth copying.</p>` },
+      { t: 'Sub-tabs within a section', s: 'todo',
+        d: `<p>Pill buttons, as their Livewire section does with Overview, Components and
+            Events. Needed for Alpine and Request.</p>` }
+    ]
+  },
+
+  {
+    release: '1.1',
+    id: 'alpine',
+    name: 'D. Alpine',
+    goal: 'Ours, not theirs. Nothing else offers it, and both Hyva and Nebula are Alpine.',
+    tasks: [
+      { t: 'Components with live state', s: 'todo',
+        d: `<p>Every <code>[x-data]</code> root: its expression, resolved component name,
+            DOM path, and live state read through <code>Alpine.$data(el)</code>.</p>
+            <p>The bar already carries its own Alpine in a shadow root under a different
+            prefix, so it can inspect the page's instance without either seeing the
+            other.</p>` },
+      { t: 'Stores', s: 'todo',
+        d: `<p>Everything registered through <code>Alpine.store()</code>, with live
+            values.</p>` },
+      { t: 'Deferred components', s: 'todo',
+        d: `<p>Which components Hyvä has deferred through <code>x-defer</code> or
+            <code>intersect</code>, and whether they have initialised yet. A common source
+            of "why is nothing happening".</p>` },
+      { t: 'Health', s: 'todo',
+        d: `<p>Alpine version, whether the CSP build is in use, and any component whose
+            expression threw during init.</p>` },
+      { t: 'Decide: value policy and MCP visibility', s: 'todo',
+        d: `<p>Reading arbitrary component state can pull in customer data, so it should
+            follow the same value policy as the rest of the bar.</p>
+            <p>This is also the first section whose data comes from the browser rather than
+            a stored profile, so it is invisible to MCP. Posting a snapshot back would fix
+            that and adds a write endpoint. Worth doing only if the section proves itself
+            first.</p>` }
+    ]
+  },
+
+  {
+    release: '1.1',
+    id: 'comfort',
+    name: 'E. Comfort',
+    goal: 'Nothing here unblocks anything, which is why it is last.',
+    tasks: [
+      { t: 'Command palette', s: 'todo',
+        d: `<p><code>Cmd/Ctrl Shift P</code>. Centered modal listing sections and settings,
+            keyboard driven, with <code>↑↓ Navigate</code> and <code>↵ Select</code> in the
+            footer.</p>` },
+      { t: 'Light theme', s: 'todo',
+        d: `<p>The bar is dark only today, which sits badly on a light admin. Theirs is the
+            better looking of their two themes.</p>` },
+      { t: 'Syntax highlighting', s: 'todo',
+        d: `<p><code>highlight.js/lib/core</code> with only <code>sql</code>,
+            <code>json</code> and a hand rolled PHP grammar. About 20 kB against about
+            900 kB for the full bundle.</p>` },
+      { t: 'History section', s: 'todo',
+        d: `<p>Recent profiles listed in the bar, so the request list is not the only way
+            back to an earlier request.</p>` }
+    ]
+  }
+];
+
+/**
+ * Explicitly deferred. Everything the 1.1 plan absorbed has been removed rather than left
+ * to rot here.
+ *
+ * @type {Array<{name: string, why: string}>}
+ */
+const BACKLOG = [
+  { name: 'Integration tests',
+    why: 'The last gap in 1.0. Assert a profile is produced for every area and that a collector which throws leaves the response untouched. Verified by hand today, not automated.' },
+  { name: 'Subtree split for Packagist',
+    why: 'Packagist reads composer.json at the repository root and this package lives in a subdirectory. Publishing needs a read only split repo that CI pushes to. Blocks tagging 1.0.0.' },
+  { name: 'Ignition integration',
+    why: 'Detect swissup/module-ignition, hand exceptions to it, and inject our profile id and a link into its error page. Its optional dependency is the one real reason to split a second package.' },
+  { name: 'Cross request comparison',
+    why: 'Diff two stored profiles to show what a change cost. Follows the History section in the 1.1 plan, and is what makes keeping profiles worth it.' },
+  { name: 'Message queue and cron profiling',
+    why: 'Consumers and cron run outside App\\Http, so they need their own entry hook on AppInterface. Clearly useful, entirely separate from the request path.' },
+  { name: 'MCP over HTTP or SSE',
+    why: 'The hand rolled stdio loop covers local agents. Revisit php-mcp/server only if a remote or multiplexed transport is actually needed.' },
+  { name: 'Open in editor links',
+    why: 'Turn call sites into phpstorm:// or vscode:// links, with a remote to local path map for Docker and Valet setups, as Ignition does.' },
+  { name: 'Browser extension',
+    why: 'Read the profile header from devtools and surface profiles without injecting anything into the page at all.' }
 ];
 
 const STATUS_LABEL = { done: 'Done', active: 'In progress', todo: 'To do', backlog: 'Backlog' };
@@ -1119,12 +1282,26 @@ function phaseStatus(phase) {
   return 'todo';
 }
 
+/**
+ * @param {string} release
+ * @returns {{total: number, done: number}}
+ */
+function tallyRelease(release) {
+  const tasks = PHASES.filter((phase) => phase.release === release)
+    .flatMap((phase) => phase.tasks);
+
+  return { total: tasks.length, done: tasks.filter((task) => task.s === 'done').length };
+}
+
 function renderCards() {
   const counts = tally();
+  const shipped = tallyRelease('1.0');
+  const next = tallyRelease('1.1');
+
   const cards = [
-    { n: counts.total, k: 'Tasks', c: '' },
+    { n: `${shipped.done}/${shipped.total}`, k: '1.0 built', c: 'is-done' },
+    { n: `${next.done}/${next.total}`, k: '1.1 planned', c: '' },
     { n: counts.done, k: 'Done', c: 'is-done' },
-    { n: counts.active, k: 'In progress', c: 'is-active' },
     { n: counts.todo, k: 'To do', c: '' },
     { n: BACKLOG.length, k: 'Backlog', c: 'is-backlog' }
   ];
@@ -1132,18 +1309,14 @@ function renderCards() {
   document.getElementById('cards').innerHTML = cards.map((card) =>
     `<div class="card ${card.c}"><div class="n">${card.n}</div><div class="k">${card.k}</div></div>`
   ).join('');
-
-  const pct = Math.round((counts.done / counts.total) * 100);
-  document.getElementById('pctText').textContent = `${pct}%`;
-  document.getElementById('progressDetail').textContent =
-    `${counts.done} of ${counts.total} tasks, ${BACKLOG.length} backlogged`;
-  document.getElementById('segDone').style.width = `${pct}%`;
-  document.getElementById('segActive').style.width =
-    `${Math.round((counts.active / counts.total) * 100)}%`;
 }
 
-function renderStepper() {
-  document.getElementById('stepper').innerHTML = PHASES.map((phase, index) => {
+/**
+ * @param {string} release
+ * @returns {string}
+ */
+function renderStepper(release) {
+  return PHASES.filter((phase) => phase.release === release).map((phase, index) => {
     const status = phaseStatus(phase);
     const done = phase.tasks.filter((task) => task.s === 'done').length;
 
@@ -1155,8 +1328,12 @@ function renderStepper() {
   }).join('');
 }
 
-function renderPhases() {
-  document.getElementById('phases').innerHTML = PHASES.map((phase) => {
+/**
+ * @param {string} release
+ * @returns {string}
+ */
+function renderPhases(release) {
+  return PHASES.filter((phase) => phase.release === release).map((phase) => {
     const status = phaseStatus(phase);
     const done = phase.tasks.filter((task) => task.s === 'done').length;
 
@@ -1181,6 +1358,54 @@ function renderPhases() {
   }).join('');
 }
 
+/**
+ * @param {{release: string, title: string, blurb: string}} release
+ * @returns {string}
+ */
+function renderRelease(release) {
+  const counts = tallyRelease(release.release);
+  const pct = counts.total === 0 ? 0 : Math.round((counts.done / counts.total) * 100);
+
+  return `<section class="release">
+    <h2 class="section">${release.title}</h2>
+    <p class="release-blurb">${release.blurb}</p>
+
+    <div class="progress">
+      <div class="top">
+        <span><strong>${pct}%</strong> complete</span>
+        <span>${counts.done} of ${counts.total} tasks</span>
+      </div>
+      <div class="bar"><span class="seg-done" style="width:${pct}%"></span></div>
+    </div>
+
+    <div class="stepper">${renderStepper(release.release)}</div>
+    ${renderPhases(release.release)}
+  </section>`;
+}
+
+const RELEASES = [
+  {
+    release: '1.0',
+    title: '1.0 — collect, reason, expose',
+    blurb: 'Seven collectors, nine finding rules, an Alpine viewer in a shadow root, and an '
+      + 'MCP server. Built and verified against a running store. Two items left, both about '
+      + 'being installable by someone else rather than working here.'
+  },
+  {
+    release: '1.1',
+    title: '1.1 — the interface',
+    blurb: 'Adopts New Debug Bar\'s layout, read from their source rather than their '
+      + 'screenshots: a floating glass window, a modal sheet, a sidebar with favourites, '
+      + 'sections that explain themselves, and a real waterfall. Plus an Alpine section, '
+      + 'which is ours. The waterfall lands first, because it needs every collector to stamp '
+      + 'when things happened and retrofitting that under a finished interface would be worse.'
+  }
+];
+
+function renderReleases() {
+  document.getElementById('releases').innerHTML = RELEASES.map(renderRelease).join('');
+}
+
 function renderBacklog() {
   document.getElementById('backlog').innerHTML = BACKLOG.map((item) =>
     `<div class="backlog-card"><h4>${item.name}</h4><p>${item.why}</p></div>`
@@ -1189,7 +1414,7 @@ function renderBacklog() {
 
 const dialog = document.getElementById('taskDialog');
 
-document.getElementById('phases').addEventListener('click', (event) => {
+document.getElementById('releases').addEventListener('click', (event) => {
   const button = event.target.closest('.task-open');
 
   if (!button) return;
@@ -1229,8 +1454,7 @@ function syncThemeButton() {
 }
 
 renderCards();
-renderStepper();
-renderPhases();
+renderReleases();
 renderBacklog();
 syncThemeButton();
 </script>
