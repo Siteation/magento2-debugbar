@@ -378,6 +378,16 @@
   .ndb-stat .ndb-stat-key { display: none; }
 }
 
+.ndb-pill.is-bad {
+  background: var(--ndb-bad);
+  color: var(--ndb-on-bad);
+}
+
+.ndb-pill.is-ok {
+  background: color-mix(in srgb, var(--ndb-ok) 18%, transparent);
+  color: var(--ndb-ok);
+}
+
 .ndb-pill {
   display: inline-block;
   min-width: 22px;
@@ -567,8 +577,14 @@
   background: color-mix(in srgb, var(--ndb-ok) 8%, var(--ndb-bg));
 }
 
+.ndb-callout.is-bad {
+  border-color: color-mix(in srgb, var(--ndb-bad) 40%, transparent);
+  background: color-mix(in srgb, var(--ndb-bad) 8%, var(--ndb-bg));
+}
+
 .ndb-callout.is-warn .ndb-callout-title { color: var(--ndb-warn); }
 .ndb-callout.is-clear .ndb-callout-title { color: var(--ndb-ok); }
+.ndb-callout.is-bad .ndb-callout-title { color: var(--ndb-bad); }
 
 @media (max-width: 720px) {
   .ndb-body { flex-direction: column; }

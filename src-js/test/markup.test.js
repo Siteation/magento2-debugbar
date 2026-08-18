@@ -89,6 +89,19 @@ test('sub-tabs bind to the property they are given', () => {
   assert.equal(markup.match(/ndb-pill/g).length, 1, 'a tab without a count gets no pill')
 })
 
+test('a count that means trouble does not look like a count that does not', () => {
+  const neutral = subTabs('tab', [{ id: 'a', label: 'Components', count: 'components.length' }])
+  const toned = subTabs('tab', [{
+    id: 'b', label: 'Health', count: 'errors.length', tone: "errors.length ? 'bad' : 'ok'", always: true,
+  }])
+
+  assert.ok(!neutral.includes('data-ndb-bind:class="\'is-\''), 'a plain count stays plain')
+  assert.ok(neutral.includes('data-ndb-show="components.length"'), 'and hides when it is zero')
+
+  assert.ok(toned.includes(`data-ndb-bind:class="'is-' + (errors.length ? 'bad' : 'ok')"`))
+  assert.ok(!toned.includes('data-ndb-show'), 'a toned badge says fine as well as broken')
+})
+
 test('a fact renders its value as an expression, not as text', () => {
   const markup = facts([{ label: 'Duration', value: "number(metrics.duration_ms, 2) + ' ms'" }])
 

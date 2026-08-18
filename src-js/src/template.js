@@ -772,7 +772,15 @@ export const template = `
             { id: 'components', label: 'Components', count: 'alpineComponents.length' },
             { id: 'stores', label: 'Stores', count: 'alpineStores.length' },
             { id: 'deferred', label: 'Deferred', count: 'alpineDeferredCount' },
-            { id: 'health', label: 'Health', count: 'alpineErrors.length' },
+            {
+              id: 'health',
+              label: 'Health',
+              // A tick rather than a green zero: the tab says it checked, without colouring
+              // a normal value the way every other count here would be.
+              count: "alpineErrors.length || '\u2713'",
+              tone: "alpineErrors.length ? 'bad' : 'ok'",
+              always: true,
+            },
           ])}
 
           <p class="ndb-note" data-ndb-show="valuePolicy !== 'full'">
@@ -881,9 +889,18 @@ export const template = `
               { label: 'Stores', value: 'alpineStores.length' },
             ])}
 
-            <p class="ndb-empty" data-ndb-show="alpineErrors.length === 0">
-              No expression errors on this page.
-            </p>
+            <div class="ndb-callout is-bad" data-ndb-show="alpineErrors.length > 0">
+              <p class="ndb-callout-title"
+                 data-ndb-text="plural(alpineErrors.length, 'expression error', 'expression errors')"></p>
+              <p>Something on this page threw while Alpine was evaluating it. A binding that
+                throws renders as an empty element and says nothing, so this is the only
+                place it shows.</p>
+            </div>
+
+            <div class="ndb-callout is-clear" data-ndb-show="alpineErrors.length === 0">
+              <p class="ndb-callout-title">No expression errors</p>
+              <p>Nothing threw while Alpine was evaluating this page.</p>
+            </div>
 
             <ol class="ndb-list">
               <template data-ndb-for="(error, index) in alpineErrors"
