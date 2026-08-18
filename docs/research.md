@@ -1115,7 +1115,32 @@ that are only populated by the resolve pass inside `isEnabled()`. Production cal
 `isEnabled()` first, so it worked. Called in any other order it silently returned defaults.
 Every getter now triggers the pass itself.
 
-### 13.18 Smaller confirmations
+### 13.18 Magento's static version does not change when you rebuild
+
+The static URL carries `version<timestamp>`, and that timestamp only moves on a deploy. A
+rebuilt bundle keeps the same URL, so browsers serve the previous one and the change looks
+like it never happened. This cost real time twice, once looking for a frontend bug that did
+not exist and once for a CSS fix that had already been applied.
+
+Appending the built file's modification time to the URL fixes it for good:
+
+```php
+$modified = filemtime($root . '/view/base/web/' . $file);
+
+return $url . (str_contains($url, '?') ? '&' : '?') . 'v=' . dechex($modified);
+```
+
+Two stats per request, and rebuilds take effect immediately.
+
+### 13.19 A debug bar must never truncate a number
+
+The metric strip inherited `text-overflow: ellipsis` from the rule meant for the request
+path, so in the admin's narrower layout it rendered `TIME 182 …` and `QUERIES 152 / 13 …`.
+A truncated measurement is worse than no measurement: it looks like data and is not.
+
+Metrics now size to content, only the path shrinks, and the strip scrolls if it has to.
+
+### 13.20 Smaller confirmations
 
 * One `aroundLaunch` plugin really does cover frontend, adminhtml, GraphQL and REST.
   Verified: all four return `X-Siteation-DebugBar-Profile`.

@@ -919,6 +919,15 @@ if ($themeId) {
             the same endpoint. Verified against Hyvä's own
             <code>/customer/section/load/</code>: 84 ms, 32 queries, 38 observers, all
             inspectable.</p>` },
+      { t: 'Readable metrics and cache busting', s: 'done',
+        d: `<p>The metric strip inherited the ellipsis rule meant for the request path, so
+            in the admin's narrower layout it showed <code>TIME 182 …</code> and
+            <code>QUERIES 152 / 13 …</code>. A truncated measurement is worse than none: it
+            looks like data. Metrics size to content now, only the path shrinks, and the
+            strip scrolls if it must.</p>
+            <p>Finding that took two attempts, because Magento's static URL carries a
+            version that only changes on a deploy, so the rebuilt CSS was never fetched.
+            Asset URLs now carry the built file's modification time.</p>` },
       { t: 'Syntax highlighting', s: 'todo',
         d: `<p><code>highlight.js/lib/core</code> with only <code>sql</code>,
             <code>json</code> and a hand rolled PHP grammar registered. Three languages

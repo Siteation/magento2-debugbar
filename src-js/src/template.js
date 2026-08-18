@@ -369,7 +369,7 @@ export const template = `
       <span class="ndb-caret" data-ndb-bind:class="open && 'is-open'"></span>
     </button>
 
-    <button type="button" class="ndb-metric" data-ndb-on:click="select('overview')">
+    <button type="button" class="ndb-metric ndb-metric-path" data-ndb-on:click="select('overview')">
       <span class="ndb-metric-key" data-ndb-text="request.method"></span>
       <span class="ndb-metric-value ndb-mono ndb-truncate" data-ndb-text="request.path"></span>
     </button>
@@ -409,7 +409,7 @@ export const template = `
       </span>
     </button>
 
-    <button type="button" class="ndb-metric" data-ndb-on:click="select('blocks')">
+    <button type="button" class="ndb-metric is-secondary" data-ndb-on:click="select('blocks')">
       <span class="ndb-metric-key">Blocks</span>
       <span class="ndb-metric-value">
         <span data-ndb-text="blocks.unique_count || 0"></span>
@@ -417,13 +417,13 @@ export const template = `
       </span>
     </button>
 
-    <button type="button" class="ndb-metric" data-ndb-on:click="select('cache')">
+    <button type="button" class="ndb-metric is-secondary" data-ndb-on:click="select('cache')">
       <span class="ndb-metric-key">Cache</span>
       <span class="ndb-metric-value" data-ndb-bind:class="'is-' + cacheTone"
             data-ndb-text="cache.hit_rate === null ? '-' : number(cache.hit_rate, 0) + '%'"></span>
     </button>
 
-    <button type="button" class="ndb-metric" data-ndb-on:click="select('overview')">
+    <button type="button" class="ndb-metric is-secondary" data-ndb-on:click="select('overview')">
       <span class="ndb-metric-key">Memory</span>
       <span class="ndb-metric-value">
         <span data-ndb-text="number(metrics.memory_peak_mb, 1)"></span> MB

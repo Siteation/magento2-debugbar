@@ -134,12 +134,14 @@
   display: flex;
   flex-direction: column;
   gap: 1px;
-  min-width: 0;
+  /* Size to content. A truncated number is worse than no number. */
+  flex: none;
 }
 
-.ndb-metric:nth-child(2) {
+/* The path is the only thing allowed to shrink, and the only thing worth truncating. */
+.ndb-metric.ndb-metric-path {
   flex: 1 1 auto;
-  min-width: 120px;
+  min-width: 90px;
 }
 
 .ndb-metric-key {
@@ -156,6 +158,11 @@
   font-weight: 600;
   font-variant-numeric: tabular-nums;
   display: block;
+  white-space: nowrap;
+}
+
+/* Only where truncation is explicitly asked for. The strip scrolls otherwise. */
+.ndb-metric-value.ndb-truncate {
   overflow: hidden;
   text-overflow: ellipsis;
 }
@@ -577,8 +584,9 @@
   font-size: 15px;
 }
 
-@media (max-width: 640px) {
-  .ndb-metric:nth-child(n + 5) {
+/* Narrow screens: keep the strip readable rather than cramming every metric in. */
+@media (max-width: 720px) {
+  .ndb-metric.is-secondary {
     display: none;
   }
 }
