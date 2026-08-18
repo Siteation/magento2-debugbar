@@ -6,6 +6,7 @@ namespace Siteation\DebugBar\Model;
 
 use Magento\Framework\App\ResponseInterface;
 use Siteation\DebugBar\Api\CollectorInterface;
+use Siteation\DebugBar\Collector\InterceptionCollector;
 use Siteation\DebugBar\Collector\RequestCollector;
 
 /**
@@ -70,10 +71,14 @@ class ProfileManager
     {
         $this->collecting = false;
 
-        $requestCollector = $this->collectors['request'] ?? null;
+        foreach ($this->collectors as $collector) {
+            if ($collector instanceof RequestCollector) {
+                $collector->capture($response);
+            }
 
-        if ($requestCollector instanceof RequestCollector) {
-            $requestCollector->capture($response);
+            if ($collector instanceof InterceptionCollector) {
+                $collector->capture();
+            }
         }
 
         $sections = [];

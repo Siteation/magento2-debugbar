@@ -986,7 +986,20 @@ running on it.
 Count observers in their own map keyed by event name and merge the two at read time, so
 neither has to arrive first.
 
-### 13.9 Smaller confirmations
+### 13.9 The layout structure needs no reflection
+
+The plan carried an open question about reaching
+`Magento\Framework\View\Layout\Data\Structure` without reflecting a private property.
+It is moot. `Layout::getAllBlocks()`, `getChildNames()` and `getElementProperty()` are all
+public in 2.4.9, and `$structure` is `protected` rather than private as Fruitcake's code
+suggests.
+
+Better still, an around plugin on `AbstractBlock::toHtml` gives what a structure walk
+cannot: per block timing. Keeping a stack separates own time from total time, which
+matters because a parent's time includes everything it renders, so containers always look
+like the slowest thing on the page.
+
+### 13.10 Smaller confirmations
 
 * One `aroundLaunch` plugin really does cover frontend, adminhtml, GraphQL and REST.
   Verified: all four return `X-Siteation-DebugBar-Profile`.

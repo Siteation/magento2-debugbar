@@ -63,6 +63,8 @@ export function debugBar() {
     eventFilter: 'all',
     eventSearch: '',
     observerSearch: '',
+    blockSearch: '',
+    pluginSearch: '',
 
     init() {
       this.profile = readProfile()
@@ -114,6 +116,16 @@ export function debugBar() {
     },
 
     /** @returns {object} */
+    get blocks() {
+      return this.summaryOf('blocks')
+    },
+
+    /** @returns {object} */
+    get interception() {
+      return this.summaryOf('interception')
+    },
+
+    /** @returns {object} */
     get metrics() {
       return this.profile.metrics || {}
     },
@@ -144,6 +156,26 @@ export function debugBar() {
     /** @returns {Array<object>} */
     get cacheItems() {
       return this.itemsOf('cache')
+    },
+
+    /** @returns {Array<object>} */
+    get visibleBlocks() {
+      return search(this.itemsOf('blocks'), this.blockSearch, ['name', 'template', 'class'])
+    },
+
+    /** @returns {Array<object>} */
+    get visiblePlugins() {
+      const needle = this.pluginSearch.trim().toLowerCase()
+
+      if (!needle) return this.itemsOf('interception')
+
+      return this.itemsOf('interception').filter((entry) => (
+        entry.type.toLowerCase().includes(needle)
+        || entry.plugins.some((plugin) => (
+          plugin.code.toLowerCase().includes(needle)
+          || plugin.class.toLowerCase().includes(needle)
+        ))
+      ))
     },
 
     /** @returns {string} */
@@ -224,6 +256,16 @@ export function debugBar() {
      */
     number(value, decimals = 0) {
       return Number(value || 0).toFixed(decimals)
+    },
+
+    /**
+     * @param {object} plugin
+     * @returns {string}
+     */
+    methodList(plugin) {
+      return Object.entries(plugin.methods || {})
+        .map(([method, kind]) => `${kind} ${method}`)
+        .join(', ')
     },
 
     /**

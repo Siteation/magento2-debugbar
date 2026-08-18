@@ -25,9 +25,17 @@ export const template = `
               data-ndb-bind:class="isSection('observers') && 'is-active'">
         Observers <span class="ndb-pill" data-ndb-text="observers.unique_count || 0"></span>
       </button>
+      <button type="button" class="ndb-tab" data-ndb-on:click="select('blocks')"
+              data-ndb-bind:class="isSection('blocks') && 'is-active'">
+        Blocks <span class="ndb-pill" data-ndb-text="blocks.unique_count || 0"></span>
+      </button>
       <button type="button" class="ndb-tab" data-ndb-on:click="select('cache')"
               data-ndb-bind:class="isSection('cache') && 'is-active'">
         Cache <span class="ndb-pill" data-ndb-text="cache.count || 0"></span>
+      </button>
+      <button type="button" class="ndb-tab" data-ndb-on:click="select('plugins')"
+              data-ndb-bind:class="isSection('plugins') && 'is-active'">
+        Plugins <span class="ndb-pill" data-ndb-text="interception.plugin_count || 0"></span>
       </button>
     </nav>
 
@@ -58,6 +66,10 @@ export const template = `
           <div><dt>Observers</dt><dd>
             <span data-ndb-text="observers.count || 0"></span> in
             <span data-ndb-text="number(observers.duration_ms, 1)"></span> ms
+          </dd></div>
+          <div><dt>Blocks</dt><dd>
+            <span data-ndb-text="blocks.unique_count || 0"></span> rendered in
+            <span data-ndb-text="number(blocks.duration_ms, 1)"></span> ms
           </dd></div>
           <div><dt>Cache</dt><dd>
             <span data-ndb-text="cache.hit_rate === null ? 'no reads' : number(cache.hit_rate, 1) + '% hit rate'"></span>
@@ -215,6 +227,81 @@ export const template = `
         <p class="ndb-empty" data-ndb-show="cacheItems.length === 0">No cache activity.</p>
       </div>
 
+      <div data-ndb-show="isSection('blocks')">
+        <div class="ndb-controls">
+          <input class="ndb-search" type="search" placeholder="Filter blocks and templates"
+                 data-ndb-model="blockSearch">
+          <span class="ndb-dim ndb-count">
+            <span data-ndb-text="visibleBlocks.length"></span> shown, own time excludes children
+          </span>
+        </div>
+
+        <table class="ndb-table">
+          <thead>
+            <tr>
+              <th>Block</th>
+              <th class="ndb-num">Renders</th>
+              <th class="ndb-num">Own</th>
+              <th class="ndb-num">Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            <template data-ndb-for="(block, index) in visibleBlocks" data-ndb-bind:key="index">
+              <tr>
+                <td>
+                  <span data-ndb-text="block.name"></span>
+                  <small class="ndb-dim ndb-mono ndb-block"
+                         data-ndb-text="block.template || block.class"></small>
+                </td>
+                <td class="ndb-num" data-ndb-text="block.count"></td>
+                <td class="ndb-num" data-ndb-text="number(block.own_ms, 2) + ' ms'"></td>
+                <td class="ndb-num ndb-dim" data-ndb-text="number(block.total_ms, 2) + ' ms'"></td>
+              </tr>
+            </template>
+          </tbody>
+        </table>
+
+        <p class="ndb-empty" data-ndb-show="visibleBlocks.length === 0">No blocks match.</p>
+      </div>
+
+      <div data-ndb-show="isSection('plugins')">
+        <div class="ndb-controls">
+          <input class="ndb-search" type="search" placeholder="Filter types and plugins"
+                 data-ndb-model="pluginSearch">
+          <span class="ndb-dim ndb-count">
+            <span data-ndb-text="visiblePlugins.length"></span> intercepted types
+          </span>
+        </div>
+
+        <p class="ndb-note" data-ndb-show="interception.available === false">
+          Magento exposes no public API for the plugin list, so this panel reads internals.
+          They moved, and the panel switched itself off rather than break the page.
+        </p>
+
+        <ol class="ndb-list">
+          <template data-ndb-for="(entry, index) in visiblePlugins" data-ndb-bind:key="index">
+            <li class="ndb-intercept">
+              <div class="ndb-intercept-type">
+                <code data-ndb-text="entry.type"></code>
+                <span class="ndb-pill" data-ndb-text="entry.plugin_count"></span>
+              </div>
+              <ul class="ndb-intercept-plugins">
+                <template data-ndb-for="(plugin, pluginIndex) in entry.plugins"
+                          data-ndb-bind:key="pluginIndex">
+                  <li>
+                    <span data-ndb-text="plugin.code"></span>
+                    <span class="ndb-dim ndb-mono" data-ndb-text="methodList(plugin)"></span>
+                    <small class="ndb-dim ndb-mono ndb-block" data-ndb-text="plugin.class"></small>
+                  </li>
+                </template>
+              </ul>
+            </li>
+          </template>
+        </ol>
+
+        <p class="ndb-empty" data-ndb-show="visiblePlugins.length === 0">No plugins match.</p>
+      </div>
+
     </div>
   </section>
 
@@ -256,6 +343,14 @@ export const template = `
       <span class="ndb-metric-value">
         <span data-ndb-text="observers.count || 0"></span>
         <span class="ndb-dim">/ <span data-ndb-text="number(observers.duration_ms, 0)"></span> ms</span>
+      </span>
+    </button>
+
+    <button type="button" class="ndb-metric" data-ndb-on:click="select('blocks')">
+      <span class="ndb-metric-key">Blocks</span>
+      <span class="ndb-metric-value">
+        <span data-ndb-text="blocks.unique_count || 0"></span>
+        <span class="ndb-dim">/ <span data-ndb-text="number(blocks.duration_ms, 0)"></span> ms</span>
       </span>
     </button>
 

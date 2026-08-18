@@ -781,23 +781,35 @@ if ($themeId) {
         d: `<p><code>App\\CacheInterface</code> around <code>load</code>,
             <code>save</code> and <code>remove</code>, timing each and recording
             identifier plus payload size. An empty load result is a miss.</p>` },
-      { t: 'Layout, block and template collector', s: 'todo',
-        d: `<p>On <code>layout_generate_blocks_after</code>, walking the structure from
-            <code>root</code> and recording every child with a
-            <code>getTemplateFile()</code>.</p>
-            <p>Fruitcake reflects a private <code>structure</code> property. Check whether
-            2.4.9 exposes a public path first, and keep the collector fail soft either
-            way.</p>` },
-      { t: 'Interception collector', s: 'todo',
-        d: `<p>Reflects <code>PluginListInterface</code> for intercepted types, applied
-            plugins and before, around or after classification.</p>
-            <p>The single most useful Magento specific panel, and nothing else provides
-            it. Also the most likely to break on upgrade, so it sits behind an interface
-            and returns empty on any <code>ReflectionException</code>.</p>` },
-      { t: 'Timer collector', s: 'todo',
-        d: `<p>Magento's nested <code>Magento\\Framework\\Profiler</code> when
-            <code>MAGE_PROFILER</code> is set, plus our own spans. Stop the master timer
-            before building the profile so the bar never measures itself.</p>` },
+      { t: 'Block and template collector', s: 'done',
+        d: `<p>No reflection needed after all. <code>Layout::getAllBlocks()</code> is
+            public in 2.4.9, and an around plugin on
+            <code>AbstractBlock::toHtml</code> gives something better than a structure
+            walk: per block <em>timing</em>.</p>
+            <p>A stack separates own time from total time. A parent's time includes
+            everything it renders, so containers always look slowest; subtracting children
+            points at the block actually worth fixing. On a cart page
+            <code>head.additional</code> reports 1.55 ms own against 3.36 ms total.</p>` },
+      { t: 'Interception collector', s: 'done',
+        d: `<p>37 intercepted types and 70 plugins on a cart page, ranked by how heavily
+            each type is wrapped. <code>Magento\\Checkout\\Controller\\Cart\\Index</code>
+            carries 10, <code>Magento\\Framework\\View\\Layout</code> carries 9. Nothing
+            else in the ecosystem shows this.</p>
+            <p>Reads <code>_pluginInstances</code> and <code>_inherited</code> off the
+            plugin list, so it reports only plugins actually instantiated for this
+            request. Method kinds are read by reflecting the plugin class for the
+            before, around and after convention, rather than trusting Magento's internal
+            definitions shape.</p>
+            <p>Any failure switches the panel off and says so, rather than breaking the
+            page. It also filters out the debug bar's own plugins, which otherwise
+            dominated the list.</p>` },
+      { t: 'Timer collector', s: 'backlog',
+        d: `<p>Dropped from this phase deliberately. Magento's nested profiler only
+            produces anything when <code>MAGE_PROFILER</code> is set, which most
+            developers never do, so it would be an empty panel by default.</p>
+            <p>Block timing answers the same question, where did the time go, with no
+            environment variable and better granularity. Revisit only if block, query,
+            observer and cache timings together leave a gap that matters.</p>` },
       { t: 'Guard against the config recursion trap', s: 'done',
         d: `<p>Do not read config inside the event or cache plugins. Config reads hit the
             cache, the cache dispatches events, and you get infinite recursion. Smile
@@ -1003,7 +1015,7 @@ const BACKLOG = [
   { name: 'Full page cache awareness',
     why: 'Confirmed in the POC: a cached page profiles as 0 queries in ~18ms, so the bar reads as broken when it is simply reporting a cache hit. It should say "served from full page cache" instead of showing an empty query list.' },
   { name: 'Lazy profile payload',
-    why: 'The POC embeds the whole profile in the page. Fine at 76 queries, not at 500. Move the payload behind a fetch from a controller and keep only the summary inline.' },
+    why: 'Now urgent rather than theoretical. With seven collectors an uncached homepage profile is 364 kB, and all of it is embedded in the page on every load. Embed the summaries only and fetch section payloads from a controller on demand.' },
   { name: 'Open in editor links',
     why: 'Turn call sites into phpstorm:// or vscode:// links, with a remote to local path map for Docker and Valet setups, as Ignition does.' }
 ];

@@ -34,6 +34,13 @@
                 sortOrder="1"/>
     </type>
 
+    <!-- Times every block render, so slow templates surface without a profiler build -->
+    <type name="Magento\Framework\View\Element\AbstractBlock">
+        <plugin name="siteation_debugbar_block"
+                type="Siteation\DebugBar\Plugin\View\BlockPlugin"
+                sortOrder="1"/>
+    </type>
+
     <type name="Magento\Framework\App\CacheInterface">
         <plugin name="siteation_debugbar_cache"
                 type="Siteation\DebugBar\Plugin\App\CachePlugin"
@@ -47,7 +54,9 @@
                 <item name="queries" xsi:type="object">Siteation\DebugBar\Collector\QueryCollector</item>
                 <item name="events" xsi:type="object">Siteation\DebugBar\Collector\EventCollector</item>
                 <item name="observers" xsi:type="object">Siteation\DebugBar\Collector\ObserverCollector</item>
+                <item name="blocks" xsi:type="object">Siteation\DebugBar\Collector\BlockCollector</item>
                 <item name="cache" xsi:type="object">Siteation\DebugBar\Collector\CacheCollector</item>
+                <item name="interception" xsi:type="object">Siteation\DebugBar\Collector\InterceptionCollector</item>
             </argument>
         </arguments>
     </type>
