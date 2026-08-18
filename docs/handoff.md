@@ -93,6 +93,7 @@ vendor/bin/phpcs  --standard=<pkg>/phpcs.xml.dist <pkg>
 vendor/bin/phpstan analyse -c <pkg>/phpstan.neon.dist
 vendor/bin/phpunit --configuration <pkg>/phpunit.xml.dist      # 71 tests
 <pkg>/dev/smoke https://mage-debugbar.test magedebugbar_admin  # 24 assertions
+cd <pkg>/src-js && npm test                                    # 20 tests, no dependency
 cd <pkg>/src-js && npm run build                               # output is committed
 ```
 

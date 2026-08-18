@@ -6,8 +6,9 @@ Every request writes one bounded, redacted JSON profile. The bar in the page is 
 over that profile, so AJAX, GraphQL and REST requests are captured too even though nothing
 can be injected into them.
 
-**Status: proof of concept.** The request and query collectors work end to end. Findings
-and the MCP server are not built yet. See `docs/plan.md`.
+**Status: unreleased.** Everything described below is built and verified against a
+running store. There is no tagged release yet, so install it from source. See
+`docs/plan.md` for what is still being built.
 
 ## Requirements
 
@@ -23,12 +24,20 @@ bin/magento module:enable Siteation_DebugBar
 bin/magento setup:upgrade
 ```
 
-## Use
-
-The bar is on by default outside production mode. To turn it off:
+Until there is a tagged release, point Composer at a checkout instead:
 
 ```
-bin/magento config:set dev/siteation_debugbar/enabled 0
+composer config repositories.siteation path /path/to/module-debugbar
+composer require --dev siteation/magento2-debugbar:@dev
+```
+
+## Use
+
+The bar collects nothing until it is switched on, and production mode refuses regardless
+of the setting:
+
+```
+bin/magento config:set dev/siteation_debugbar/enabled 1
 ```
 
 Settings live under **Stores > Configuration > Advanced > Developer > Siteation Debug Bar**.
@@ -90,6 +99,10 @@ Redacted at record time, never stored:
   cookies, session ids, form keys, card numbers, CVV, IBAN.
 * String literals in SQL, so a `WHERE` clause cannot carry an email address.
 * Request headers and cookies are not collected at all.
+
+The **Alpine** section is the exception to all of this: it reads the page's live Alpine
+components rather than a stored profile, so nothing it shows is ever written to disk, and
+it applies the same policy, the same key pattern and the same bounds in the browser.
 
 **Stored by default:** query bindings and request parameters. Bindings are positional, so
 a value a customer typed arrives as an anonymous value with no key to judge it by. That is
@@ -153,10 +166,16 @@ installing the module needs no build step.
 cd src-js
 npm install
 npm run build     # or: npm run dev, to rebuild on change
+npm test          # node's own runner, no test dependency
 ```
 
+From the instance root, where `PKG` is this package's directory:
+
 ```
-vendor/bin/phpcs --standard=package-source/siteation/magento2-debugbar/phpcs.xml.dist .
+vendor/bin/phpcs --standard=$PKG/phpcs.xml.dist $PKG
+vendor/bin/phpstan analyse -c $PKG/phpstan.neon.dist
+vendor/bin/phpunit --configuration $PKG/phpunit.xml.dist
+$PKG/dev/smoke https://your-store.test admin
 ```
 
 ## Documentation

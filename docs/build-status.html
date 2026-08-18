@@ -1316,6 +1316,28 @@ inspect_debug_queries       slowest first, with call sites</code></pre>
     name: 'E. Comfort',
     goal: 'Nothing here unblocks anything, which is why it is last.',
     tasks: [
+      { t: 'Tests for the JavaScript that has to be right', s: 'done',
+        d: `<p>The value policy is the last thing between a component's state and the
+            screen, and it was the only half of the redactor without tests. Twenty tests
+            on <code>node --test</code>, which needs no dependency and no config: key
+            pattern parity with <code>Model/Redactor.php</code>, the three policies, depth
+            and item bounds, cycles, throwing getters, and expression literals.</p>
+            <p>Two of them are regression guards for bugs that fail silently: that
+            <code>keysOf</code> still reads Alpine's merged proxy through
+            <code>Reflect</code>, and that no sidebar loop variable is named after a
+            component property.</p>
+            <p>Node has no DOM, so the tests install two stand-in classes for
+            <code>Node</code> and <code>Element</code>. Nothing here needs a real one.</p>` },
+      { t: 'Fixed: the README described a different module', s: 'done',
+        d: `<p>It called itself a proof of concept with no findings and no MCP server, in
+            a file whose next section documents the MCP server. It also said the bar is on
+            by default when <code>config.xml</code> ships <code>enabled</code> at
+            <code>0</code>, which is the opposite of the safety promise made three
+            paragraphs later.</p>
+            <p>Also corrected: the phpcs path pointed at a directory that does not exist,
+            the install block now says what to do before there is a tagged release, and the
+            Alpine section is named where the privacy story is told, since it is the one
+            section that reads live data.</p>` },
       { t: 'Type, icons and a header that stopped being a second menu', s: 'done',
         d: `<p>Measured rather than judged from a screenshot, which at this display scale
             makes 15px look like 10px.</p>

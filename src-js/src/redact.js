@@ -85,7 +85,9 @@ export function cleanExpression(expression, policy = POLICY_FULL) {
     .replace(/'(?:[^'\\]|\\.)*'/g, "'?'")
     .replace(/"(?:[^"\\]|\\.)*"/g, '"?"')
 
-  return cleanString(stripped, policy === POLICY_MASKED ? POLICY_FULL : policy)
+  // Masking what is left would say nothing: with the literals gone, the shape is all the
+  // expression still carries, and shape is what the masked policy keeps.
+  return cleanString(stripped, POLICY_FULL)
 }
 
 /**
