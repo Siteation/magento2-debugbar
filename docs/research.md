@@ -1013,7 +1013,24 @@ from a controller the first time it is opened. Two things this needs:
 * The bar's own endpoint must be excluded from profiling, or fetching a profile stores
   another one and a few clicks push the real profiles out of the ring buffer.
 
-### 13.11 Smaller confirmations
+### 13.11 The N+1 heuristic earns its keep on stock Magento
+
+Running the finished rules against an untouched Luma sample category page finds a real one:
+the same EAV attribute query executed 40 times from a single call site in
+`Magento\Eav\Model\ResourceModel\Entity\Attribute`. Nothing about that page is unusual,
+which is the point. The conservative three condition test still fires on genuine cases
+while staying quiet on the many queries that merely repeat.
+
+The negative cases matter as much and are covered by tests: the same query from three call
+sites is not a loop, identical bindings repeated is a caching problem, and two executions
+is not yet a pattern.
+
+One further rule turned out to be about presentation rather than detection. Reporting each
+repeated query group separately produced three near identical findings out of seven, which
+buried everything else. They are merged into one finding now. Distinct queries, yes, but
+"queries are repeating" is one thing to go and look at.
+
+### 13.12 Smaller confirmations
 
 * One `aroundLaunch` plugin really does cover frontend, adminhtml, GraphQL and REST.
   Verified: all four return `X-Siteation-DebugBar-Profile`.

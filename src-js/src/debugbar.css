@@ -374,6 +374,85 @@
   overflow-wrap: anywhere;
 }
 
+/* findings */
+
+.ndb-finding {
+  border-top: 1px solid var(--ndb-border);
+  padding: 12px 0 12px 12px;
+  border-left: 3px solid transparent;
+}
+
+.ndb-finding:first-child {
+  border-top: 0;
+}
+
+.ndb-finding.is-error { border-left-color: var(--ndb-bad); }
+.ndb-finding.is-warning { border-left-color: var(--ndb-warn); }
+.ndb-finding.is-info { border-left-color: var(--ndb-dim); }
+
+.ndb-finding-head {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 5px;
+}
+
+.ndb-severity {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  padding: 2px 7px;
+  border-radius: 4px;
+}
+
+.ndb-severity.is-error { background: var(--ndb-bad); color: #14181f; }
+.ndb-severity.is-warning { background: var(--ndb-warn); color: #14181f; }
+.ndb-severity.is-info { background: var(--ndb-border); color: var(--ndb-text); }
+
+.ndb-finding-message {
+  font-size: 15px;
+  font-weight: 600;
+  flex: 1;
+  min-width: 12rem;
+}
+
+.ndb-finding-id {
+  font-family: var(--ndb-mono);
+  font-size: 12px;
+}
+
+.ndb-finding p {
+  margin: 0 0 4px;
+  font-size: 14px;
+  color: var(--ndb-dim);
+  max-width: 70ch;
+}
+
+.ndb-finding-why {
+  color: var(--ndb-text) !important;
+}
+
+.ndb-finding strong {
+  color: var(--ndb-dim);
+  font-weight: 600;
+  margin-right: 4px;
+}
+
+.ndb-finding code {
+  font-family: var(--ndb-mono);
+  font-size: 13px;
+  color: var(--ndb-text);
+}
+
+.ndb-finding .ndb-chip {
+  margin-top: 6px;
+}
+
+.ndb-pill.is-bad { background: var(--ndb-bad); color: #14181f; }
+.ndb-pill.is-warn { background: var(--ndb-warn); color: #14181f; }
+
 /* tables */
 
 .ndb-table {

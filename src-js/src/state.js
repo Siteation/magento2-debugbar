@@ -57,7 +57,7 @@ export function debugBar() {
   return {
     profile: {},
     open: false,
-    section: 'overview',
+    section: 'findings',
     queryFilter: 'all',
     querySearch: '',
     eventFilter: 'all',
@@ -132,6 +132,29 @@ export function debugBar() {
       return this.payloads[key]?.items
         || this.profile.sections?.[key]?.payload?.items
         || []
+    },
+
+    /** @returns {Array<object>} */
+    get findings() {
+      return this.profile.findings || []
+    },
+
+    /** @returns {number} */
+    get errorCount() {
+      return this.findings.filter((finding) => finding.severity === 'error').length
+    },
+
+    /** @returns {number} */
+    get warningCount() {
+      return this.findings.filter((finding) => finding.severity === 'warning').length
+    },
+
+    /** @returns {string} */
+    get findingsTone() {
+      if (this.errorCount > 0) return 'bad'
+      if (this.warningCount > 0) return 'warn'
+
+      return 'ok'
     },
 
     /** @returns {object} */
@@ -275,6 +298,23 @@ export function debugBar() {
       this.open = true
       this.persist()
       this.loadPayloads()
+    },
+
+    /**
+     * Findings are only useful if they lead somewhere, so each one carries the section
+     * and filter that hold its evidence.
+     *
+     * @param {object} action
+     */
+    follow(action) {
+      if (!action) return
+
+      if (action.filter && action.section === 'queries') {
+        this.queryFilter = action.filter === 'repeated' ? 'all' : action.filter
+        this.querySearch = ''
+      }
+
+      this.select(action.section)
     },
 
     /**

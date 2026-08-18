@@ -6,6 +6,7 @@ namespace Siteation\DebugBar\Model;
 
 use Magento\Framework\App\ResponseInterface;
 use Siteation\DebugBar\Api\CollectorInterface;
+use Siteation\DebugBar\Analysis\ProfileAnalyzer;
 use Siteation\DebugBar\Collector\InterceptionCollector;
 use Siteation\DebugBar\Collector\RequestCollector;
 
@@ -28,6 +29,7 @@ class ProfileManager
      * @param array<string, CollectorInterface> $collectors
      */
     public function __construct(
+        private readonly ProfileAnalyzer $analyzer,
         private readonly array $collectors = []
     ) {
     }
@@ -91,7 +93,7 @@ class ProfileManager
             ];
         }
 
-        return [
+        $profile = [
             'id' => $this->id,
             'version' => self::VERSION,
             'started_at' => round($this->startedAt, 6),
@@ -101,5 +103,9 @@ class ProfileManager
             ],
             'sections' => $sections,
         ];
+
+        $profile['findings'] = $this->analyzer->analyze($profile);
+
+        return $profile;
     }
 }

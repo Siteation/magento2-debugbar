@@ -61,4 +61,19 @@
         </arguments>
     </type>
 
+    <type name="Siteation\DebugBar\Analysis\ProfileAnalyzer">
+        <arguments>
+            <argument name="rules" xsi:type="array">
+                <item name="request_error" xsi:type="object">Siteation\DebugBar\Analysis\Rule\RequestErrorRule</item>
+                <item name="request_slow" xsi:type="object">Siteation\DebugBar\Analysis\Rule\SlowRequestRule</item>
+                <item name="query_slow" xsi:type="object">Siteation\DebugBar\Analysis\Rule\SlowQueryRule</item>
+                <item name="query_repeated" xsi:type="object">Siteation\DebugBar\Analysis\Rule\RepeatedQueryRule</item>
+                <item name="block_slow" xsi:type="object">Siteation\DebugBar\Analysis\Rule\SlowBlockRule</item>
+                <item name="observer_slow" xsi:type="object">Siteation\DebugBar\Analysis\Rule\SlowObserverRule</item>
+                <item name="cache_miss" xsi:type="object">Siteation\DebugBar\Analysis\Rule\CacheMissRule</item>
+                <item name="collector_truncated" xsi:type="object">Siteation\DebugBar\Analysis\Rule\TruncatedCollectorRule</item>
+            </argument>
+        </arguments>
+    </type>
+
 </config>

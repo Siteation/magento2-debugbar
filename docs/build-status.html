@@ -834,42 +834,57 @@ if ($themeId) {
     name: 'Analysis',
     goal: 'Turn raw collected data into ranked, clickable findings. The differentiator.',
     tasks: [
-      { t: 'Analysis/QueryAnalyzer: fingerprint, group, slow, N+1', s: 'todo',
-        d: `<p>Normalise whitespace, fingerprint
-            <code>substr(sha256(normalized_sql . "\\0" . connection), 0, 16)</code>, group
-            by fingerprint, derive <code>slow</code>, <code>repeated_count</code>,
-            <code>query_time_percent</code>, <code>request_time_percent</code> and read or
-            write type.</p>
-            <p>The N+1 test is deliberately conservative:</p>
-            <pre><code>'likely_n_plus_one' => count($executions) >= 3
+      { t: 'Query call sites', s: 'done',
+        d: `<p>Backtraces are the expensive part of collecting queries, so the scan is
+            bounded twice: 40 raw frames inspected, 5 application frames kept. Framework,
+            Laminas and generated code are dropped, because "it came from Mysql.php" helps
+            nobody.</p>
+            <p>The bar's own files are excluded too, or every call site would point at the
+            collector.</p>` },
+      { t: 'Analysis/QueryAnalyzer with the N+1 heuristic', s: 'done',
+        d: `<p>Groups by normalised SQL and connection. Literals are already stripped at
+            record time, so "the same query with different ids" collapses to one group,
+            which is exactly what an N+1 looks like.</p>
+            <p>Three conditions, all required:</p>
+            <pre><code>'likely_n_plus_one' =&gt; $group['count'] &gt;= 3
     && $bindingsVary
-    && $hasSharedCallSite,</code></pre>
-            <p>Same SQL from many call sites is not an N+1. Identical bindings repeated is
-            a caching problem. Chunked and paginated queries still trip it, which is why it
-            is labelled "likely".</p>` },
-      { t: 'Call site resolution', s: 'todo',
-        d: `<p>Scan 40 frames, drop framework and <code>generated/code</code> paths, keep
-            the first 5 application frames. Both limits configurable.</p>` },
-      { t: 'Finding shape and the ported rules', s: 'todo',
-        d: `<p>Every finding carries id, severity, section, message, evidence, and a
-            <code>why</code> / <code>location</code> / <code>next</code> /
-            <code>action</code> block. <code>action</code> names the section and filter to
-            open, which is what makes a finding clickable.</p>
-            <p>Ported: <code>exception.captured</code>, <code>request.error</code>,
-            <code>request.slow</code>, <code>query.slow</code>,
-            <code>query.repeated</code>, <code>cache.high_miss_rate</code> (only above 5
-            operations and an 80% miss rate, so one lookup makes no noise).</p>
-            <p>Ordered errors first, capped at 50.</p>` },
-      { t: 'Magento specific rules', s: 'todo',
-        d: `<p>None of these exist in any current Magento tool.</p>
-            <ul>
-              <li><code>layout.cache_miss</code> on a full layout rebuild</li>
-              <li><code>block.uncacheable</code> when one block disables full page cache for the whole page</li>
-              <li><code>plugin.heavy</code> when a single interceptor dominates the request</li>
-              <li><code>collection.loaded_in_loop</code>, the Magento shape of N+1</li>
-              <li><code>indexer.invalid</code> when an invalid indexer explains slow reads</li>
-              <li><code>cache.type_disabled</code> when a disabled cache type costs measurable time</li>
-            </ul>` }
+    && $sharedCallSite,</code></pre>
+            <p>Covered by unit tests including three negative cases: the same query from
+            three call sites is not a loop, identical bindings repeated is a caching
+            problem, and two executions is not yet a pattern.</p>` },
+      { t: 'Finding shape and the rule contract', s: 'done',
+        d: `<p>Every finding answers five questions: what happened, what is wrong, why it
+            matters, where it came from, and what to do next. The action names the section
+            and filter holding the evidence, so a finding is a starting point rather than a
+            dead end.</p>
+            <p>Rules are registered through <code>di.xml</code> behind
+            <code>RuleInterface</code>, so a project can add its own. A rule that throws is
+            skipped and logged rather than taking the profile with it.</p>` },
+      { t: 'Eight rules, verified against the real store', s: 'done',
+        d: `<p><code>request.error</code>, <code>request.slow</code>,
+            <code>query.slow</code>, <code>query.n_plus_one</code>,
+            <code>query.repeated</code>, <code>block.slow</code>,
+            <code>observer.slow</code>, <code>cache.high_miss_rate</code>,
+            <code>collector.truncated</code>.</p>
+            <p>On a stock category page this finds a genuine N+1: the same EAV attribute
+            query 40 times from one call site.</p>
+            <p><code>block.slow</code> and <code>observer.slow</code> need both a share of
+            the request and an absolute floor, so half of a fast request stays quiet.
+            <code>cache.high_miss_rate</code> needs five reads before it says anything, so
+            one cold lookup makes no noise.</p>
+            <p>Plain repeats are merged into one finding. Each group is a different query,
+            but "queries are repeating" is one thing to go and look at, and a list of near
+            identical findings would push everything else off the page.</p>` },
+      { t: 'Findings tab, first and default', s: 'done',
+        d: `<p>Findings lead the bar and the strip carries a count coloured by the worst
+            severity. Each finding shows its severity, message, why, next step, location
+            and a button that opens the section and filter holding the evidence.</p>` },
+      { t: 'Unit tests', s: 'done',
+        d: `<p>16 tests over the analyzer and the rules, run from the module's own
+            <code>phpunit.xml.dist</code>. They cover the N+1 heuristic's negative cases,
+            the cache rule's minimum read count, the block rule needing both a share and a
+            floor, and that one N+1 produces exactly one finding rather than also being
+            reported as a repeat.</p>` }
     ]
   },
   {

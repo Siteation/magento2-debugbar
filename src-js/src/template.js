@@ -11,6 +11,12 @@ export const template = `
 
   <section class="ndb-panel" data-ndb-show="open" data-ndb-cloak>
     <nav class="ndb-tabs">
+      <button type="button" class="ndb-tab" data-ndb-on:click="select('findings')"
+              data-ndb-bind:class="isSection('findings') && 'is-active'">
+        Findings
+        <span class="ndb-pill" data-ndb-bind:class="'is-' + findingsTone"
+              data-ndb-text="findings.length"></span>
+      </button>
       <button type="button" class="ndb-tab" data-ndb-on:click="select('overview')"
               data-ndb-bind:class="isSection('overview') && 'is-active'">Overview</button>
       <button type="button" class="ndb-tab" data-ndb-on:click="select('queries')"
@@ -45,6 +51,35 @@ export const template = `
       <p class="ndb-note" data-ndb-show="loadError">
         Could not load profile details: <span data-ndb-text="loadError"></span>
       </p>
+
+      <div data-ndb-show="isSection('findings')">
+        <p class="ndb-empty" data-ndb-show="findings.length === 0">
+          Nothing worth flagging on this request.
+        </p>
+
+        <ol class="ndb-list">
+          <template data-ndb-for="(finding, index) in findings" data-ndb-bind:key="index">
+            <li class="ndb-finding" data-ndb-bind:class="'is-' + finding.severity">
+              <div class="ndb-finding-head">
+                <span class="ndb-severity" data-ndb-bind:class="'is-' + finding.severity"
+                      data-ndb-text="finding.severity"></span>
+                <span class="ndb-finding-message" data-ndb-text="finding.message"></span>
+                <code class="ndb-dim ndb-finding-id" data-ndb-text="finding.id"></code>
+              </div>
+              <p class="ndb-finding-why" data-ndb-text="finding.why"></p>
+              <p class="ndb-finding-next">
+                <strong>Next</strong> <span data-ndb-text="finding.next"></span>
+              </p>
+              <p class="ndb-finding-where" data-ndb-show="finding.location">
+                <strong>Where</strong> <code data-ndb-text="finding.location"></code>
+              </p>
+              <button type="button" class="ndb-chip" data-ndb-show="finding.action"
+                      data-ndb-on:click="follow(finding.action)"
+                      data-ndb-text="finding.action ? finding.action.label : ''"></button>
+            </li>
+          </template>
+        </ol>
+      </div>
 
       <div data-ndb-show="isSection('overview')">
         <p class="ndb-note" data-ndb-show="looksLikeFullPageCacheHit">
@@ -320,6 +355,12 @@ export const template = `
     <button type="button" class="ndb-metric" data-ndb-on:click="select('overview')">
       <span class="ndb-metric-key" data-ndb-text="request.method"></span>
       <span class="ndb-metric-value ndb-mono ndb-truncate" data-ndb-text="request.path"></span>
+    </button>
+
+    <button type="button" class="ndb-metric" data-ndb-on:click="select('findings')">
+      <span class="ndb-metric-key">Findings</span>
+      <span class="ndb-metric-value" data-ndb-bind:class="'is-' + findingsTone"
+            data-ndb-text="findings.length"></span>
     </button>
 
     <button type="button" class="ndb-metric" data-ndb-on:click="select('overview')">

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Siteation\DebugBar\Collector;
 
 use Magento\Framework\DB\LoggerInterface;
+use Siteation\DebugBar\Model\CallSiteResolver;
 use Siteation\DebugBar\Model\Config;
 use Siteation\DebugBar\Model\Redactor;
 
@@ -24,6 +25,7 @@ class QueryCollector extends AbstractCollector
     public function __construct(
         Redactor $redactor,
         private readonly Config $config,
+        private readonly CallSiteResolver $callSites,
         int $maxItems = 500
     ) {
         parent::__construct($redactor, $maxItems);
@@ -72,6 +74,7 @@ class QueryCollector extends AbstractCollector
             'bindings' => $this->redactor->cleanBindings($bindings),
             'duration_ms' => $durationMs,
             'slow' => $durationMs >= $this->config->slowQueryMs(),
+            'callsite' => $this->callSites->resolve(),
         ]);
     }
 
