@@ -103,6 +103,12 @@ class TimelineBuilder
             ? round((float) $item['start_ms'], 3)
             : ($duration !== null && $duration > 0 ? round(max(0, $at - $duration), 3) : null);
 
+        // A block records own and total time under those names, never as duration_ms, so
+        // without this it arrives as a span that lasted nothing and can never be ranked.
+        if ($duration === null && $start !== null) {
+            $duration = max(0.0, $at - $start);
+        }
+
         return [
             'id' => $section . '-' . $index,
             'section' => $section,

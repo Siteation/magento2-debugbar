@@ -141,4 +141,36 @@ class TimelineBuilderTest extends TestCase
     {
         return ['metrics' => ['duration_ms' => 100.0], 'sections' => $sections];
     }
+    #[Test]
+    public function itGivesASpanTheDurationItCovers(): void
+    {
+        $result = $this->builder->build([
+            'metrics' => ['duration_ms' => 40.0],
+            'sections' => ['blocks' => ['payload' => ['items' => [
+                // How a block arrives: timed as a span, but its time is own_ms and total_ms.
+                ['name' => 'header', 'start_ms' => 4.0, 'at_ms' => 12.5, 'own_ms' => 8.5],
+            ]]]],
+        ]);
+
+        $block = $this->entry($result, 'header');
+
+        $this->assertSame('span', $block['kind']);
+        $this->assertSame(8.5, $block['duration_ms'], 'A span with no duration cannot be ranked.');
+    }
+
+    /**
+     * @param array{items: list<array<string, mixed>>, summary: array<string, mixed>} $result
+     * @return array<string, mixed>
+     */
+    private function entry(array $result, string $label): array
+    {
+        foreach ($result['items'] as $item) {
+            if (str_contains((string) $item['label'], $label)) {
+                return $item;
+            }
+        }
+
+        $this->fail("No $label entry in the timeline.");
+    }
+
 }
