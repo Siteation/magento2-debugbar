@@ -24,8 +24,9 @@
         "developer",
         "mcp"
     ],
-    "homepage": "https://github.com/allrude/magento2-debugbar",
+    "homepage": "https://github.com/Siteation/magento2-debugbar",
     "support": {
-        "issues": "https://github.com/allrude/magento2-debugbar/issues"
+        "issues": "https://github.com/Siteation/magento2-debugbar/issues",
+        "source": "https://github.com/Siteation/magento2-debugbar"
     }
 }

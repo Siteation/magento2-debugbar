@@ -346,7 +346,7 @@ Ship a `SKILL.md` alongside it, mirroring New Debug Bar's, whose best rules are:
   and that a thrown collector leaves the response untouched.
 * **Docs.** README with install, enable, MCP setup and a screenshot. `CHANGELOG.md` starting
   at v1.
-* Tag `1.0.0` on `git@github.com:allrude/magento2-debugbar.git` and submit to Packagist.
+* Tag `1.0.0` on `git@github.com:Siteation/magento2-debugbar.git` and submit to Packagist.
 
 ## Verification
 
