@@ -994,6 +994,17 @@ inspect_debug_queries       slowest first, with call sites</code></pre>
     name: 'Hardening',
     goal: 'The gap between working on one machine and being installable by someone else.',
     tasks: [
+      { t: 'Per area control', s: 'done',
+        d: `<p>Storefront, admin, GraphQL and REST can each be switched off from
+            <strong>Active In</strong>. Selecting nothing covers every area, so the setting
+            cannot silently reduce coverage on an existing install.</p>
+            <p>The area has to be resolved before <code>launch()</code> gets round to
+            setting it, so it is worked out the same way <code>App\\Http</code> does, from
+            <code>AreaList::getCodeByFrontName()</code>.</p>
+            <p>Writing the test for this found a real fragility: the config getters only
+            returned resolved values if <code>isEnabled()</code> had been called first.
+            Production happened to call it first. Each getter now triggers the resolve
+            pass itself.</p>` },
       { t: 'Off by default, with an IP allowlist', s: 'done',
         d: `<p>Ships <code>enabled = 0</code>. Installing the module must not start
             collecting SQL, bindings and cache keys. Production mode refuses regardless of

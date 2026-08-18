@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Siteation\DebugBar\Model;
 
+use Magento\Framework\App\AreaList;
 use Magento\Framework\App\Request\Http as HttpRequest;
 
 /**
@@ -18,7 +19,8 @@ class RequestEligibility
 
     public function __construct(
         private readonly Config $config,
-        private readonly HttpRequest $request
+        private readonly HttpRequest $request,
+        private readonly AreaList $areaList
     ) {
     }
 
@@ -32,7 +34,24 @@ class RequestEligibility
             return false;
         }
 
+        if (!$this->config->allowsArea($this->area())) {
+            return false;
+        }
+
         return !$this->isOwnRequest();
+    }
+
+    /**
+     * Resolved the same way App\Http::launch() does, because the decision has to be made
+     * before launch() gets round to setting the area.
+     */
+    public function area(): ?string
+    {
+        try {
+            return $this->areaList->getCodeByFrontName($this->request->getFrontName());
+        } catch (\Throwable) {
+            return null;
+        }
     }
 
     /**

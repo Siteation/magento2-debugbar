@@ -1099,7 +1099,23 @@ happened to return the right thing. It also flagged the injector calling `getCon
 `isRedirect()` on `App\Response\HttpInterface`, which declares neither. Both worked at
 runtime and both were wrong.
 
-### 13.17 Smaller confirmations
+### 13.17 The area has to be resolved before Magento resolves it
+
+Gating the bar per area cannot ask `State::getAreaCode()`, because the decision happens in
+`aroundLaunch` and `launch()` is what sets the area. The answer is to resolve it exactly
+the way `App\Http` does, one line earlier:
+
+```php
+$this->areaList->getCodeByFrontName($this->request->getFrontName());
+```
+
+Writing the test for it also surfaced a fragility that had been sitting there since the
+config was first written. Getters like `allowsIp()` and `valuePolicy()` read properties
+that are only populated by the resolve pass inside `isEnabled()`. Production called
+`isEnabled()` first, so it worked. Called in any other order it silently returned defaults.
+Every getter now triggers the pass itself.
+
+### 13.18 Smaller confirmations
 
 * One `aroundLaunch` plugin really does cover frontend, adminhtml, GraphQL and REST.
   Verified: all four return `X-Siteation-DebugBar-Profile`.

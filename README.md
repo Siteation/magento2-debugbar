@@ -100,6 +100,13 @@ instance is shared, set **Captured Values** to *Masked* or *None*:
 bin/magento config:set dev/siteation_debugbar/value_policy masked
 ```
 
+Choose which areas produce a profile under **Active In**, or from the CLI. Selecting
+nothing covers all of them:
+
+```
+bin/magento config:set dev/siteation_debugbar/areas frontend,adminhtml
+```
+
 An IP allowlist covers both the bar and the profile endpoint:
 
 ```

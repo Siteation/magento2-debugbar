@@ -10,6 +10,7 @@
                     Production mode refuses regardless of this flag.
                 -->
                 <enabled>0</enabled>
+                <areas>frontend,adminhtml,graphql,webapi_rest</areas>
                 <slow_query_ms>100</slow_query_ms>
                 <slow_request_ms>1000</slow_request_ms>
                 <allowed_ips/>

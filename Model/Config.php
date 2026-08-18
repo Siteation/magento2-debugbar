@@ -10,7 +10,8 @@ use Throwable;
 
 /**
  * Every value is resolved once, in one guarded pass, and read from plain properties after
- * that.
+ * that. Each getter triggers that pass, so no caller has to know it must ask whether the
+ * bar is enabled before asking anything else.
  *
  * Nothing may read configuration while a request is being collected. A config read can
  * miss the cache, a cache miss issues queries and dispatches events, and the query, cache
@@ -27,6 +28,7 @@ class Config
     private const XML_PATH_SLOW_REQUEST_MS = 'dev/siteation_debugbar/slow_request_ms';
     private const XML_PATH_ALLOWED_IPS = 'dev/siteation_debugbar/allowed_ips';
     private const XML_PATH_VALUE_POLICY = 'dev/siteation_debugbar/value_policy';
+    private const XML_PATH_AREAS = 'dev/siteation_debugbar/areas';
 
     private const DEFAULT_SLOW_QUERY_MS = 100.0;
     private const DEFAULT_SLOW_REQUEST_MS = 1000.0;
@@ -43,6 +45,9 @@ class Config
     private array $allowedIps = [];
 
     private string $valuePolicy = Redactor::POLICY_FULL;
+
+    /** @var list<string> */
+    private array $areas = [];
 
     public function __construct(
         private readonly ScopeConfigInterface $scopeConfig,
@@ -93,11 +98,15 @@ class Config
 
     public function slowQueryMs(): float
     {
+        $this->isEnabled();
+
         return $this->slowQueryMs;
     }
 
     public function slowRequestMs(): float
     {
+        $this->isEnabled();
+
         return $this->slowRequestMs;
     }
 
@@ -108,6 +117,8 @@ class Config
      */
     public function allowedIps(): array
     {
+        $this->isEnabled();
+
         return $this->allowedIps;
     }
 
@@ -116,12 +127,36 @@ class Config
      */
     public function valuePolicy(): string
     {
+        $this->isEnabled();
+
         return $this->valuePolicy;
+    }
+
+    /**
+     * Which areas may be profiled. An empty list means every area, so an upgrade that
+     * predates this setting keeps behaving as it did.
+     *
+     * @return list<string>
+     */
+    public function areas(): array
+    {
+        $this->isEnabled();
+
+        return $this->areas;
+    }
+
+    public function allowsArea(?string $area): bool
+    {
+        if ($this->areas() === []) {
+            return true;
+        }
+
+        return $area !== null && in_array($area, $this->areas, true);
     }
 
     public function allowsIp(?string $ip): bool
     {
-        if ($this->allowedIps === []) {
+        if ($this->allowedIps() === []) {
             return true;
         }
 
@@ -151,6 +186,7 @@ class Config
         );
         $this->allowedIps = $this->ipList($this->scopeConfig->getValue(self::XML_PATH_ALLOWED_IPS));
         $this->valuePolicy = $this->policy($this->scopeConfig->getValue(self::XML_PATH_VALUE_POLICY));
+        $this->areas = $this->csv($this->scopeConfig->getValue(self::XML_PATH_AREAS));
 
         return true;
     }
@@ -169,6 +205,18 @@ class Config
      */
     private function ipList(mixed $value): array
     {
+        return $this->csv($value);
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function csv(mixed $value): array
+    {
+        if (is_array($value)) {
+            return array_values(array_filter(array_map('strval', $value)));
+        }
+
         if (!is_string($value) || trim($value) === '') {
             return [];
         }

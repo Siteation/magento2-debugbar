@@ -12,6 +12,13 @@
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                     <comment>Production mode disables the bar regardless of this setting.</comment>
                 </field>
+                <field id="areas" translate="label comment" type="multiselect" sortOrder="15"
+                       showInDefault="1" showInWebsite="0" showInStore="0" canRestore="1">
+                    <label>Active In</label>
+                    <source_model>Siteation\DebugBar\Model\Config\Source\Areas</source_model>
+                    <comment>Which areas produce a profile. Select none to cover all of them.</comment>
+                    <depends><field id="enabled">1</field></depends>
+                </field>
                 <field id="slow_query_ms" translate="label comment" type="text" sortOrder="20"
                        showInDefault="1" showInWebsite="0" showInStore="0" canRestore="1">
                     <label>Slow Query Threshold (ms)</label>

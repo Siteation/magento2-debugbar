@@ -30,6 +30,7 @@ entries for the work that led up to it.
 
 * Off by default. Production mode refuses regardless of the setting.
 * Optional IP allowlist, applied to the bar and to the profile endpoint.
+* Per area control: storefront, admin, GraphQL and REST can each be switched off.
 * Sensitive keys are redacted at record time and string literals are stripped from SQL.
   Captured values follow a configurable policy, because query bindings are positional and
   cannot be judged by name.
