@@ -22,7 +22,7 @@ class CallSiteResolver
         '/vendor/laminas/',
         '/generated/code/',
         '/package-source/siteation/module-debugbar/',
-        '/vendor/siteation/',
+        '/vendor/siteation/magento2-debugbar/',
     ];
 
     private ?string $root = null;

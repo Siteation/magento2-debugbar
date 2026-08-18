@@ -499,7 +499,7 @@
     <div>
       <h1>Siteation_DebugBar</h1>
       <p>
-        Build tracker for <code>siteation/module-debugbar</code>. A modern debug bar for
+        Build tracker for <code>siteation/magento2-debugbar</code>. A modern debug bar for
         Magento 2.4.9 on Hyv&auml; and Nebula, modelled on New Debug Bar: stored request
         profiles, ranked findings, an Alpine viewer, and a read only MCP server.
       </p>
@@ -1059,9 +1059,11 @@ inspect_debug_queries       slowest first, with call sites</code></pre>
             <p>All of this has been verified by hand against the running store. It is not
             yet automated.</p>` },
       { t: 'Tag 1.0.0 and publish', s: 'todo',
-        d: `<p>Blocked on the packaging decision. Packagist reads composer.json at the
-            repository root, and this package lives in a subdirectory, so publishing needs
-            a read only subtree split first.</p>` }
+        d: `<p>No longer blocked. The package is its own repository with composer.json at
+            its root, so Packagist can read it directly and no subtree split or mirror repo
+            is needed.</p>
+            <p>Two things left: a smoke test covering all four areas, and making the
+            repository public so Packagist can reach it.</p>` }
     ]
   },
 
@@ -1240,10 +1242,10 @@ shadow-[0_18px_60px_-18px_rgba(24,24,27,0.4)]</code></pre>
 const BACKLOG = [
   { name: 'Integration tests',
     why: 'The last gap in 1.0. Assert a profile is produced for every area and that a collector which throws leaves the response untouched. Verified by hand today, not automated.' },
-  { name: 'Subtree split for Packagist',
-    why: 'Packagist reads composer.json at the repository root and this package lives in a subdirectory. Publishing needs a read only split repo that CI pushes to. Blocks tagging 1.0.0.' },
+  { name: 'Smoke test before tagging',
+    why: 'Hit all four areas, assert the profile header and shape, and assert a thrown collector leaves the response untouched. Cheaper than Magento\'s integration framework and covers the regressions that actually bite.' },
   { name: 'Ignition integration',
-    why: 'Detect swissup/module-ignition, hand exceptions to it, and inject our profile id and a link into its error page. Its optional dependency is the one real reason to split a second package.' },
+    why: 'Detect swissup/module-ignition, hand exceptions to it, and inject our profile id and a link into its error page. Its optional dependency is the one thing that would justify a second package, which would simply be its own repository.' },
   { name: 'Cross request comparison',
     why: 'Diff two stored profiles to show what a change cost. Follows the History section in the 1.1 plan, and is what makes keeping profiles worth it.' },
   { name: 'Message queue and cron profiling',

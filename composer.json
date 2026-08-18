@@ -1,6 +1,6 @@
 {
-    "name": "siteation/module-debugbar",
-    "description": "Developer debug bar for Magento 2",
+    "name": "siteation/magento2-debugbar",
+    "description": "Developer debug bar for Magento 2, with findings and an MCP server",
     "type": "magento2-module",
     "license": "MIT",
     "require": {
@@ -14,5 +14,18 @@
         "psr-4": {
             "Siteation\\DebugBar\\": ""
         }
+    },
+    "keywords": [
+        "magento",
+        "magento2",
+        "debug",
+        "debugbar",
+        "profiler",
+        "developer",
+        "mcp"
+    ],
+    "homepage": "https://github.com/allrude/magento2-debugbar",
+    "support": {
+        "issues": "https://github.com/allrude/magento2-debugbar/issues"
     }
 }

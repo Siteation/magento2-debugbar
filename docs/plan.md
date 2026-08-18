@@ -22,13 +22,13 @@ cleanly and none of them are Laravel specific:
 4. **Everything is bounded and redacted at record time**, and truncation is reported rather
    than hidden.
 
-We build the Magento equivalent as `siteation/module-debugbar` (`Siteation_DebugBar`) in the
+We build the Magento equivalent as `siteation/magento2-debugbar` (`Siteation_DebugBar`) in the
 existing `package-source/siteation` monorepo, on the stack this instance already runs:
 Magento 2.4.9, PHP 8.3/8.4, Hyvä 3.0 with Alpine 3.14 and Tailwind 4, and Nebula
 (`qoliber/nebula-admin-theme`, Alpine 3 + Tailwind 4 + ES modules) in the admin.
 
 Full prior art notes, verified hooks and extracted code live in
-`package-source/siteation/module-debugbar/docs/research.md`.
+`package-source/siteation/magento2-debugbar/docs/research.md`.
 
 ### Decisions already taken
 
@@ -87,7 +87,7 @@ served as real files. This is strictly better than every prior art module.
 ## Package layout
 
 ```
-package-source/siteation/module-debugbar/
+package-source/siteation/magento2-debugbar/
   composer.json                 exists, add "type": "magento2-module" deps only
   registration.php              exists
   etc/module.xml                exists
@@ -346,7 +346,7 @@ Ship a `SKILL.md` alongside it, mirroring New Debug Bar's, whose best rules are:
   and that a thrown collector leaves the response untouched.
 * **Docs.** README with install, enable, MCP setup and a screenshot. `CHANGELOG.md` starting
   at v1.
-* Tag `1.0.0` on `git@github.com:allrude/siteation-magento2.git` and submit to Packagist.
+* Tag `1.0.0` on `git@github.com:allrude/magento2-debugbar.git` and submit to Packagist.
 
 ## Verification
 

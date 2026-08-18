@@ -18,7 +18,7 @@ and the MCP server are not built yet. See `docs/plan.md`.
 ## Install
 
 ```
-composer require --dev siteation/module-debugbar
+composer require --dev siteation/magento2-debugbar
 bin/magento module:enable Siteation_DebugBar
 bin/magento setup:upgrade
 ```
@@ -156,7 +156,7 @@ npm run build     # or: npm run dev, to rebuild on change
 ```
 
 ```
-vendor/bin/phpcs --standard=package-source/siteation/module-debugbar/phpcs.xml.dist .
+vendor/bin/phpcs --standard=package-source/siteation/magento2-debugbar/phpcs.xml.dist .
 ```
 
 ## Documentation
