@@ -1221,7 +1221,21 @@ inspect_debug_queries       slowest first, with call sites</code></pre>
       { t: 'Sub-tabs within a section', s: 'closed',
         d: `<p>Moved into D, where the Alpine section will actually have components,
             stores, deferred and health to switch between. Building the control now would
-            mean building something with nothing to put in it.</p>` }
+            mean building something with nothing to put in it.</p>` },
+      { t: 'Fixed: the sidebar did not switch anything', s: 'done',
+        d: `<p>Clicking a sidebar row emptied its own label and left the panel on whatever
+            it was showing. No active row was ever marked either.</p>
+            <p>The <code>x-for</code> loop variable was called <code>section</code>, and so
+            is the component property holding the current one. Alpine resolves
+            <code>this</code> inside a handler against the merged scope, innermost first, so
+            in <code>select(id) { this.section = id }</code> the write landed on the loop
+            variable: the row being rendered was replaced by a string, its
+            <code>label</code> became undefined, and the real section never changed. The
+            same shadowing made <code>isSection(item.id)</code> compare a string to an
+            object, so no row was ever active.</p>
+            <p>Renamed to <code>item</code>. Worth recording because nothing throws and
+            nothing is logged: a name collision between a loop variable and a component
+            property silently redirects every write inside the loop.</p>` }
     ]
   },
   {
@@ -1230,29 +1244,69 @@ inspect_debug_queries       slowest first, with call sites</code></pre>
     name: 'D. Alpine',
     goal: 'Ours, not theirs. Nothing else offers it, and both Hyva and Nebula are Alpine.',
     tasks: [
-      { t: 'Components with live state', s: 'todo',
-        d: `<p>Every <code>[x-data]</code> root: its expression, resolved component name,
-            DOM path, and live state read through <code>Alpine.$data(el)</code>.</p>
-            <p>The bar already carries its own Alpine in a shadow root under a different
-            prefix, so it can inspect the page's instance without either seeing the
-            other.</p>` },
-      { t: 'Stores', s: 'todo',
-        d: `<p>Everything registered through <code>Alpine.store()</code>, with live
-            values.</p>` },
-      { t: 'Deferred components', s: 'todo',
-        d: `<p>Which components Hyvä has deferred through <code>x-defer</code> or
-            <code>intersect</code>, and whether they have initialised yet. A common source
-            of "why is nothing happening".</p>` },
-      { t: 'Health', s: 'todo',
-        d: `<p>Alpine version, whether the CSP build is in use, and any component whose
-            expression threw during init.</p>` },
-      { t: 'Decide: value policy and MCP visibility', s: 'todo',
-        d: `<p>Reading arbitrary component state can pull in customer data, so it should
-            follow the same value policy as the rest of the bar.</p>
-            <p>This is also the first section whose data comes from the browser rather than
-            a stored profile, so it is invisible to MCP. Posting a snapshot back would fix
-            that and adds a write endpoint. Worth doing only if the section proves itself
-            first.</p>` }
+      { t: 'Components with live state', s: 'done',
+        d: `<p>Every <code>[x-data]</code> root, with its name, its expression, a DOM path
+            and a key count. State is read when a row is opened rather than during the
+            scan, because the home page carries 110 components and walking all of them
+            once a second to fill rows nobody opened is work for nothing.</p>
+            <p>Two things had to be right. <code>Alpine.$data(el)</code> folds every
+            parent scope into the child, so a nested component would show state belonging
+            to something further up the page; the first entry of
+            <code>el._x_dataStack</code> is the component itself. And
+            <code>Object.keys</code> on Alpine's merged proxy returns nothing at all: its
+            <code>ownKeys</code> trap answers over a bare <code>{}</code> target, so every
+            key it names is then dropped for having no descriptor.
+            <code>Reflect.ownKeys</code> takes the trap at its word.</p>
+            <p>Hovering a row outlines the element in the page, and puts the inline style
+            back exactly as it found it.</p>` },
+      { t: 'Stores', s: 'done',
+        d: `<p>Alpine keeps stores in module state with no public getter.
+            <code>injectMagics</code> would hand over <code>$store</code>, but 3.14.3,
+            which Hyvä ships, does not export it, so the evaluator is the only way in:
+            <code>Alpine.evaluate(document.body, '$store')</code> resolves on both the
+            standard and the CSP build.</p>
+            <p>An empty list is therefore ambiguous, and the panel says so rather than
+            implying the page registered none.</p>` },
+      { t: 'Deferred components', s: 'done',
+        d: `<p>Hyvä's defer plugin marks <code>[x-data][x-defer]</code> with
+            <code>x-ignore</code> and removes it when the component runs, so the attribute
+            gives the strategy (interact, intersect, idle, eager, event:name) and
+            <code>_x_dataStack</code> gives whether it has started.</p>
+            <p>Worth having: the home page has 110 components, 56 of them deferred and 88
+            not started at first paint. "Nothing is happening" is usually one of those.</p>` },
+      { t: 'Health', s: 'done',
+        d: `<p>Version, build, prefix, the file Alpine was loaded from, and every
+            expression error.</p>
+            <p>The CSP build is detected by evaluating <code>1</code>. Its evaluator
+            resolves dotted property paths and nothing else, so an expression that is
+            valid JavaScript but not a path answers the question. The probe runs with
+            <code>console.warn</code> silenced, since failing is half of the point.</p>
+            <p>Errors are collected in <code>early.js</code>, not here. Alpine 3.14.3 has
+            no <code>setErrorHandler</code>, and components initialise long before the bar
+            loads, so the warning Alpine writes is the only place an init error surfaces.
+            The original <code>console.warn</code> is always called.</p>` },
+      { t: 'Sub-tabs within a section', s: 'done',
+        d: `<p>Moved out of C, where there was nothing to put in it. Components, Stores,
+            Deferred and Health, as a segmented control rather than more sidebar rows: the
+            sidebar answers which section, and this answers which view of one.</p>` },
+      { t: 'Decided: the value policy is applied in the browser', s: 'done',
+        d: `<p>Every other section is redacted in PHP before it reaches disk. This one
+            reads live objects, so it would have been the one section that leaks. The key
+            pattern, the depth bound and the item bound from <code>Model/Redactor.php</code>
+            now exist in <code>redact.js</code>, and the policy travels to the page as
+            <code>data-value-policy</code>.</p>
+            <p>The <code>x-data</code> expression is treated like SQL rather than like
+            code: literals are replaced with <code>?</code>. A server rendered expression
+            puts page data inline, so <code>initSlider({sku: 'ABC-1'})</code> is a value in
+            code's clothing, and showing it beside a redacted state tree would have been
+            incoherent.</p>` },
+      { t: 'Decided: MCP stays blind to this section, for now', s: 'closed',
+        d: `<p>The section is invisible to MCP because its data never enters a profile.
+            Fixing that means posting a snapshot back, which means a write endpoint on a
+            module whose entire security story is that it only ever reads.</p>
+            <p>Deferred deliberately. The section has to prove it is worth that before the
+            endpoint is worth building, and an agent can already ask a browser for the
+            page's Alpine state directly.</p>` }
     ]
   },
 
