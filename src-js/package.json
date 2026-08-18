@@ -1,0 +1,17 @@
+{
+  "name": "@siteation/debugbar-ui",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Alpine sources for Siteation_DebugBar. Build output is committed to view/base/web.",
+  "scripts": {
+    "build": "vite build",
+    "dev": "vite build --watch"
+  },
+  "dependencies": {
+    "alpinejs": "^3.14.9"
+  },
+  "devDependencies": {
+    "vite": "^7.1.5"
+  }
+}

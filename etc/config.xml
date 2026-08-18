@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Store:etc/config.xsd">
+    <default>
+        <dev>
+            <siteation_debugbar>
+                <!-- Production mode disables the bar regardless of this flag -->
+                <enabled>1</enabled>
+                <slow_query_ms>100</slow_query_ms>
+                <slow_request_ms>1000</slow_request_ms>
+            </siteation_debugbar>
+        </dev>
+    </default>
+</config>

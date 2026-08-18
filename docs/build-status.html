@@ -1,0 +1,1145 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Siteation_DebugBar build status</title>
+<style>
+  :root {
+    color-scheme: light dark;
+
+    --bg: #f6f7f9;
+    --surface: #ffffff;
+    --surface-2: #f0f2f5;
+    --border: #dfe3e8;
+    --border-strong: #c4cad2;
+    --text: #14181f;
+    --text-dim: #5b6572;
+    --text-faint: #8a94a2;
+
+    --accent: #3159d8;
+    --accent-soft: #e5ebfd;
+    --done: #1f8a5b;
+    --done-soft: #dff3e9;
+    --active: #b06d05;
+    --active-soft: #fdefd6;
+    --todo: #5b6572;
+    --todo-soft: #eceff3;
+    --backlog: #8a94a2;
+    --backlog-soft: #f2f4f7;
+
+    --radius: 10px;
+    --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+    --sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0e1116;
+      --surface: #161b22;
+      --surface-2: #1c222b;
+      --border: #2a313c;
+      --border-strong: #3d4655;
+      --text: #e6e9ee;
+      --text-dim: #9aa4b2;
+      --text-faint: #6e7885;
+
+      --accent: #7f9cf5;
+      --accent-soft: #1e2740;
+      --done: #4ade80;
+      --done-soft: #14301f;
+      --active: #fbbf47;
+      --active-soft: #33260a;
+      --todo: #9aa4b2;
+      --todo-soft: #222933;
+      --backlog: #6e7885;
+      --backlog-soft: #1b2129;
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --bg: #0e1116;
+    --surface: #161b22;
+    --surface-2: #1c222b;
+    --border: #2a313c;
+    --border-strong: #3d4655;
+    --text: #e6e9ee;
+    --text-dim: #9aa4b2;
+    --text-faint: #6e7885;
+
+    --accent: #7f9cf5;
+    --accent-soft: #1e2740;
+    --done: #4ade80;
+    --done-soft: #14301f;
+    --active: #fbbf47;
+    --active-soft: #33260a;
+    --todo: #9aa4b2;
+    --todo-soft: #222933;
+    --backlog: #6e7885;
+    --backlog-soft: #1b2129;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    padding: 2rem 1.25rem 5rem;
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 15px;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap { max-width: 78rem; margin: 0 auto; }
+
+  code, .mono { font-family: var(--mono); font-size: 0.86em; }
+
+  code {
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 0.08em 0.36em;
+  }
+
+  /* ---------- header ---------- */
+
+  header.page {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 2rem;
+  }
+
+  header.page h1 {
+    margin: 0 0 0.3rem;
+    font-size: 1.5rem;
+    letter-spacing: -0.015em;
+  }
+
+  header.page p {
+    margin: 0;
+    color: var(--text-dim);
+    max-width: 46rem;
+  }
+
+  .theme-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    color: var(--text-dim);
+    cursor: pointer;
+    font: inherit;
+    font-size: 0.82rem;
+    padding: 0.4rem 0.85rem;
+  }
+
+  .theme-toggle:hover { border-color: var(--border-strong); color: var(--text); }
+
+  /* ---------- summary cards ---------- */
+
+  .cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(9.5rem, 1fr));
+    gap: 0.75rem;
+    margin-bottom: 1.25rem;
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 0.9rem 1rem;
+  }
+
+  .card .n {
+    font-size: 1.9rem;
+    font-weight: 650;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .card .k {
+    color: var(--text-dim);
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-top: 0.2rem;
+  }
+
+  .card.is-done .n { color: var(--done); }
+  .card.is-active .n { color: var(--active); }
+  .card.is-backlog .n { color: var(--backlog); }
+
+  .progress {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1rem;
+    margin-bottom: 2.25rem;
+  }
+
+  .progress .top {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 0.6rem;
+    font-size: 0.85rem;
+    color: var(--text-dim);
+  }
+
+  .progress .top strong { color: var(--text); font-size: 1rem; }
+
+  .bar {
+    height: 8px;
+    border-radius: 999px;
+    background: var(--surface-2);
+    overflow: hidden;
+    display: flex;
+  }
+
+  .bar span { display: block; height: 100%; }
+  .bar .seg-done { background: var(--done); }
+  .bar .seg-active { background: var(--active); }
+
+  /* ---------- stepper ---------- */
+
+  h2.section {
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-faint);
+    margin: 0 0 0.9rem;
+    font-weight: 600;
+  }
+
+  .stepper {
+    display: flex;
+    gap: 0;
+    overflow-x: auto;
+    padding-bottom: 0.5rem;
+    margin-bottom: 2.25rem;
+  }
+
+  .step {
+    flex: 1 0 8.5rem;
+    position: relative;
+    padding: 0 0.5rem;
+    text-align: center;
+  }
+
+  .step::before {
+    content: "";
+    position: absolute;
+    top: 0.85rem;
+    left: -50%;
+    width: 100%;
+    height: 2px;
+    background: var(--border);
+  }
+
+  .step:first-child::before { display: none; }
+  .step.done::before, .step.active::before { background: var(--done); }
+
+  .step .dot {
+    position: relative;
+    width: 1.7rem;
+    height: 1.7rem;
+    margin: 0 auto 0.5rem;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    font-size: 0.78rem;
+    font-weight: 650;
+    background: var(--surface);
+    border: 2px solid var(--border);
+    color: var(--text-faint);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .step.done .dot { background: var(--done); border-color: var(--done); color: #fff; }
+  .step.active .dot { background: var(--active); border-color: var(--active); color: #fff; }
+
+  .step .label { font-size: 0.82rem; font-weight: 600; }
+  .step .meta { font-size: 0.72rem; color: var(--text-faint); margin-top: 0.1rem; }
+  .step.done .label, .step.active .label { color: var(--text); }
+  .step:not(.done):not(.active) .label { color: var(--text-dim); }
+
+  /* ---------- phase details ---------- */
+
+  details.phase {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    margin-bottom: 0.75rem;
+    overflow: hidden;
+  }
+
+  details.phase[open] { border-color: var(--border-strong); }
+
+  details.phase > summary {
+    cursor: pointer;
+    list-style: none;
+    padding: 0.9rem 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    user-select: none;
+  }
+
+  details.phase > summary::-webkit-details-marker { display: none; }
+
+  details.phase > summary::before {
+    content: "";
+    width: 0;
+    height: 0;
+    border-left: 5px solid var(--text-faint);
+    border-top: 4px solid transparent;
+    border-bottom: 4px solid transparent;
+    transition: transform 0.15s ease;
+    flex: none;
+  }
+
+  details.phase[open] > summary::before { transform: rotate(90deg); }
+  details.phase > summary:hover { background: var(--surface-2); }
+
+  .phase-title { font-weight: 600; flex: 1; }
+  .phase-title small { display: block; font-weight: 400; color: var(--text-dim); font-size: 0.82rem; }
+
+  .phase-count {
+    font-size: 0.78rem;
+    color: var(--text-dim);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+
+  .phase-body { padding: 0 1rem 1rem 2.1rem; }
+
+  /* ---------- checklist ---------- */
+
+  ul.checklist { list-style: none; margin: 0; padding: 0; }
+
+  ul.checklist li {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.65rem;
+    padding: 0.5rem 0;
+    border-top: 1px solid var(--border);
+  }
+
+  ul.checklist li:first-child { border-top: none; }
+
+  .box {
+    flex: none;
+    width: 1.05rem;
+    height: 1.05rem;
+    margin-top: 0.16rem;
+    border-radius: 4px;
+    border: 1.5px solid var(--border-strong);
+    display: grid;
+    place-items: center;
+    font-size: 0.7rem;
+    line-height: 1;
+    color: transparent;
+  }
+
+  li.done .box { background: var(--done); border-color: var(--done); color: #fff; }
+  li.active .box { border-color: var(--active); background: var(--active-soft); }
+  li.backlog .box { border-style: dashed; }
+
+  .task-text { flex: 1; min-width: 0; }
+  li.done .task-text { color: var(--text-dim); }
+  li.backlog .task-text { color: var(--text-faint); }
+
+  .task-open {
+    background: none;
+    border: none;
+    padding: 0;
+    font: inherit;
+    color: inherit;
+    text-align: left;
+    cursor: pointer;
+    border-bottom: 1px dotted var(--border-strong);
+  }
+
+  .task-open:hover { color: var(--accent); border-bottom-color: var(--accent); }
+
+  .tag {
+    flex: none;
+    font-size: 0.68rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-weight: 650;
+    padding: 0.12rem 0.45rem;
+    border-radius: 999px;
+    margin-top: 0.15rem;
+  }
+
+  .tag.done { background: var(--done-soft); color: var(--done); }
+  .tag.active { background: var(--active-soft); color: var(--active); }
+  .tag.todo { background: var(--todo-soft); color: var(--todo); }
+  .tag.backlog { background: var(--backlog-soft); color: var(--backlog); }
+
+  /* ---------- dialog ---------- */
+
+  dialog {
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius);
+    background: var(--surface);
+    color: var(--text);
+    padding: 0;
+    max-width: min(46rem, calc(100vw - 2rem));
+    width: 100%;
+  }
+
+  dialog::backdrop { background: rgb(0 0 0 / 0.5); }
+
+  dialog .dlg-head {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 1.1rem 1.25rem 0.9rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  dialog h3 { margin: 0; font-size: 1.05rem; letter-spacing: -0.01em; }
+  dialog .dlg-sub { color: var(--text-dim); font-size: 0.8rem; margin-top: 0.15rem; }
+
+  dialog .dlg-body { padding: 1.1rem 1.25rem 1.35rem; }
+  dialog .dlg-body > *:first-child { margin-top: 0; }
+  dialog .dlg-body > *:last-child { margin-bottom: 0; }
+  dialog .dlg-body p { margin: 0 0 0.75rem; }
+  dialog .dlg-body ul { margin: 0 0 0.75rem; padding-left: 1.15rem; }
+  dialog .dlg-body li { margin-bottom: 0.3rem; }
+
+  dialog pre {
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 0.75rem 0.9rem;
+    overflow-x: auto;
+    font-family: var(--mono);
+    font-size: 0.8rem;
+    line-height: 1.5;
+    margin: 0 0 0.75rem;
+  }
+
+  dialog pre code { background: none; border: none; padding: 0; }
+
+  .dlg-close {
+    flex: none;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text-dim);
+    cursor: pointer;
+    font: inherit;
+    font-size: 1rem;
+    line-height: 1;
+    padding: 0.3rem 0.55rem;
+  }
+
+  .dlg-close:hover { color: var(--text); border-color: var(--border-strong); }
+
+  /* ---------- backlog ---------- */
+
+  .backlog-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(17rem, 1fr));
+    gap: 0.75rem;
+  }
+
+  .backlog-card {
+    background: var(--surface);
+    border: 1px dashed var(--border-strong);
+    border-radius: var(--radius);
+    padding: 0.85rem 1rem;
+  }
+
+  .backlog-card h4 { margin: 0 0 0.3rem; font-size: 0.92rem; }
+  .backlog-card p { margin: 0; color: var(--text-dim); font-size: 0.85rem; }
+
+  footer.page {
+    margin-top: 2.5rem;
+    padding-top: 1.25rem;
+    border-top: 1px solid var(--border);
+    color: var(--text-faint);
+    font-size: 0.8rem;
+  }
+
+  @media (max-width: 40rem) {
+    body { padding: 1.25rem 0.9rem 4rem; }
+    .phase-body { padding-left: 1rem; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="page">
+    <div>
+      <h1>Siteation_DebugBar</h1>
+      <p>
+        Build tracker for <code>siteation/module-debugbar</code>. A modern debug bar for
+        Magento 2.4.9 on Hyv&auml; and Nebula, modelled on New Debug Bar: stored request
+        profiles, ranked findings, an Alpine viewer, and a read only MCP server.
+      </p>
+    </div>
+    <button class="theme-toggle" id="themeToggle" type="button">
+      <span id="themeIcon">&#9789;</span><span id="themeLabel">Theme</span>
+    </button>
+  </header>
+
+  <div class="cards" id="cards"></div>
+
+  <div class="progress">
+    <div class="top">
+      <span><strong id="pctText">0%</strong> complete</span>
+      <span id="progressDetail"></span>
+    </div>
+    <div class="bar">
+      <span class="seg-done" id="segDone"></span>
+      <span class="seg-active" id="segActive"></span>
+    </div>
+  </div>
+
+  <h2 class="section">Workflow</h2>
+  <div class="stepper" id="stepper"></div>
+
+  <h2 class="section">Phases</h2>
+  <div id="phases"></div>
+
+  <h2 class="section" style="margin-top:2.25rem">Backlog</h2>
+  <div class="backlog-grid" id="backlog"></div>
+
+  <footer class="page">
+    Source of truth for scope is <code>docs/plan.md</code>. Prior art, verified framework
+    hooks and extracted code are in <code>docs/research.md</code>. Update the
+    <code>PHASES</code> array in this file as work lands.
+  </footer>
+
+</div>
+
+<dialog id="taskDialog">
+  <div class="dlg-head">
+    <div>
+      <h3 id="dlgTitle"></h3>
+      <div class="dlg-sub" id="dlgSub"></div>
+    </div>
+    <button class="dlg-close" id="dlgClose" type="button" aria-label="Close">&times;</button>
+  </div>
+  <div class="dlg-body" id="dlgBody"></div>
+</dialog>
+
+<script>
+/**
+ * Build state. Statuses: 'done' | 'active' | 'todo' | 'backlog'.
+ * Edit this array as work lands; everything below renders from it.
+ *
+ * @type {Array<{id: string, name: string, goal: string, tasks: Array<{t: string, s: string, d: string}>}>}
+ */
+const PHASES = [
+  {
+    id: 'research',
+    name: 'Research',
+    goal: 'Read the prior art from source, verify every framework hook against 2.4.9.',
+    tasks: [
+      { t: 'Clone and read the five reference projects', s: 'done',
+        d: `<p>Read from source, not from README claims.</p>
+            <ul>
+              <li><code>newdebugbar/newdebugbar</code> (Laravel, Apache-2.0), the architecture and UX model</li>
+              <li><code>Smile-SA/magento2-module-debug-toolbar</code> (EPL-2.0), best source of Magento collection hooks</li>
+              <li><code>fruitcake/magento2-debugbar</code> (OSL-3.0), injection and query backtrace patterns</li>
+              <li><code>yongchengchen/magento2debugbar</code>, rejected: hijacks the ObjectManager and router</li>
+              <li><code>swissup/module-ignition</code> (MIT), CSP nonce handling and solution providers</li>
+            </ul>`},
+      { t: 'Verify collection hooks exist in Magento 2.4.9', s: 'done',
+        d: `<p>All confirmed present in this instance.</p>
+            <ul>
+              <li><code>DB\\LoggerInterface</code>, called around every query in a <code>finally</code></li>
+              <li><code>Event\\ManagerInterface</code> and <code>Event\\InvokerInterface</code></li>
+              <li><code>App\\CacheInterface</code></li>
+              <li><code>PluginListInterface</code> via reflection</li>
+            </ul>
+            <p>Verified at <code>vendor/magento/framework/DB/Adapter/Pdo/Mysql.php:691</code>:</p>
+            <pre><code>$this->logger->startTimer();
+$result = $this->performQuery(fn () => parent::query($sql, $bind));
+} finally {
+    $this->logger->logStats(LoggerInterface::TYPE_QUERY, $sql, $bind, $result);
+}</code></pre>` },
+      { t: 'Confirm the local stack: Hyv&auml; 3.0, Alpine 3.14.3, Tailwind 4.3, Nebula', s: 'done',
+        d: `<p>Hyv&auml; ships Alpine <strong>3.14.3</strong> plus a CSP build
+            (<code>alpine3-csp.min.js</code>), loaded as
+            <code>&lt;script type="module" defer crossorigin&gt;</code> in
+            <code>before.body.end</code>.</p>
+            <p>Nebula (<code>qoliber/nebula-admin-theme</code>) is Alpine 3, Tailwind 4 and
+            native ES modules, no RequireJS, Knockout or jQuery. Frontend and admin
+            therefore converge on one stack, so a single bar covers both.</p>` },
+      { t: 'Write docs/research.md', s: 'done',
+        d: `<p>Twelve sections covering prior art, local stack facts, every Magento
+            collection hook with extracted code, CSP rules, Alpine isolation, storage,
+            the collector contract, the analysis layer, MCP, error pages, an explicit
+            "things to avoid" list, and direct recommendations.</p>` }
+    ]
+  },
+  {
+    id: 'plan',
+    name: 'Plan',
+    goal: 'Settle the four architectural decisions and write the build plan.',
+    tasks: [
+      { t: 'Decide the Alpine strategy', s: 'done',
+        d: `<p><strong>Bundle our own Alpine 3.14</strong> with a custom directive prefix,
+            so our directives and the host theme's <code>x-</code> directives are mutually
+            invisible.</p>
+            <pre><code>import Alpine from 'alpinejs'
+
+Alpine.prefixed('data-ndb-')
+Alpine.data('debugBar', debugBar)
+Alpine.start()</code></pre>
+            <p>Costs about 15 kB. Buys working on Luma, in adminhtml, against the CSP
+            build, and on a page where the theme's own JS threw.</p>` },
+      { t: 'Decide the v1 scope', s: 'done',
+        d: `<p><strong>Profiles + findings + MCP.</strong> MCP ships in the first release.
+            It is the reason to build this rather than install Smile's toolbar.</p>` },
+      { t: 'Decide coverage', s: 'done',
+        d: `<p>Frontend HTML, AJAX and fetch, adminhtml, and GraphQL and REST.</p>
+            <p>All four come from one hook: <code>pub/index.php</code> always creates
+            <code>Magento\\Framework\\App\\Http</code>, and
+            <code>Bootstrap::run()</code> does
+            <code>$response = $application->launch(); $response->sendResponse();</code>,
+            so <code>beforeLaunch</code> and <code>afterLaunch</code> bracket every web
+            request in every area.</p>` },
+      { t: 'Decide on the error page', s: 'done',
+        d: `<p>Out of scope. <code>swissup/module-ignition</code> is MIT and already does
+            this well. Revisit later as a detect and integrate story: link the profile id
+            from its error page.</p>` },
+      { t: 'Write docs/plan.md', s: 'done',
+        d: `<p>Context, architecture, package layout, six build phases, verification
+            commands, and the open items to settle during Phase 1.</p>` },
+      { t: 'Write docs/build-status.html', s: 'done',
+        d: `<p>This page. Update the <code>PHASES</code> array as work lands.</p>` }
+    ]
+  },
+  {
+    id: 'poc',
+    name: 'POC',
+    goal: 'Prove the spine end to end on one collector. Thin, but real. Done and verified in the browser.',
+    tasks: [
+      { t: 'Plugin/App/HttpPlugin: one aroundLaunch', s: 'done',
+        d: `<p>Started as <code>beforeLaunch</code> plus <code>afterLaunch</code>, which
+            <strong>does not work</strong>:</p>
+            <pre><code>ErrorException: Undefined array key "Magento\Framework\App\Http"
+  in Interception/PluginList/PluginList.php on line 174</code></pre>
+            <p><code>launch()</code> switches the object manager to the request's area.
+            The next <code>getNext()</code> anywhere sees a new scope and
+            <code>_loadScopedData()</code> overwrites <code>_inherited</code> from the
+            newly scoped cache, which has no entry for <code>App\Http</code> because that
+            entry only ever existed as a lazy addition. The after listener then calls
+            <code>getPlugin()</code>, which never reloads, and reads into the hole.</p>
+            <p>An around plugin is resolved before the switch. This is why Ignition uses
+            <code>aroundLaunch</code> and Smile keeps response work in an observer.</p>` },
+      { t: 'Model/ProfileStore: atomic write, prune by count and age', s: 'done',
+        d: `<p>Writes <code>var/siteation_debugbar/&lt;uuid4&gt;.json</code>, temp file plus
+            rename, pruned to 20 files and 60 minutes on every write. Verified: 25 requests
+            leave exactly 20 files and no stray <code>.tmp</code>.</p>
+            <p>Permissions needed a fix. Setting the mode on the temp file left
+            <code>0775</code> behind, because the rename does not carry it across every
+            filesystem driver. Narrow the destination after the rename instead. Now
+            <code>0600</code> in a <code>0700</code> directory.</p>` },
+      { t: 'Collector/QueryCollector via Plugin/Db/LoggerPlugin', s: 'done',
+        d: `<p>No <code>env.php</code> change needed. Verified against a real store: 16
+            queries on an empty cart, 56 on a category page, 76 on the admin login.</p>
+            <p>String literals are stripped from the SQL at record time, so a WHERE clause
+            cannot smuggle an email address into a stored profile.</p>` },
+      { t: 'Collector/RequestCollector', s: 'done',
+        d: `<p>Method, path, route, full action name, area, status, duration and peak
+            memory. Holds one record rather than a list.</p>` },
+      { t: 'Presentation/BarInjector with the full guard set', s: 'done',
+        d: `<p>Skips binary and streamed responses, redirects, attachments and non HTML
+            content types, and requires a closing <code>&lt;/body&gt;</code>.</p>
+            <p>Every profiled response carries
+            <code>X-Siteation-DebugBar-Profile</code>, including the ones that cannot carry
+            a bar. Verified on frontend HTML, AJAX, GraphQL and REST.</p>` },
+      { t: 'Presentation/AssetUrl: survive a full page cache hit', s: 'done',
+        d: `<p>Plain <code>getUrl()</code> builds
+            <code>frontend/_view/en_US/...</code> on an FPC hit and
+            <code>pub/static.php</code> answers "Requested path ... is wrong". Nothing
+            initialises the design on a cached page, so the fallback context has no
+            theme.</p>
+            <pre><code>$params = ['area' =&gt; $area];
+$themeId = $this-&gt;design-&gt;getConfigurationDesignTheme($area);
+
+if ($themeId) {
+    $params['themeId'] = $themeId;
+}</code></pre>
+            <p>That makes the repository resolve through the cached theme provider, which
+            needs no rendered page. No dedicated asset route is required after all.</p>` },
+      { t: 'Alpine bar in a shadow root, initTree not start', s: 'done',
+        d: `<p>A custom prefix alone is not enough. Alpine registers its shorthand
+            transformers against the live prefix:</p>
+            <pre><code>mapAttributes(startingWith("@", into(prefix("on:"))))</code></pre>
+            <p>so in our instance <code>@click</code> becomes
+            <code>data-ndb-on:click</code>. On its own that is harmless, but
+            <code>Alpine.start()</code> installs a mutation observer whose
+            <code>onElAdded</code> calls <code>initTree</code> on <em>every</em> added
+            element. Any node the theme adds at runtime would have its
+            <code>@click</code> claimed by us and its handler bound a second time.</p>
+            <p>Fix: mount in a shadow root and call
+            <code>Alpine.initTree(root)</code>. No document wide observer, the theme's
+            Alpine cannot see our markup, and <code>x-for</code> and <code>x-if</code>
+            still work because they init their own subtrees. The shadow root also isolates
+            CSS both ways, so Tailwind will need no prefix in Phase 3.</p>
+            <p>Verified: Hyvä's own Alpine search panel still opens, and
+            <code>window.Alpine</code> is still the theme's 3.14.3.</p>` },
+      { t: 'Readable type scale, sized in px', s: 'done',
+        d: `<p>The first pass was 13px base with 0.66rem labels, too small to read all
+            day. Now 15px base, 14px mono for SQL, 12px uppercase labels.</p>
+            <p>Sized in <code>px</code>, not <code>rem</code>, because inside a shadow root
+            <code>rem</code> still resolves against the <strong>document</strong> root. A
+            store with <code>html { font-size: 62.5% }</code> would silently shrink the
+            whole bar.</p>` },
+      { t: 'etc/adminhtml/system.xml', s: 'done',
+        d: `<p>Not in the original POC list, but without it
+            <code>bin/magento config:set</code> refuses the path, so the bar could not be
+            turned off from the CLI or the admin. Enabled flag plus both slow
+            thresholds.</p>` },
+      { t: 'phpcs.xml.dist', s: 'done',
+        d: `<p>The raw <code>Magento2</code> standard reported 1 error and 126 warnings.
+            The error was a silenced <code>chmod</code>, now covered by a scoped ignore.
+            Around 110 of the warnings were "every method needs a docblock and a @param",
+            which on fully typed code only restates the signature.</p>
+            <p>The ruleset excludes <code>Magento2.Annotation.*</code> and keeps the rest.
+            Now 0 errors and 8 warnings, all deliberate.</p>` },
+      { t: 'Exit criteria met', s: 'done',
+        d: `<p>Verified in Chrome against the real store:</p>
+            <ul>
+              <li>Bar renders on Hyvä pages with real query counts and timings</li>
+              <li>Query list filters and searches, panel state survives navigation</li>
+              <li>Profile JSON on disk, id equal to the response header</li>
+              <li>Works in adminhtml (76 queries on the login page)</li>
+              <li>AJAX, GraphQL and REST all return the header</li>
+              <li>No console errors and no CSP violations from the bar</li>
+            </ul>
+            <p>The one console exception seen, "InvalidStateError: Transition was aborted",
+            reproduces with the bar disabled, so it is pre-existing.</p>` }
+    ]
+  },
+  {
+    id: 'collection',
+    name: 'Collection',
+    goal: 'All remaining collectors behind one interface, registered through di.xml.',
+    tasks: [
+      { t: 'Api/CollectorInterface and AbstractCollector', s: 'todo',
+        d: `<p>Bounding and redaction happen once, for every collector, and totals stay
+            accurate even when items are dropped.</p>
+            <pre><code>public function record(array $item): void
+{
+    $safeItem = $this->redactor->clean($item);
+    $this->track($safeItem);                    // totals always updated
+
+    if ($this->retainedCount() >= $this->maxItems) {
+        $this->dropped++;                       // ... but the item is not kept
+
+        return;
+    }
+
+    $this->items[] = $safeItem;
+}</code></pre>
+            <p><code>summary()</code> reports <code>count</code>,
+            <code>retained_count</code>, <code>dropped_count</code> and
+            <code>truncated</code>, so the UI and an agent can say "there were 900
+            queries, showing 500" instead of silently lying.</p>` },
+      { t: 'Event and observer collectors', s: 'todo',
+        d: `<p>Two plugins. <code>Event\\ManagerInterface::aroundDispatch</code> gives every
+            dispatched event including the ones nobody listens to.
+            <code>Event\\InvokerInterface::aroundDispatch</code> gives every observer that
+            actually ran, with its own timing.</p>` },
+      { t: 'Cache collector with hit rate', s: 'todo',
+        d: `<p><code>App\\CacheInterface</code> around <code>load</code>,
+            <code>save</code> and <code>remove</code>, timing each and recording
+            identifier plus payload size. An empty load result is a miss.</p>` },
+      { t: 'Layout, block and template collector', s: 'todo',
+        d: `<p>On <code>layout_generate_blocks_after</code>, walking the structure from
+            <code>root</code> and recording every child with a
+            <code>getTemplateFile()</code>.</p>
+            <p>Fruitcake reflects a private <code>structure</code> property. Check whether
+            2.4.9 exposes a public path first, and keep the collector fail soft either
+            way.</p>` },
+      { t: 'Interception collector', s: 'todo',
+        d: `<p>Reflects <code>PluginListInterface</code> for intercepted types, applied
+            plugins and before, around or after classification.</p>
+            <p>The single most useful Magento specific panel, and nothing else provides
+            it. Also the most likely to break on upgrade, so it sits behind an interface
+            and returns empty on any <code>ReflectionException</code>.</p>` },
+      { t: 'Timer collector', s: 'todo',
+        d: `<p>Magento's nested <code>Magento\\Framework\\Profiler</code> when
+            <code>MAGE_PROFILER</code> is set, plus our own spans. Stop the master timer
+            before building the profile so the bar never measures itself.</p>` },
+      { t: 'Guard against the config recursion trap', s: 'todo',
+        d: `<p>Do not read config inside the event or cache plugins. Config reads hit the
+            cache, the cache dispatches events, and you get infinite recursion. Smile
+            documents this in a source comment.</p>
+            <p><code>Model/Config</code> resolves enablement once in
+            <code>beforeLaunch</code> and every plugin reads that resolved value from a
+            property.</p>` }
+    ]
+  },
+  {
+    id: 'analysis',
+    name: 'Analysis',
+    goal: 'Turn raw collected data into ranked, clickable findings. The differentiator.',
+    tasks: [
+      { t: 'Analysis/QueryAnalyzer: fingerprint, group, slow, N+1', s: 'todo',
+        d: `<p>Normalise whitespace, fingerprint
+            <code>substr(sha256(normalized_sql . "\\0" . connection), 0, 16)</code>, group
+            by fingerprint, derive <code>slow</code>, <code>repeated_count</code>,
+            <code>query_time_percent</code>, <code>request_time_percent</code> and read or
+            write type.</p>
+            <p>The N+1 test is deliberately conservative:</p>
+            <pre><code>'likely_n_plus_one' => count($executions) >= 3
+    && $bindingsVary
+    && $hasSharedCallSite,</code></pre>
+            <p>Same SQL from many call sites is not an N+1. Identical bindings repeated is
+            a caching problem. Chunked and paginated queries still trip it, which is why it
+            is labelled "likely".</p>` },
+      { t: 'Call site resolution', s: 'todo',
+        d: `<p>Scan 40 frames, drop framework and <code>generated/code</code> paths, keep
+            the first 5 application frames. Both limits configurable.</p>` },
+      { t: 'Finding shape and the ported rules', s: 'todo',
+        d: `<p>Every finding carries id, severity, section, message, evidence, and a
+            <code>why</code> / <code>location</code> / <code>next</code> /
+            <code>action</code> block. <code>action</code> names the section and filter to
+            open, which is what makes a finding clickable.</p>
+            <p>Ported: <code>exception.captured</code>, <code>request.error</code>,
+            <code>request.slow</code>, <code>query.slow</code>,
+            <code>query.repeated</code>, <code>cache.high_miss_rate</code> (only above 5
+            operations and an 80% miss rate, so one lookup makes no noise).</p>
+            <p>Ordered errors first, capped at 50.</p>` },
+      { t: 'Magento specific rules', s: 'todo',
+        d: `<p>None of these exist in any current Magento tool.</p>
+            <ul>
+              <li><code>layout.cache_miss</code> on a full layout rebuild</li>
+              <li><code>block.uncacheable</code> when one block disables full page cache for the whole page</li>
+              <li><code>plugin.heavy</code> when a single interceptor dominates the request</li>
+              <li><code>collection.loaded_in_loop</code>, the Magento shape of N+1</li>
+              <li><code>indexer.invalid</code> when an invalid indexer explains slow reads</li>
+              <li><code>cache.type_disabled</code> when a disabled cache type costs measurable time</li>
+            </ul>` }
+    ]
+  },
+  {
+    id: 'bar',
+    name: 'The bar',
+    goal: 'Alpine viewer built with Vite and Tailwind 4, output committed.',
+    tasks: [
+      { t: 'Vite and Tailwind 4 build, output committed to view/base/web/', s: 'todo',
+        d: `<p>Nebula proves the "ships with compiled assets, install and go" model works
+            in Magento. It also means <code>mage build hyva</code> is irrelevant to this
+            module.</p>
+            <p>Tailwind with a <code>ndb-</code> prefix and a scoped preflight, so we
+            cannot leak into the host page.</p>` },
+      { t: 'The debugBar Alpine.data factory', s: 'todo',
+        d: `<p>Modelled on New Debug Bar's <code>state.js</code>: collapsed strip, full
+            screen inspector, section list, favorites, per section filters and search,
+            command palette, light, dark and system theme, preferences in
+            <code>localStorage</code>.</p>` },
+      { t: 'Port lockHost', s: 'todo',
+        d: `<p>When the inspector opens, mark every sibling <code>inert</code>, lock body
+            scroll, compensate for scrollbar width, and restore all of it on close. This
+            is what makes it feel like an app instead of an overlay.</p>` },
+      { t: 'Flash prevention and syntax highlighting', s: 'todo',
+        d: `<p>One critical style in the head, before the stylesheet:</p>
+            <pre><code>&lt;style&gt;#siteation-debugbar [data-ndb-cloak]{display:none!important}&lt;/style&gt;</code></pre>
+            <p><code>highlight.js/lib/core</code> with only <code>sql</code>,
+            <code>json</code> and a hand rolled PHP grammar registered. Three languages
+            instead of the full bundle is about 20 kB against about 900 kB.</p>` },
+      { t: 'fetch and XHR interceptor for the request list', s: 'todo',
+        d: `<p>AJAX, GraphQL and REST are stored but not injected. The bar reads
+            <code>X-Siteation-DebugBar-Profile</code> off responses and appends them to a
+            request list, which is how those three coverage targets become visible without
+            touching their payloads.</p>` },
+      { t: 'Enforce the UX rules in review', s: 'todo',
+        d: `<p>Taken from New Debug Bar's own <code>AGENTS.md</code>.</p>
+            <ul>
+              <li>Show the request, errors, query count and time first</li>
+              <li>Keep framework details, raw data, hashes and repeated facts out of the main view</li>
+              <li>A finding explains the problem, why it matters, where it came from and what to do next</li>
+              <li>Do not show two findings for the same cause</li>
+              <li>Do not use middots, bullets or pipes to split facts. Use space, labels, icons or groups</li>
+            </ul>` }
+    ]
+  },
+  {
+    id: 'mcp',
+    name: 'MCP',
+    goal: 'Four read only tools over stdio, so an agent reads exact data instead of guessing.',
+    tasks: [
+      { t: 'Console/McpServerCommand with a hand rolled JSON-RPC loop', s: 'todo',
+        d: `<p><code>bin/magento siteation:debugbar:mcp</code>, registered through
+            <code>Magento\\Framework\\Console\\CommandListInterface</code>.</p>
+            <p>Hand roll rather than take a dependency. <code>php-mcp/server</code> 3.3.0
+            pulls ReactPHP plus <code>symfony/finder</code> into a Magento vendor tree, and
+            <code>mcp/sdk</code> is pre 1.0. We need <code>initialize</code>,
+            <code>notifications/initialized</code>, <code>tools/list</code>,
+            <code>tools/call</code> and <code>ping</code> over newline delimited JSON-RPC
+            2.0. Revisit only if we later need SSE or HTTP transport.</p>` },
+      { t: 'The four tools', s: 'todo',
+        d: `<pre><code>list-debug-profiles          filter by method, path, status, warning
+get-debug-profile-section    cursor paginated
+inspect-debug-queries        filter slow | repeated, sort by duration
+get-debug-findings           cursor paginated</code></pre>
+            <p>Server instructions tell the agent to correlate by header, not by
+            recency.</p>` },
+      { t: 'Double bound every response', s: 'todo',
+        d: `<p>By item count (50) and by byte budget (100 kB), dropping items until it
+            fits, plus a <code>response_version</code> so the contract can evolve.</p>
+            <pre><code>while ($this->byteLength($response) > $this->maxBytes && $summaries !== []) {
+    array_pop($summaries);
+    $response = $this->profileListResponse($summaries, $total, true);
+}</code></pre>` },
+      { t: 'Ship a SKILL.md for agents', s: 'todo',
+        d: `<p>Mirroring New Debug Bar's. Its best rules:</p>
+            <ul>
+              <li>Set small limits instead of accepting maximums. Start with 10 profile summaries, 10 findings, 5 section items</li>
+              <li>Read findings first, then the smallest useful section</li>
+              <li>Treat a finding as a lead, not a verdict</li>
+              <li>Compare query time with total request time. If queries are a small share, inspect lifecycle, models, events and views before blaming the database</li>
+            </ul>` },
+      { t: 'Document client setup', s: 'todo',
+        d: `<p>Generous startup timeout, because Magento boots slowly.</p>
+            <pre><code>{
+  "mcpServers": {
+    "siteation-debugbar": {
+      "command": "php",
+      "args": ["/abs/path/bin/magento", "siteation:debugbar:mcp"],
+      "startup_timeout_sec": 60
+    }
+  }
+}</code></pre>` }
+    ]
+  },
+  {
+    id: 'hardening',
+    name: 'Hardening',
+    goal: 'Make it safe, fast and releasable. Tag 1.0.0 and publish.',
+    tasks: [
+      { t: 'Off by default, developer mode plus explicit config', s: 'todo',
+        d: `<p><code>etc/config.xml</code> ships <code>enabled = 0</code>, matching Smile.
+            Optional IP allowlist on top.</p>` },
+      { t: 'Redaction and bounds', s: 'todo',
+        d: `<p>Passwords, tokens, cookies, session ids, card data and customer PII removed
+            at record time, not at render time. Bounded depth (5), string length (2000)
+            and array size (100).</p>` },
+      { t: 'Overhead budget', s: 'todo',
+        d: `<p>Measure the profiler's own cost and show it in the bar. Assert in a test
+            that a profiled request stays within an agreed multiple of an unprofiled
+            one.</p>` },
+      { t: 'Quality gates', s: 'todo',
+        d: `<p>PHPStan, <code>phpcs</code> with the Magento2 standard, and the repo's
+            <code>.php-cs-fixer.dist.php</code>.</p>` },
+      { t: 'Tests', s: 'todo',
+        d: `<p>Unit: <code>QueryAnalyzer</code> fingerprinting and the N+1 heuristic,
+            <code>Redactor</code>, <code>ProfileStore</code> pruning and atomicity,
+            <code>BarInjector</code> guards.</p>
+            <p>Integration: a profile is produced for frontend, adminhtml, GraphQL and
+            AJAX requests, and a thrown collector leaves the response untouched.</p>` },
+      { t: 'Browser and agent verification', s: 'todo',
+        d: `<p>Browser: bar renders on a Hyv&auml; page, the theme's own Alpine components
+            still work (prefix isolation holds), no CSP violations in the console, light
+            and dark both read correctly, keyboard reaches every control, usable at 390px.
+            Repeat in adminhtml. Trigger an AJAX add to cart and confirm it appears in the
+            request list.</p>
+            <p>Agent: point Claude Code at the MCP server, load a slow page, ask it to
+            explain what happened. Success is a correct answer citing a specific profile
+            id, not a data dump.</p>` },
+      { t: 'README, CHANGELOG, tag 1.0.0, submit to Packagist', s: 'todo',
+        d: `<p>Tag on <code>git@github.com:allrude/siteation-magento2.git</code>.
+            CHANGELOG starts at v1, with no entries for pre v1 work.</p>` }
+    ]
+  }
+];
+
+/**
+ * Explicitly deferred work. Not part of v1.
+ *
+ * @type {Array<{name: string, why: string}>}
+ */
+const BACKLOG = [
+  { name: 'Ignition integration',
+    why: 'Detect swissup/module-ignition, hand exceptions to it, and inject our profile id and a link into its error page. Small work, no duplicated UI.' },
+  { name: 'Alpine component inspector',
+    why: 'List every x-data root on the page with its live state, in the spirit of @designbycode/alpine-debug and Alpine Toolbox. Genuinely useful on Hyva and Nebula, and no Magento equivalent exists.' },
+  { name: 'Cross request comparison',
+    why: 'Diff two stored profiles side by side to show what a change cost. Cheap once profiles exist, and it is what makes the profile history worth keeping.' },
+  { name: 'MCP over HTTP or SSE',
+    why: 'The hand rolled stdio loop covers local agents. Revisit php-mcp/server only if a remote or multiplexed transport is actually needed.' },
+  { name: 'Message queue and cron profiling',
+    why: 'Consumers and cron run outside App\\Http, so they need their own entry hook on AppInterface. Out of v1 scope, clearly useful later.' },
+  { name: 'Browser extension',
+    why: 'Read the X-Siteation-DebugBar-Profile header from devtools and surface profiles without injecting anything into the page at all.' },
+  { name: 'Full page cache awareness',
+    why: 'Confirmed in the POC: a cached page profiles as 0 queries in ~18ms, so the bar reads as broken when it is simply reporting a cache hit. It should say "served from full page cache" instead of showing an empty query list.' },
+  { name: 'Lazy profile payload',
+    why: 'The POC embeds the whole profile in the page. Fine at 76 queries, not at 500. Move the payload behind a fetch from a controller and keep only the summary inline.' },
+  { name: 'Open in editor links',
+    why: 'Turn call sites into phpstorm:// or vscode:// links, with a remote to local path map for Docker and Valet setups, as Ignition does.' }
+];
+
+const STATUS_LABEL = { done: 'Done', active: 'In progress', todo: 'To do', backlog: 'Backlog' };
+const CHECK = { done: '✓', active: '•', todo: '', backlog: '' };
+
+/**
+ * Count tasks by status across all phases.
+ *
+ * @returns {{total: number, done: number, active: number, todo: number}}
+ */
+function tally() {
+  const counts = { total: 0, done: 0, active: 0, todo: 0 };
+
+  PHASES.forEach((phase) => phase.tasks.forEach((task) => {
+    counts.total++;
+    counts[task.s] = (counts[task.s] || 0) + 1;
+  }));
+
+  return counts;
+}
+
+/**
+ * Derive a phase status from its tasks.
+ *
+ * @param {{tasks: Array<{s: string}>}} phase
+ * @returns {string} 'done' | 'active' | 'todo'
+ */
+function phaseStatus(phase) {
+  const done = phase.tasks.filter((task) => task.s === 'done').length;
+
+  if (done === phase.tasks.length) return 'done';
+  if (done > 0 || phase.tasks.some((task) => task.s === 'active')) return 'active';
+
+  return 'todo';
+}
+
+function renderCards() {
+  const counts = tally();
+  const cards = [
+    { n: counts.total, k: 'Tasks', c: '' },
+    { n: counts.done, k: 'Done', c: 'is-done' },
+    { n: counts.active, k: 'In progress', c: 'is-active' },
+    { n: counts.todo, k: 'To do', c: '' },
+    { n: BACKLOG.length, k: 'Backlog', c: 'is-backlog' }
+  ];
+
+  document.getElementById('cards').innerHTML = cards.map((card) =>
+    `<div class="card ${card.c}"><div class="n">${card.n}</div><div class="k">${card.k}</div></div>`
+  ).join('');
+
+  const pct = Math.round((counts.done / counts.total) * 100);
+  document.getElementById('pctText').textContent = `${pct}%`;
+  document.getElementById('progressDetail').textContent =
+    `${counts.done} of ${counts.total} tasks, ${BACKLOG.length} backlogged`;
+  document.getElementById('segDone').style.width = `${pct}%`;
+  document.getElementById('segActive').style.width =
+    `${Math.round((counts.active / counts.total) * 100)}%`;
+}
+
+function renderStepper() {
+  document.getElementById('stepper').innerHTML = PHASES.map((phase, index) => {
+    const status = phaseStatus(phase);
+    const done = phase.tasks.filter((task) => task.s === 'done').length;
+
+    return `<div class="step ${status}">
+      <div class="dot">${status === 'done' ? '✓' : index + 1}</div>
+      <div class="label">${phase.name}</div>
+      <div class="meta">${done}/${phase.tasks.length}</div>
+    </div>`;
+  }).join('');
+}
+
+function renderPhases() {
+  document.getElementById('phases').innerHTML = PHASES.map((phase) => {
+    const status = phaseStatus(phase);
+    const done = phase.tasks.filter((task) => task.s === 'done').length;
+
+    const items = phase.tasks.map((task, index) =>
+      `<li class="${task.s}">
+        <span class="box" aria-hidden="true">${CHECK[task.s]}</span>
+        <span class="task-text">
+          <button class="task-open" type="button"
+                  data-phase="${phase.id}" data-task="${index}">${task.t}</button>
+        </span>
+        <span class="tag ${task.s}">${STATUS_LABEL[task.s]}</span>
+      </li>`
+    ).join('');
+
+    return `<details class="phase" ${status === 'active' ? 'open' : ''}>
+      <summary>
+        <span class="phase-title">${phase.name}<small>${phase.goal}</small></span>
+        <span class="phase-count">${done} / ${phase.tasks.length}</span>
+      </summary>
+      <div class="phase-body"><ul class="checklist">${items}</ul></div>
+    </details>`;
+  }).join('');
+}
+
+function renderBacklog() {
+  document.getElementById('backlog').innerHTML = BACKLOG.map((item) =>
+    `<div class="backlog-card"><h4>${item.name}</h4><p>${item.why}</p></div>`
+  ).join('');
+}
+
+const dialog = document.getElementById('taskDialog');
+
+document.getElementById('phases').addEventListener('click', (event) => {
+  const button = event.target.closest('.task-open');
+
+  if (!button) return;
+
+  const phase = PHASES.find((candidate) => candidate.id === button.dataset.phase);
+  const task = phase.tasks[Number(button.dataset.task)];
+
+  document.getElementById('dlgTitle').innerHTML = task.t;
+  document.getElementById('dlgSub').textContent =
+    `Phase ${phase.name}, status ${STATUS_LABEL[task.s].toLowerCase()}`;
+  document.getElementById('dlgBody').innerHTML = task.d;
+  dialog.showModal();
+});
+
+document.getElementById('dlgClose').addEventListener('click', () => dialog.close());
+
+dialog.addEventListener('click', (event) => {
+  if (event.target === dialog) dialog.close();
+});
+
+const root = document.documentElement;
+
+document.getElementById('themeToggle').addEventListener('click', () => {
+  const dark = root.getAttribute('data-theme') === 'dark'
+    || (!root.hasAttribute('data-theme') && matchMedia('(prefers-color-scheme: dark)').matches);
+
+  root.setAttribute('data-theme', dark ? 'light' : 'dark');
+  syncThemeButton();
+});
+
+function syncThemeButton() {
+  const dark = root.getAttribute('data-theme') === 'dark'
+    || (!root.hasAttribute('data-theme') && matchMedia('(prefers-color-scheme: dark)').matches);
+
+  document.getElementById('themeIcon').textContent = dark ? '☼' : '☽';
+  document.getElementById('themeLabel').textContent = dark ? 'Light' : 'Dark';
+}
+
+renderCards();
+renderStepper();
+renderPhases();
+renderBacklog();
+syncThemeButton();
+</script>
+</body>
+</html>
