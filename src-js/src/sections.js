@@ -55,11 +55,19 @@ export const SECTIONS = [
     label: 'Plugins',
     lead: 'Which interceptors were built for this request, and on what.',
   },
+  {
+    id: 'alpine',
+    label: 'Alpine',
+    lead: 'The components on the page right now, their state, and what has not started.',
+  },
 ]
 
 /**
  * Counts shown beside each section in the sidebar. Null means the section has nothing
  * worth counting, so no badge is drawn rather than a misleading zero.
+ *
+ * Alpine is the one count that does not come from the profile. It is read from the page,
+ * so it can change without the request changing.
  *
  * @param {string} id
  * @param {object} state the bar's Alpine component
@@ -76,6 +84,7 @@ export function countFor(id, state) {
     case 'events': return state.events.unique_count || null
     case 'cache': return state.cache.count || null
     case 'plugins': return state.interception.plugin_count || null
+    case 'alpine': return state.alpineComponents.length || null
     default: return null
   }
 }

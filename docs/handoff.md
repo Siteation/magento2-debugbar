@@ -60,6 +60,11 @@ every web request in every area. It has to be `around`: `launch()` switches the 
 manager to the request's area, `PluginList` reloads its scoped data, and an `after`
 listener dies in `getPlugin()`. See `research.md` 13.1.
 
+**The Alpine section is the exception to all of this.** It reads the page's live Alpine
+instead of a stored profile, so it is client only, invisible to MCP, and applies the value
+policy itself in `redact.js`. The policy reaches the page as `data-value-policy` on the
+bar's root element.
+
 **Collectors** implement `Api\CollectorInterface`, registered as a sorted `di.xml` array on
 `ProfileManager`. `AbstractCollector` does redaction, bounding and `at_ms` stamping once for
 all of them. Seven: request, queries, events, observers, blocks, cache, interception. Plus a
@@ -87,7 +92,7 @@ bin/magento cache:flush                                        # after any plugi
 vendor/bin/phpcs  --standard=<pkg>/phpcs.xml.dist <pkg>
 vendor/bin/phpstan analyse -c <pkg>/phpstan.neon.dist
 vendor/bin/phpunit --configuration <pkg>/phpunit.xml.dist      # 71 tests
-<pkg>/dev/smoke https://mage-debugbar.test magedebugbar_admin  # 23 assertions
+<pkg>/dev/smoke https://mage-debugbar.test magedebugbar_admin  # 24 assertions
 cd <pkg>/src-js && npm run build                               # output is committed
 ```
 
@@ -100,41 +105,34 @@ screenshot. Screenshots are scaled and have misled me twice.
 Rutger's call: it needs the repository made public so Packagist can read it. Not an
 engineering task, and not something to push toward.
 
-**1.1**: 16 of 25.
+**1.1**: 23 of 27.
 
 | Phase | | |
 | --- | --- | --- |
 | A. Timeline | 5/5 | `at_ms` on every item, `TimelineBuilder`, waterfall view |
 | B. Window | 5/5 | floating glass dock, modal sheet, `lockHost`, window controls |
-| C. Navigation | 5/6 | 210px sidebar, favourites with drag, section leads, inline findings |
-| D. Alpine | 0/5 | **next** |
+| C. Navigation | 6/7 | 210px sidebar, favourites with drag, section leads, inline findings |
+| D. Alpine | 6/7 | components, stores, deferred, health, sub-tabs, value policy |
 | E. Comfort | 1/5 | light theme done; palette, highlighting, history left |
 
 Backlog is in `build-status.html`, which is the live tracker. Open it in a browser.
 
-## Next: Phase D, the Alpine section
+## Next: the interface pass Rutger asked for
 
-Ours, not theirs. Nothing else offers it and both Hyvä and Nebula are Alpine. The bar
-already carries its own Alpine in a shadow root under a different prefix, so it can inspect
-the page's instance without either seeing the other.
+Compared against New Debug Bar's own screenshot, ours reads as cramped rather than wrong:
+type is too small in places, the theme and window icons are too small, and there is a
+question about whether the header metrics and the sidebar are saying the same thing twice.
+Measure before changing anything, and mind the 12px floor.
 
-* **Components**: every `[x-data]` root, its expression, resolved name, DOM path, and live
-  state through `Alpine.$data(el)`.
-* **Stores**: everything registered with `Alpine.store()`.
-* **Deferred**: which components Hyvä has deferred through `x-defer` or `intersect` and
-  whether they have initialised. A common "why is nothing happening".
-* **Health**: Alpine version, whether the CSP build is in use, components that threw on
-  init.
-* **Sub-tabs** were deferred from C into D, because this is the first section that has
-  something to switch between.
+## Decided in D, worth not relitigating
 
-Two things to decide while building it:
-
-* Reading arbitrary component state can pull in customer data, so it should follow the same
-  value policy as the rest of the bar.
-* It is the first section whose data comes from the browser rather than a stored profile,
-  so it is invisible to MCP. Posting a snapshot back would fix that and adds a write
-  endpoint. Only worth it if the section proves itself first.
+* **The value policy runs in the browser too.** `redact.js` mirrors the key pattern, depth
+  bound and item bound of `Model/Redactor.php`, and `x-data` expressions have their string
+  literals replaced the way SQL does, because a server rendered expression carries page
+  data inline.
+* **MCP stays blind to the Alpine section.** Making it visible means posting a snapshot
+  back, which means a write endpoint on a module whose whole safety story is that it only
+  reads. The section has to prove itself first, and an agent can already ask a browser.
 
 ## Open, needing Rutger
 
@@ -156,3 +154,13 @@ Beyond the three stale artifact traps, the ones most likely to bite again:
 * A shadow root isolates the bar from the page, not from itself. Generic class names
   collide; `.ndb-facts` was defined twice and the header broke.
 * Do not use tiny type. 15px body, 14px mono, 12px floor.
+* An `x-for` variable that shares a name with a component property silently redirects every
+  write inside the loop. `select(id) { this.section = id }` wrote to the loop's `section`,
+  which blanked the row's own label and never changed the panel. Nothing throws.
+* `Object.keys` on Alpine's merged scope proxy returns `[]`. Its `ownKeys` trap answers over
+  a bare `{}`, so each key it names is dropped for having no descriptor. Use
+  `Reflect.ownKeys`.
+* `Alpine.$data(el)` folds every parent scope into the child. For one component's own state,
+  read `el._x_dataStack[0]`.
+* Alpine 3.14.3, which Hyvä ships, has no `setErrorHandler` and no `injectMagics`. Expression
+  errors have to be read from `console.warn`, and `$store` from `Alpine.evaluate`.

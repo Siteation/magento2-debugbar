@@ -8,6 +8,7 @@ use Magento\Framework\App\Response\HttpInterface as HttpResponse;
 use Magento\Framework\App\ResponseInterface;
 use Magento\Framework\HTTP\PhpEnvironment\Response as ReadableResponse;
 use Magento\Framework\UrlInterface;
+use Siteation\DebugBar\Model\Config;
 use Siteation\DebugBar\Model\RequestEligibility;
 
 /**
@@ -17,6 +18,10 @@ use Siteation\DebugBar\Model\RequestEligibility;
  * profile travels as <script type="application/json">, which browsers treat as data, and
  * the stylesheet URL travels as a data attribute for the bar to load inside its shadow
  * root. Magento_Csp therefore needs no nonce and no unsafe-inline.
+ *
+ * The value policy rides along as an attribute too. The Alpine section reads live objects
+ * out of the page rather than a redacted profile, so the bar has to know the policy at
+ * render time to apply it itself.
  *
  * Responses that cannot carry a bar still get the header, which is how AJAX, GraphQL and
  * REST requests reach the bar's request list and how an agent correlates a request to its
@@ -37,7 +42,8 @@ class BarInjector
 
     public function __construct(
         private readonly AssetUrl $assets,
-        private readonly UrlInterface $url
+        private readonly UrlInterface $url,
+        private readonly Config $config
     ) {
     }
 
@@ -124,13 +130,15 @@ class BarInjector
         );
 
         $markup = sprintf(
-            '<div id="%s" data-css="%s" data-profile-url="%s" data-front-name="%s"></div>'
+            '<div id="%s" data-css="%s" data-profile-url="%s" data-front-name="%s"'
+            . ' data-value-policy="%s"></div>'
             . '<script type="application/json" id="%s">%s</script>'
             . '<script type="module" src="%s" defer></script>',
             self::ROOT_ID,
             $this->escape($this->assets->for('css/debugbar.css')),
             $this->escape($this->profileUrl(self::ID_PLACEHOLDER)),
             RequestEligibility::FRONT_NAME,
+            $this->escape($this->config->valuePolicy()),
             self::DATA_ID,
             $json === false ? '{}' : $json,
             $this->escape($this->assets->for('js/debugbar.js'))

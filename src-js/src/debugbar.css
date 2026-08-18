@@ -4,12 +4,6 @@
  * A developer tool has to render at the same size on every store it is dropped into.
  */
 
-/*
- * Sizes are in px on purpose. Inside a shadow root `rem` still resolves against the
- * document root, so a store with `html { font-size: 62.5% }` would shrink the whole bar.
- * A developer tool has to render at the same size on every store it is dropped into.
- */
-
 :host {
   position: fixed;
   inset: 0;
@@ -1085,3 +1079,145 @@
 }
 
 
+
+/* sub-tabs, and the Alpine section */
+
+.ndb-subtabs {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 14px;
+  padding: 3px;
+  border: 1px solid var(--ndb-border);
+  border-radius: 10px;
+  background: var(--ndb-bg-2);
+  width: fit-content;
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+.ndb-subtab {
+  appearance: none;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--ndb-dim);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 5px 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  white-space: nowrap;
+}
+
+.ndb-subtab:hover {
+  color: var(--ndb-text);
+}
+
+.ndb-subtab.is-active {
+  background: var(--ndb-bg);
+  color: var(--ndb-text);
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.2);
+}
+
+.ndb-alpine {
+  border: 1px solid var(--ndb-border);
+  border-radius: 10px;
+  margin-bottom: 8px;
+  overflow: hidden;
+}
+
+.ndb-alpine-head {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 12px;
+}
+
+.ndb-alpine-head:hover {
+  background: var(--ndb-hover);
+}
+
+.ndb-alpine-head.is-static {
+  cursor: default;
+}
+
+.ndb-alpine-head.is-static:hover {
+  background: transparent;
+}
+
+.ndb-alpine-caret {
+  color: var(--ndb-dim);
+  transition: transform 120ms ease;
+}
+
+.ndb-alpine-head.is-static .ndb-alpine-caret {
+  display: none;
+}
+
+.ndb-alpine-name {
+  font-family: var(--ndb-mono);
+  font-size: 14px;
+  font-weight: 600;
+  flex: none;
+}
+
+/* Pushes the count to the right edge and takes the squeeze itself. */
+.ndb-alpine-path {
+  flex: 1 1 auto;
+  min-width: 0;
+  text-align: right;
+}
+
+.ndb-tag {
+  flex: none;
+  padding: 1px 8px;
+  border-radius: 999px;
+  border: 1px solid var(--ndb-border);
+  color: var(--ndb-dim);
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.ndb-tag.is-warn {
+  border-color: var(--ndb-warn);
+  color: var(--ndb-warn);
+}
+
+.ndb-alpine-body {
+  border-top: 1px solid var(--ndb-border);
+  padding: 10px 12px;
+  background: var(--ndb-bg-2);
+}
+
+.ndb-alpine-expression {
+  display: block;
+  font-family: var(--ndb-mono);
+  font-size: 14px;
+  color: var(--ndb-accent);
+  margin-bottom: 8px;
+  word-break: break-word;
+}
+
+.ndb-json {
+  margin: 0;
+  font-family: var(--ndb-mono);
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--ndb-text);
+  white-space: pre-wrap;
+  word-break: break-word;
+  max-height: 320px;
+  overflow: auto;
+}

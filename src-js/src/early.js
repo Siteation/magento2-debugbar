@@ -5,12 +5,23 @@
  * theme has already fetched its private content. Wrapping fetch and XMLHttpRequest from a
  * blocking script in the head is the only way to see those requests at all.
  *
+ * It also watches for Alpine's expression errors, for the same reason: components
+ * initialise long before the bar loads, so an error thrown during init is over by the
+ * time anything could ask about it.
+ *
  * Deliberately tiny and dependency free: it buffers what it sees and does nothing else.
  * The bar drains the buffer when it boots.
  */
 (function () {
   const HEADER = 'x-siteation-debugbar-profile'
-  const state = { requests: [], onRequest: null, frontName: 'siteation_debugbar' }
+  const MAX_ERRORS = 25
+  const state = {
+    requests: [],
+    onRequest: null,
+    frontName: 'siteation_debugbar',
+    alpineErrors: [],
+    alpineReady: false,
+  }
 
   window.__siteationDebugBar = state
 
@@ -30,6 +41,42 @@
     state.requests = state.requests.slice(0, 25)
 
     if (typeof state.onRequest === 'function') state.onRequest(entry)
+  }
+
+  window.addEventListener('alpine:initialized', function () {
+    state.alpineReady = true
+  }, { once: true, passive: true })
+
+  function describe(element) {
+    if (!element || !element.tagName) return ''
+
+    const classes = typeof element.className === 'string' ? element.className.trim() : ''
+
+    return element.tagName.toLowerCase()
+      + (element.id ? '#' + element.id : '')
+      + (classes ? '.' + classes.split(/\s+/).slice(0, 2).join('.') : '')
+  }
+
+  // Alpine 3.14.3, which Hyva ships, has no setErrorHandler, so the warning it writes is
+  // the only place an expression error surfaces. The original is always called.
+  const nativeWarn = console.warn
+
+  console.warn = function (message) {
+    try {
+      if (typeof message === 'string'
+        && message.indexOf('Alpine') === 0
+        && state.alpineErrors.length < MAX_ERRORS) {
+        state.alpineErrors.push({
+          message: message,
+          element: describe(arguments[1]),
+          during_init: !state.alpineReady,
+        })
+      }
+    } catch (error) {
+      // Watching for an error must never become one.
+    }
+
+    return nativeWarn.apply(console, arguments)
   }
 
   const nativeFetch = window.fetch

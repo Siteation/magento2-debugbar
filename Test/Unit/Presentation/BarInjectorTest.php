@@ -9,6 +9,8 @@ use Magento\Framework\HTTP\PhpEnvironment\Response as HttpResponse;
 use Magento\Framework\UrlInterface;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
+use Siteation\DebugBar\Model\Config;
+use Siteation\DebugBar\Model\Redactor;
 use Siteation\DebugBar\Presentation\AssetUrl;
 use Siteation\DebugBar\Presentation\BarInjector;
 
@@ -26,7 +28,10 @@ class BarInjectorTest extends TestCase
         $url = $this->createStub(UrlInterface::class);
         $url->method('getUrl')->willReturn('https://example.test/siteation_debugbar/profile/view/');
 
-        $this->injector = new BarInjector($assets, $url);
+        $config = $this->createStub(Config::class);
+        $config->method('valuePolicy')->willReturn(Redactor::POLICY_MASKED);
+
+        $this->injector = new BarInjector($assets, $url, $config);
     }
 
     #[Test]
@@ -40,6 +45,11 @@ class BarInjectorTest extends TestCase
         $this->assertStringContainsString('id="siteation-debugbar"', $body);
         $this->assertStringContainsString('type="application/json"', $body);
         $this->assertStringContainsString('debugbar-early.js', $body);
+        $this->assertStringContainsString(
+            'data-value-policy="masked"',
+            $body,
+            'The Alpine section redacts in the browser, so it has to be told the policy.'
+        );
         $this->assertStringContainsString('<p>Hello</p>', $body, 'The page itself must survive.');
     }
 

@@ -17,6 +17,9 @@ entries for the work that led up to it.
   opened.
 * Renders in a shadow root with its own bundled Alpine, so it cannot collide with the
   theme's styles or its Alpine, and still works on a page whose own JavaScript failed.
+* An Alpine section that reads the page's own instance: every component with its live
+  state, the registered stores, which components Hyva deferred and whether they have
+  started, and the version, build and expression errors behind it.
 
 ### For coding agents
 
@@ -34,5 +37,7 @@ entries for the work that led up to it.
 * Sensitive keys are redacted at record time and string literals are stripped from SQL.
   Captured values follow a configurable policy, because query bindings are positional and
   cannot be judged by name.
+* The Alpine section reads live objects rather than a stored profile, so it applies the
+  same policy, the same key pattern and the same bounds in the browser.
 * No inline script and no inline style reach the page, so `Magento_Csp` needs no nonce and
   no `unsafe-inline`.

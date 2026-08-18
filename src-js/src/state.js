@@ -1,6 +1,18 @@
 import { watchRequests } from './requests.js'
 import { keepFocusWithin, lockHost, unlockHost } from './host.js'
 import { SECTIONS, countFor } from './sections.js'
+import { policyName } from './redact.js'
+import {
+  alpineErrors,
+  alpineHealth,
+  highlight,
+  scanComponents,
+  scanStores,
+  stateJson,
+} from './alpine.js'
+
+/** How often the Alpine section re-reads the page while it is the one being looked at. */
+const LIVE_INTERVAL_MS = 1000
 
 const STORAGE_KEY = 'siteation.debugbar.v1'
 const ID_PLACEHOLDER = '__PROFILE_ID__'
@@ -82,6 +94,19 @@ export function debugBar() {
     observerSearch: '',
     blockSearch: '',
     pluginSearch: '',
+    alpineTab: 'components',
+    alpineSearch: '',
+    alpineLive: true,
+    alpineComponents: [],
+    alpineStores: [],
+    alpineHealth: { present: false, version: '', csp: null, source: '', prefix: '' },
+    alpineErrors: [],
+    alpineExpanded: [],
+    alpineStates: {},
+    alpineTimer: null,
+    // The Alpine section reads live objects instead of a redacted profile, so it has to
+    // apply the policy itself. See Model/Redactor.php for the stored half.
+    valuePolicy: 'full',
     timelineFilter: 'key',
     timelineSearch: '',
     returnFocusTo: null,
@@ -110,6 +135,11 @@ export function debugBar() {
         ? preferences.favourites.filter((id) => SECTIONS.some((s) => s.id === id))
         : []
       this.watchColorScheme()
+      this.valuePolicy = policyName(this.rootElement()?.dataset.valuePolicy)
+      this.refreshAlpine()
+
+      this.$watch('alpineLiveWanted', () => this.syncAlpineLive())
+      this.syncAlpineLive()
 
       if (this.open) this.$nextTick(() => this.lock())
 
@@ -122,12 +152,17 @@ export function debugBar() {
       if (this.open) this.loadPayloads()
     },
 
+    /** @returns {HTMLElement|null} the host element, which carries the bar's settings */
+    rootElement() {
+      return document.getElementById('siteation-debugbar')
+    },
+
     /**
      * @param {string} id
      * @returns {string|null}
      */
     profileUrlFor(id) {
-      const template = document.getElementById('siteation-debugbar')?.dataset.profileUrl
+      const template = this.rootElement()?.dataset.profileUrl
 
       return template ? template.replace(ID_PLACEHOLDER, encodeURIComponent(id)) : null
     },
@@ -389,6 +424,42 @@ export function debugBar() {
       ))
     },
 
+    /** @returns {Array<object>} */
+    get visibleAlpineComponents() {
+      const items = this.alpineTab === 'deferred'
+        ? this.alpineComponents.filter((component) => component.deferred)
+        : this.alpineComponents
+
+      return search(items, this.alpineSearch, ['name', 'expression', 'path'])
+    },
+
+    /** @returns {number} */
+    get alpineDeferredCount() {
+      return this.alpineComponents.filter((component) => component.deferred).length
+    },
+
+    /**
+     * A deferred component that has not run yet is the usual answer to "why is nothing
+     * happening", so it is worth counting on its own.
+     *
+     * @returns {number}
+     */
+    get alpinePendingCount() {
+      return this.alpineComponents.filter((component) => !component.initialised).length
+    },
+
+    /** @returns {string} */
+    get alpineBuild() {
+      if (this.alpineHealth.csp === null) return 'could not tell'
+
+      return this.alpineHealth.csp ? 'CSP friendly' : 'standard'
+    },
+
+    /** @returns {boolean} whether the page should be re-read on a timer */
+    get alpineLiveWanted() {
+      return this.open && !this.dismissed && this.alpineLive && this.section === 'alpine'
+    },
+
     /** @returns {string} */
     get statusPhrase() {
       const status = Number(this.request.status || 0)
@@ -587,7 +658,7 @@ export function debugBar() {
     },
 
     lock() {
-      lockHost(document.getElementById('siteation-debugbar'))
+      lockHost(this.rootElement())
       this.$refs.sheet?.focus()
     },
 
@@ -625,6 +696,72 @@ export function debugBar() {
       }
 
       this.select(action.section)
+    },
+
+    /**
+     * The one section whose data is not in the profile, so it is read again rather than
+     * waited for.
+     */
+    refreshAlpine() {
+      this.alpineHealth = alpineHealth()
+      this.alpineComponents = scanComponents(this.valuePolicy)
+      this.alpineStores = scanStores(this.valuePolicy)
+      this.alpineErrors = alpineErrors()
+
+      this.alpineExpanded.forEach((id) => {
+        this.alpineStates[id] = stateJson(id, this.valuePolicy)
+      })
+    },
+
+    /** Reads the page only while the section is the one on screen. */
+    syncAlpineLive() {
+      if (this.alpineLiveWanted && !this.alpineTimer) {
+        // Nobody is reading a background tab, and its timers are throttled anyway.
+        this.alpineTimer = setInterval(() => {
+          if (!document.hidden) this.refreshAlpine()
+        }, LIVE_INTERVAL_MS)
+
+        return
+      }
+
+      if (!this.alpineLiveWanted && this.alpineTimer) {
+        clearInterval(this.alpineTimer)
+        this.alpineTimer = null
+      }
+    },
+
+    /**
+     * @param {number} id
+     * @returns {boolean}
+     */
+    isAlpineExpanded(id) {
+      return this.alpineExpanded.includes(id)
+    },
+
+    /**
+     * State is read here rather than during the scan, because a page carries dozens of
+     * components and walking all of them to fill rows nobody opened is work for nothing.
+     *
+     * @param {number} id
+     */
+    toggleAlpineComponent(id) {
+      if (this.isAlpineExpanded(id)) {
+        this.alpineExpanded = this.alpineExpanded.filter((expanded) => expanded !== id)
+        delete this.alpineStates[id]
+
+        return
+      }
+
+      this.alpineExpanded = [...this.alpineExpanded, id]
+      this.alpineStates[id] = stateJson(id, this.valuePolicy)
+    },
+
+    /**
+     * @param {number} id
+     * @param {boolean} on
+     */
+    highlightAlpine(id, on) {
+      highlight(id, on)
     },
 
     /**

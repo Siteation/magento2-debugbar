@@ -47,6 +47,9 @@ grep -q 'debugbar-early.js' "$BODY" \
     && pass "loads the early request watcher in the head" || fail "loads the early request watcher" ""
 grep -q '<script type="application/json" id="siteation-debugbar-profile">' "$BODY" \
     && pass "embeds the profile as data, not script" || fail "embeds the profile as data" ""
+# The Alpine section reads live objects, so it applies the policy in the browser.
+grep -q 'data-value-policy="' "$BODY" \
+    && pass "tells the bar the value policy" || fail "tells the bar the value policy" ""
 # Scoped to the profile tag: a storefront page has plenty of unrelated JSON in it.
 python3 - "$BODY" <<'PY' && pass "embeds summaries only" || fail "embeds summaries only" "section items are inline; the payload should be fetched"
 import json, re, sys

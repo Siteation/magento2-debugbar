@@ -1,5 +1,6 @@
 import { header } from './header.js'
 import { navigation } from './nav.js'
+import { subTabs } from './tabs.js'
 import { icon } from './icons.js'
 
 /**
@@ -433,6 +434,153 @@ export const template = `
         </ol>
 
         <p class="ndb-empty" data-ndb-show="visiblePlugins.length === 0">No plugins match.</p>
+      </div>
+
+      <div data-ndb-show="isSection('alpine')">
+        <p class="ndb-note" data-ndb-show="!alpineHealth.present">
+          No Alpine on this page. This section reads the page's own instance, so it has
+          nothing to show until a theme loads one.
+        </p>
+
+        <div data-ndb-show="alpineHealth.present">
+          ${subTabs('alpineTab', [
+            { id: 'components', label: 'Components', count: 'alpineComponents.length' },
+            { id: 'stores', label: 'Stores', count: 'alpineStores.length' },
+            { id: 'deferred', label: 'Deferred', count: 'alpineDeferredCount' },
+            { id: 'health', label: 'Health', count: 'alpineErrors.length' },
+          ])}
+
+          <p class="ndb-note" data-ndb-show="valuePolicy !== 'full'">
+            The value policy is set to <span data-ndb-text="valuePolicy"></span>, so
+            component state is treated exactly as a stored profile would be.
+          </p>
+
+          <div data-ndb-show="alpineTab === 'components' || alpineTab === 'deferred'">
+            <div class="ndb-controls">
+              <input class="ndb-search" type="search" placeholder="Filter components"
+                     data-ndb-model="alpineSearch">
+              <button type="button" class="ndb-chip"
+                      data-ndb-bind:class="alpineLive && 'is-active'"
+                      data-ndb-on:click="alpineLive = !alpineLive"
+                      data-ndb-bind:title="alpineLive ? 'Stop reading the page' : 'Read the page again every second'">
+                Live
+              </button>
+              <button type="button" class="ndb-chip" data-ndb-on:click="refreshAlpine()"
+                      title="Read the page now">Refresh</button>
+              <span class="ndb-dim ndb-count">
+                <span data-ndb-text="visibleAlpineComponents.length"></span> shown,
+                <span data-ndb-text="alpinePendingCount"></span> not started
+              </span>
+            </div>
+
+            <p class="ndb-note" data-ndb-show="alpineTab === 'deferred' && alpineDeferredCount === 0">
+              Nothing on this page is deferred. Hyva defers a component with x-defer, and
+              until it runs the component has no state at all.
+            </p>
+
+            <ol class="ndb-list">
+              <template data-ndb-for="component in visibleAlpineComponents"
+                        data-ndb-bind:key="component.id">
+                <li class="ndb-alpine">
+                  <button type="button" class="ndb-alpine-head"
+                          data-ndb-on:click="toggleAlpineComponent(component.id)"
+                          data-ndb-on:mouseenter="highlightAlpine(component.id, true)"
+                          data-ndb-on:mouseleave="highlightAlpine(component.id, false)"
+                          data-ndb-on:focus="highlightAlpine(component.id, true)"
+                          data-ndb-on:blur="highlightAlpine(component.id, false)">
+                    ${icon('caret', 'ndb-alpine-caret')}
+                    <span class="ndb-alpine-name" data-ndb-text="component.name"></span>
+                    <span class="ndb-tag is-warn" data-ndb-show="!component.initialised">
+                      not started
+                    </span>
+                    <span class="ndb-tag" data-ndb-show="component.deferred"
+                          data-ndb-text="'defer: ' + component.strategy"></span>
+                    <span class="ndb-alpine-path ndb-mono ndb-dim ndb-truncate"
+                          data-ndb-text="component.path"></span>
+                    <span class="ndb-pill" data-ndb-show="component.keys"
+                          data-ndb-text="component.keys"></span>
+                  </button>
+
+                  <div class="ndb-alpine-body" data-ndb-show="isAlpineExpanded(component.id)">
+                    <code class="ndb-alpine-expression" data-ndb-show="component.expression"
+                          data-ndb-text="component.expression"></code>
+                    <pre class="ndb-json" data-ndb-text="alpineStates[component.id]"></pre>
+                  </div>
+                </li>
+              </template>
+            </ol>
+
+            <p class="ndb-empty" data-ndb-show="visibleAlpineComponents.length === 0">
+              No components match.
+            </p>
+          </div>
+
+          <div data-ndb-show="alpineTab === 'stores'">
+            <div class="ndb-controls">
+              <span class="ndb-dim ndb-count">
+                <span data-ndb-text="alpineStores.length"></span> registered with
+                Alpine.store()
+              </span>
+            </div>
+
+            <ol class="ndb-list">
+              <template data-ndb-for="store in alpineStores" data-ndb-bind:key="store.name">
+                <li class="ndb-alpine">
+                  <div class="ndb-alpine-head is-static">
+                    <span class="ndb-alpine-name" data-ndb-text="store.name"></span>
+                    <span class="ndb-pill" data-ndb-show="store.keys"
+                          data-ndb-text="store.keys"></span>
+                  </div>
+                  <div class="ndb-alpine-body">
+                    <pre class="ndb-json" data-ndb-text="store.value"></pre>
+                  </div>
+                </li>
+              </template>
+            </ol>
+
+            <p class="ndb-empty" data-ndb-show="alpineStores.length === 0">
+              No stores. Alpine keeps them in module state with no public getter, so an
+              empty list can also mean this version does not let the bar reach them.
+            </p>
+          </div>
+
+          <div data-ndb-show="alpineTab === 'health'">
+            <dl class="ndb-facts">
+              <div><dt>Version</dt><dd data-ndb-text="alpineHealth.version"></dd></div>
+              <div><dt>Build</dt><dd data-ndb-text="alpineBuild"></dd></div>
+              <div><dt>Prefix</dt><dd class="ndb-mono" data-ndb-text="alpineHealth.prefix"></dd></div>
+              <div><dt>Loaded from</dt><dd class="ndb-mono"
+                data-ndb-text="alpineHealth.source || 'not a separate file'"></dd></div>
+              <div><dt>Components</dt><dd data-ndb-text="alpineComponents.length"></dd></div>
+              <div><dt>Not started</dt><dd data-ndb-text="alpinePendingCount"></dd></div>
+              <div><dt>Deferred</dt><dd data-ndb-text="alpineDeferredCount"></dd></div>
+              <div><dt>Stores</dt><dd data-ndb-text="alpineStores.length"></dd></div>
+            </dl>
+
+            <p class="ndb-empty" data-ndb-show="alpineErrors.length === 0">
+              No expression errors on this page.
+            </p>
+
+            <ol class="ndb-list">
+              <template data-ndb-for="(error, index) in alpineErrors"
+                        data-ndb-bind:key="index">
+                <li class="ndb-finding is-error">
+                  <div class="ndb-finding-head">
+                    <span class="ndb-severity is-error"
+                          data-ndb-text="error.during_init ? 'init' : 'runtime'"></span>
+                    <span class="ndb-finding-message" data-ndb-text="error.message"></span>
+                  </div>
+                  <p class="ndb-finding-where" data-ndb-show="error.expression">
+                    <strong>Expression</strong> <code data-ndb-text="error.expression"></code>
+                  </p>
+                  <p class="ndb-finding-where" data-ndb-show="error.element">
+                    <strong>Where</strong> <code data-ndb-text="error.element"></code>
+                  </p>
+                </li>
+              </template>
+            </ol>
+          </div>
+        </div>
       </div>
 
       </div>
