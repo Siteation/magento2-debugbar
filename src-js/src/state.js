@@ -64,6 +64,9 @@ export function debugBar() {
     section: 'findings',
     placement: 'bottom',
     maximised: false,
+    theme: 'system',
+    resolvedTheme: 'dark',
+    stopWatchingScheme: null,
     // Deliberately not persisted. Hiding the bar for good with no way back would be a
     // trap, so closing it lasts until the next page load.
     dismissed: false,
@@ -95,6 +98,10 @@ export function debugBar() {
       this.section = preferences.section
       this.placement = preferences.placement === 'top' ? 'top' : 'bottom'
       this.maximised = Boolean(preferences.maximised)
+      this.theme = ['system', 'light', 'dark'].includes(preferences.theme)
+        ? preferences.theme
+        : 'system'
+      this.watchColorScheme()
 
       if (this.open) this.$nextTick(() => this.lock())
 
@@ -425,6 +432,33 @@ export function debugBar() {
         && Number(this.events.count || 0) === 0
     },
 
+    /**
+     * System is the default, so the bar follows the developer's own setting until they
+     * say otherwise. The media query stays watched, so changing the OS theme while a page
+     * is open takes effect without a reload.
+     */
+    watchColorScheme() {
+      const query = window.matchMedia('(prefers-color-scheme: light)')
+
+      const apply = () => {
+        this.resolvedTheme = this.theme === 'system'
+          ? (query.matches ? 'light' : 'dark')
+          : this.theme
+      }
+
+      apply()
+      this.stopWatchingScheme?.()
+      query.addEventListener('change', apply)
+      this.stopWatchingScheme = () => query.removeEventListener('change', apply)
+    },
+
+    cycleTheme() {
+      const order = ['system', 'light', 'dark']
+      this.theme = order[(order.indexOf(this.theme) + 1) % order.length]
+      this.watchColorScheme()
+      this.persist()
+    },
+
     openInspector() {
       if (this.open) return
 
@@ -521,6 +555,7 @@ export function debugBar() {
           section: this.section,
           placement: this.placement,
           maximised: this.maximised,
+          theme: this.theme,
         }))
       } catch {
         // A blocked localStorage is not a reason to lose the bar.

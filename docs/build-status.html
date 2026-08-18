@@ -1250,13 +1250,29 @@ inspect_debug_queries       slowest first, with call sites</code></pre>
     name: 'E. Comfort',
     goal: 'Nothing here unblocks anything, which is why it is last.',
     tasks: [
-      { t: 'Command palette', s: 'todo',
+      { t: 'Search and the command palette', s: 'todo',
+        d: `<p>The header carried a search icon that opened findings, which was a lie about
+            what the control did. It is a warning icon now, and search waits until the
+            palette exists to sit behind it.</p>
+            <p><code>Cmd/Ctrl Shift P</code>. Centered modal listing sections and settings,
+            keyboard driven, with <code>↑↓ Navigate</code> and <code>↵ Select</code> in the
+            footer.</p>` },
+      { t: 'Command palette (superseded)', s: 'closed',
         d: `<p><code>Cmd/Ctrl Shift P</code>. Centered modal listing sections and settings,
             keyboard driven, with <code>↑↓ Navigate</code> and <code>↵ Select</code> in the
             footer.</p>` },
-      { t: 'Light theme', s: 'todo',
-        d: `<p>The bar is dark only today, which sits badly on a light admin. Theirs is the
-            better looking of their two themes.</p>` },
+      { t: 'Light theme', s: 'done',
+        d: `<p>Pulled forward out of this phase. C writes a great deal of new CSS, and
+            theming it afterwards means retrofitting colours across all of it, so the
+            palette landed while the stylesheet was still small.</p>
+            <p>System, light and dark, cycled from the header and remembered. System is the
+            default and stays watched, so changing the OS theme takes effect without a
+            reload. Tokens moved off <code>:host</code> onto <code>.ndb</code> so a theme
+            class can redefine them; a media query alone would have made "system"
+            impossible to override.</p>
+            <p>Severity text had to become a token of its own. Dark paints bright amber and
+            red, so text on them must be dark; light paints dark ones, so text must be
+            white. A single value gave white on bright amber, which is unreadable.</p>` },
       { t: 'Syntax highlighting', s: 'todo',
         d: `<p><code>highlight.js/lib/core</code> with only <code>sql</code>,
             <code>json</code> and a hand rolled PHP grammar. About 20 kB against about

@@ -76,9 +76,16 @@ export function header({ sheet }) {
     <button type="button" class="ndb-icon-button" data-ndb-on:click="select('findings')"
             data-ndb-bind:class="findings.length > 0 && 'is-' + findingsTone"
             title="Findings">
-      ${icon('search')}
+      ${icon('alert')}
       <span class="ndb-badge" data-ndb-show="findings.length > 0"
             data-ndb-text="findings.length"></span>
+    </button>
+
+    <button type="button" class="ndb-icon-button" data-ndb-on:click="cycleTheme()"
+            data-ndb-bind:title="'Theme: ' + theme + '. Click to change.'">
+      <span data-ndb-show="theme === 'system'">${icon('monitor')}</span>
+      <span data-ndb-show="theme === 'light'">${icon('sun')}</span>
+      <span data-ndb-show="theme === 'dark'">${icon('moon')}</span>
     </button>
 
     <button type="button" class="ndb-icon-button" data-ndb-on:click="movePlacement()"

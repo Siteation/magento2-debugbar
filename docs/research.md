@@ -1194,7 +1194,22 @@ easy to read that as isolation from everything. It is not. Inside the root the b
 flat namespace, and the more sections it grows the more likely a generic name is already
 taken. Names like `fact`, `item`, `row` and `panel` are the ones to avoid.
 
-### 13.23 Smaller confirmations
+### 13.23 A theme cannot be only a media query
+
+`prefers-color-scheme` alone would have made "system" impossible to override: a developer
+on a light admin at night still wants to choose dark. The resolved theme has to be a class
+on the bar's root, with system merely one of the three values that resolves to it. Keeping
+the media query watched means changing the OS setting takes effect without a reload.
+
+Tokens also have to live on the bar's root element rather than `:host`, because a theme
+class cannot redefine what `:host` declares from inside.
+
+The part that is easy to get wrong is text on coloured chips. Dark themes paint bright
+severity colours, so text on them must be dark. Light themes paint dark ones, so text must
+be white. A single value gives white on bright amber, which is unreadable, and it looks
+fine right up until you check it in both themes.
+
+### 13.24 Smaller confirmations
 
 * One `aroundLaunch` plugin really does cover frontend, adminhtml, GraphQL and REST.
   Verified: all four return `X-Siteation-DebugBar-Profile`.

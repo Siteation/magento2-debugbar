@@ -14,7 +14,7 @@ import { header } from './header.js'
  */
 export const template = `
 <div class="ndb" data-ndb-data="debugBar" data-ndb-cloak
-     data-ndb-bind:class="'is-' + placement">
+     data-ndb-bind:class="'is-' + placement + ' is-theme-' + resolvedTheme">
 
   <div class="ndb-dock" data-ndb-show="!open && !dismissed" data-ndb-cloak>
     ${header({ sheet: false })}
