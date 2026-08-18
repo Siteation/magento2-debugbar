@@ -1,3 +1,4 @@
+import { facts } from './facts.js'
 import { header } from './header.js'
 import { navigation } from './nav.js'
 import { palette } from './palette.js'
@@ -56,17 +57,17 @@ export const template = `
 
       <div class="ndb-callout is-warn" data-ndb-show="sectionFindings.length > 0">
         <template data-ndb-for="(finding, index) in sectionFindings" data-ndb-bind:key="index">
-          <p>
-            <strong data-ndb-text="finding.message"></strong>
-            <span data-ndb-text="finding.why"></span>
-          </p>
+          <div>
+            <p class="ndb-callout-title" data-ndb-text="finding.message"></p>
+            <p data-ndb-text="finding.why"></p>
+          </div>
         </template>
       </div>
 
       <div class="ndb-callout is-clear"
            data-ndb-show="section !== 'findings' && sectionFindings.length === 0">
-        <p><strong>No clear problem found.</strong>
-          Nothing in this section matched a rule.</p>
+        <p class="ndb-callout-title">No clear problem found</p>
+        <p>Nothing in this section matched a rule.</p>
       </div>
 
 
@@ -122,60 +123,123 @@ export const template = `
       </div>
 
       <div data-ndb-show="isSection('overview')">
+        <div class="ndb-summary">
+          <span class="ndb-method" data-ndb-text="request.method || 'GET'"></span>
+          <code class="ndb-summary-path" data-ndb-text="request.path || '/'"></code>
+          <span class="ndb-summary-status" data-ndb-bind:class="'is-' + statusTone">
+            <span data-ndb-text="request.status"></span>
+            <span data-ndb-text="statusPhrase"></span>
+          </span>
+          <span class="ndb-summary-note" data-ndb-text="outcomePhrase"></span>
+        </div>
+
         <p class="ndb-note" data-ndb-show="looksLikeFullPageCacheHit">
           No queries and no events. This page was almost certainly served from the full
           page cache, so the application never ran.
         </p>
-        <dl class="ndb-facts">
-          <div><dt>Method</dt><dd data-ndb-text="request.method"></dd></div>
-          <div><dt>Path</dt><dd class="ndb-mono" data-ndb-text="request.path"></dd></div>
-          <div><dt>Route</dt><dd data-ndb-text="request.route || 'unknown'"></dd></div>
-          <div><dt>Action</dt><dd class="ndb-mono" data-ndb-text="request.action || 'unknown'"></dd></div>
-          <div><dt>Area</dt><dd data-ndb-text="request.area"></dd></div>
-          <div><dt>Status</dt><dd data-ndb-text="request.status"></dd></div>
-          <div><dt>Duration</dt><dd><span data-ndb-text="number(metrics.duration_ms, 1)"></span> ms</dd></div>
-          <div><dt>Memory peak</dt><dd><span data-ndb-text="number(metrics.memory_peak_mb, 1)"></span> MB</dd></div>
-          <div><dt>Queries</dt><dd>
-            <span data-ndb-text="queries.count || 0"></span> in
-            <span data-ndb-text="number(queries.duration_ms, 1)"></span> ms
-          </dd></div>
-          <div><dt>Events</dt><dd>
-            <span data-ndb-text="events.count || 0"></span> dispatched,
-            <span data-ndb-text="events.unique_count || 0"></span> unique
-          </dd></div>
-          <div><dt>Observers</dt><dd>
-            <span data-ndb-text="observers.count || 0"></span> in
-            <span data-ndb-text="number(observers.duration_ms, 1)"></span> ms
-          </dd></div>
-          <div><dt>Blocks</dt><dd>
-            <span data-ndb-text="blocks.unique_count || 0"></span> rendered in
-            <span data-ndb-text="number(blocks.duration_ms, 1)"></span> ms
-          </dd></div>
-          <div><dt>Cache</dt><dd>
-            <span data-ndb-text="cache.hit_rate === null ? 'no reads' : number(cache.hit_rate, 1) + '% hit rate'"></span>
-          </dd></div>
-          <div><dt>Profile</dt><dd class="ndb-mono ndb-dim" data-ndb-text="profile.id"></dd></div>
-        </dl>
+
+        <ol class="ndb-steps">
+          <li class="ndb-step">
+            <h3>Received</h3>
+            <p>Magento accepted the request and chose an area for it.</p>
+            ${facts([
+              { label: 'Path', value: "request.path || '/'", mono: true },
+              { label: 'Method', value: "request.method || 'GET'" },
+              { label: 'Area', value: 'request.area' },
+              { label: 'Kind', value: "request.is_ajax ? 'AJAX' : 'Document'" },
+              { label: 'Scheme', value: "request.is_secure ? 'https' : 'http'" },
+              { label: 'Deploy mode', value: "request.mode || 'unknown'", tone: 'modeTone' },
+            ])}
+          </li>
+
+          <li class="ndb-step">
+            <h3>Matched</h3>
+            <p>Routing resolved a controller, and the object manager built what it needed.</p>
+            ${facts([
+              { label: 'Route', value: "request.route || 'unknown'", mono: true },
+              { label: 'Action', value: "request.action || 'unknown'", mono: true },
+              { label: 'Intercepted types', value: "interception.plugin_count || 0" },
+              { label: 'Observers run', value: "observers.count || 0" },
+            ])}
+          </li>
+
+          <li class="ndb-step">
+            <h3>Responded</h3>
+            <p>What the work cost, and what went back to the browser.</p>
+            ${facts([
+              { label: 'Status', value: 'request.status', tone: 'statusTone' },
+              { label: 'Response size', value: 'bytes(request.response_bytes)' },
+              { label: 'Duration', value: "number(metrics.duration_ms, 2) + ' ms'", tone: 'durationTone' },
+              { label: 'Memory peak', value: "number(metrics.memory_peak_mb, 1) + ' MB'" },
+              {
+                label: 'Queries',
+                raw: true,
+                value: '<span data-ndb-text="queries.count || 0"></span>'
+                  + ' <small data-ndb-text="\'in \' + number(queries.duration_ms, 1) + \' ms\'"></small>',
+              },
+              {
+                label: 'Blocks',
+                raw: true,
+                value: '<span data-ndb-text="blocks.unique_count || 0"></span>'
+                  + ' <small data-ndb-text="\'in \' + number(blocks.duration_ms, 1) + \' ms\'"></small>',
+              },
+              {
+                label: 'Events',
+                raw: true,
+                value: '<span data-ndb-text="events.count || 0"></span>'
+                  + ' <small data-ndb-text="events.unique_count + \' unique\'"></small>',
+              },
+              {
+                label: 'Cache',
+                value: "cache.hit_rate === null ? 'no reads' : number(cache.hit_rate, 1) + '% hit rate'",
+                tone: 'cacheTone',
+              },
+            ])}
+          </li>
+        </ol>
+
+        <p class="ndb-profile-id">
+          Profile <code class="ndb-mono ndb-dim" data-ndb-text="profile.id"></code>
+        </p>
       </div>
 
       <div data-ndb-show="isSection('timeline')">
-        <p class="ndb-section-lead">
-          Follow important work in the order it happened across the request.
-        </p>
-
-        <div class="ndb-controls">
-          <button type="button" class="ndb-chip" data-ndb-on:click="timelineFilter = 'key'"
-                  data-ndb-bind:class="timelineFilter === 'key' && 'is-active'">Key activity</button>
-          <button type="button" class="ndb-chip" data-ndb-on:click="timelineFilter = 'all'"
-                  data-ndb-bind:class="timelineFilter === 'all' && 'is-active'">Everything</button>
-          <input class="ndb-search" type="search" placeholder="Filter activity"
-                 data-ndb-model="timelineSearch">
-          <span class="ndb-dim ndb-count">
-            <span data-ndb-text="visibleTimeline.length"></span> of
-            <span data-ndb-text="timeline.count || 0"></span> across
-            <span data-ndb-text="number(timeline.scale_ms, 0)"></span> ms
-          </span>
+        <div class="ndb-subhead">
+          <div>
+            <h3>Waterfall</h3>
+            <p>
+              <span data-ndb-text="timeline.count || 0"></span> events across
+              <span data-ndb-text="number(timeline.scale_ms, 0)"></span> ms
+            </p>
+          </div>
+          <p class="ndb-legend">
+            <span class="ndb-legend-bar"></span> Duration
+            <span class="ndb-legend-dot"></span> Event
+          </p>
         </div>
+
+        <div class="ndb-fields">
+          <div class="ndb-field">
+            <span class="ndb-field-label">Show activity</span>
+            <div class="ndb-chips">
+              <button type="button" class="ndb-chip" data-ndb-on:click="timelineFilter = 'key'"
+                      data-ndb-bind:class="timelineFilter === 'key' && 'is-active'">Key activity</button>
+              <button type="button" class="ndb-chip" data-ndb-on:click="timelineFilter = 'all'"
+                      data-ndb-bind:class="timelineFilter === 'all' && 'is-active'">Everything</button>
+            </div>
+          </div>
+
+          <div class="ndb-field is-search">
+            <span class="ndb-field-label">Search activity</span>
+            <input class="ndb-search" type="search" placeholder="Event or section"
+                   data-ndb-model="timelineSearch">
+          </div>
+        </div>
+
+        <p class="ndb-dim ndb-count ndb-shown" data-ndb-show="visibleTimeline.length !== timeline.count">
+          <span data-ndb-text="visibleTimeline.length"></span> of
+          <span data-ndb-text="timeline.count || 0"></span> shown
+        </p>
 
         <div class="ndb-wf">
           <div class="ndb-wf-head">
@@ -548,17 +612,16 @@ export const template = `
           </div>
 
           <div data-ndb-show="alpineTab === 'health'">
-            <dl class="ndb-facts">
-              <div><dt>Version</dt><dd data-ndb-text="alpineHealth.version"></dd></div>
-              <div><dt>Build</dt><dd data-ndb-text="alpineBuild"></dd></div>
-              <div><dt>Prefix</dt><dd class="ndb-mono" data-ndb-text="alpineHealth.prefix"></dd></div>
-              <div><dt>Loaded from</dt><dd class="ndb-mono"
-                data-ndb-text="alpineHealth.source || 'not a separate file'"></dd></div>
-              <div><dt>Components</dt><dd data-ndb-text="alpineComponents.length"></dd></div>
-              <div><dt>Not started</dt><dd data-ndb-text="alpinePendingCount"></dd></div>
-              <div><dt>Deferred</dt><dd data-ndb-text="alpineDeferredCount"></dd></div>
-              <div><dt>Stores</dt><dd data-ndb-text="alpineStores.length"></dd></div>
-            </dl>
+            ${facts([
+              { label: 'Version', value: 'alpineHealth.version' },
+              { label: 'Build', value: 'alpineBuild' },
+              { label: 'Prefix', value: 'alpineHealth.prefix', mono: true },
+              { label: 'Loaded from', value: "alpineHealth.source || 'not a separate file'", mono: true },
+              { label: 'Components', value: 'alpineComponents.length' },
+              { label: 'Not started', value: 'alpinePendingCount' },
+              { label: 'Deferred', value: 'alpineDeferredCount' },
+              { label: 'Stores', value: 'alpineStores.length' },
+            ])}
 
             <p class="ndb-empty" data-ndb-show="alpineErrors.length === 0">
               No expression errors on this page.

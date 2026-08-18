@@ -534,21 +534,36 @@
   max-width: 70ch;
 }
 
+/* A tinted panel with its conclusion on the first line, as theirs has. */
 .ndb-callout {
-  margin-bottom: 14px;
-  padding: 10px 14px;
+  margin-bottom: 16px;
+  padding: 12px 16px;
   border-radius: 10px;
-  border-left: 3px solid var(--ndb-border);
+  border: 1px solid var(--ndb-border);
   background: var(--ndb-bg-2);
   font-size: 14px;
 }
 
-.ndb-callout p { margin: 0 0 4px; color: var(--ndb-dim); }
+.ndb-callout p { margin: 0 0 6px; color: var(--ndb-dim); }
 .ndb-callout p:last-child { margin-bottom: 0; }
-.ndb-callout strong { color: var(--ndb-text); margin-right: 5px; }
 
-.ndb-callout.is-warn { border-left-color: var(--ndb-warn); }
-.ndb-callout.is-clear { border-left-color: var(--ndb-ok); }
+.ndb-callout-title {
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.ndb-callout.is-warn {
+  border-color: color-mix(in srgb, var(--ndb-warn) 40%, transparent);
+  background: color-mix(in srgb, var(--ndb-warn) 8%, var(--ndb-bg));
+}
+
+.ndb-callout.is-clear {
+  border-color: color-mix(in srgb, var(--ndb-ok) 40%, transparent);
+  background: color-mix(in srgb, var(--ndb-ok) 8%, var(--ndb-bg));
+}
+
+.ndb-callout.is-warn .ndb-callout-title { color: var(--ndb-warn); }
+.ndb-callout.is-clear .ndb-callout-title { color: var(--ndb-ok); }
 
 @media (max-width: 720px) {
   .ndb-body { flex-direction: column; }
@@ -594,36 +609,146 @@
 
 /* overview */
 
+/*
+ * Label over value, four across. A label column and a value column spend half the width
+ * on labels and force one fact per line.
+ */
 .ndb-facts {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 10px 32px;
+  grid-template-columns: repeat(auto-fit, minmax(165px, 1fr));
+  gap: 14px 20px;
   margin: 0;
 }
 
-.ndb-facts > div {
-  display: flex;
-  gap: 12px;
-  align-items: baseline;
-  border-bottom: 1px solid var(--ndb-border);
-  padding-bottom: 7px;
+.ndb-fact {
+  min-width: 0;
 }
 
 .ndb-facts dt {
-  flex: none;
-  width: 110px;
+  margin-bottom: 2px;
   color: var(--ndb-dim);
   font-size: 12px;
+  font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.06em;
 }
 
 .ndb-facts dd {
   margin: 0;
-  min-width: 0;
   font-size: 15px;
+  font-weight: 600;
   overflow-wrap: anywhere;
   font-variant-numeric: tabular-nums;
+}
+
+.ndb-facts dd small {
+  font-size: 14px;
+  font-weight: 400;
+  color: var(--ndb-dim);
+}
+
+/* Mono is wider, so it drops a step to fit the same column. */
+.ndb-facts dd.ndb-mono { font-size: 14px; }
+
+/*
+ * Only trouble is coloured. The status is green in the summary above, and repeating that
+ * here would make four of the eight facts green on a request where nothing is wrong.
+ */
+.ndb-fact-value.is-warn { color: var(--ndb-warn); }
+.ndb-fact-value.is-bad { color: var(--ndb-bad); }
+
+/* the overview: a summary, then the request as stages */
+
+.ndb-summary {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 20px;
+  padding: 12px 16px;
+  border: 1px solid var(--ndb-border);
+  border-radius: 12px;
+}
+
+.ndb-summary-path {
+  font-family: var(--ndb-mono);
+  font-size: 15px;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.ndb-summary-status {
+  display: inline-flex;
+  gap: 6px;
+  font-weight: 700;
+}
+
+.ndb-summary-status.is-ok { color: var(--ndb-ok); }
+.ndb-summary-status.is-warn { color: var(--ndb-warn); }
+.ndb-summary-status.is-bad { color: var(--ndb-bad); }
+
+.ndb-summary-note {
+  color: var(--ndb-dim);
+  border-left: 1px solid var(--ndb-border);
+  padding-left: 10px;
+}
+
+.ndb-steps {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+/* The rail: a ring per stage, joined by a line that stops at the last one. */
+.ndb-step {
+  position: relative;
+  padding: 0 0 24px 28px;
+}
+
+.ndb-step::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 4px;
+  width: 13px;
+  height: 13px;
+  border: 2px solid var(--ndb-accent);
+  border-radius: 50%;
+  background: var(--ndb-bg);
+}
+
+.ndb-step::after {
+  content: "";
+  position: absolute;
+  left: 6px;
+  top: 17px;
+  bottom: 0;
+  width: 1px;
+  background: var(--ndb-accent);
+  opacity: 0.6;
+}
+
+.ndb-step:last-child { padding-bottom: 0; }
+.ndb-step:last-child::after { display: none; }
+
+.ndb-step h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.ndb-step > p {
+  margin: 2px 0 12px;
+  color: var(--ndb-dim);
+  font-size: 14px;
+}
+
+.ndb-profile-id {
+  margin: 20px 0 0;
+  padding-top: 14px;
+  border-top: 1px solid var(--ndb-border);
+  color: var(--ndb-dim);
+  font-size: 14px;
 }
 
 /* queries */
@@ -844,17 +969,96 @@
 .ndb-pill.is-bad { background: var(--ndb-bad); color: var(--ndb-on-bad); }
 .ndb-pill.is-warn { background: var(--ndb-warn); color: var(--ndb-on-warn); }
 
-/* waterfall */
+/* section sub-heading, and controls that say what they filter */
 
-.ndb-section-lead {
-  margin: 0 0 14px;
+.ndb-subhead {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+}
+
+.ndb-subhead h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.ndb-subhead p {
+  margin: 2px 0 0;
   color: var(--ndb-dim);
   font-size: 14px;
-  max-width: 70ch;
 }
+
+.ndb-legend {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ndb-legend-bar {
+  width: 22px;
+  height: 8px;
+  border-radius: 999px;
+  background: var(--ndb-accent);
+}
+
+.ndb-legend-dot {
+  width: 8px;
+  height: 8px;
+  margin-left: 8px;
+  border-radius: 50%;
+  background: var(--ndb-ok);
+}
+
+.ndb-fields {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+}
+
+.ndb-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.ndb-field.is-search { flex: 1 1 220px; }
+
+.ndb-field-label {
+  color: var(--ndb-dim);
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.ndb-chips {
+  display: flex;
+  gap: 8px;
+}
+
+/* The search input grows along a row elsewhere; inside a field it would grow downwards. */
+.ndb-field .ndb-search {
+  flex: none;
+  width: 100%;
+}
+
+.ndb-shown { margin: -6px 0 12px; }
+
+/* waterfall */
 
 .ndb-wf {
   font-size: 14px;
+  border: 1px solid var(--ndb-border);
+  border-radius: 12px;
+  overflow: hidden;
 }
 
 .ndb-wf-head,
@@ -866,7 +1070,8 @@
 }
 
 .ndb-wf-head {
-  padding-bottom: 7px;
+  padding: 9px 14px;
+  background: var(--ndb-bg-2);
   border-bottom: 1px solid var(--ndb-border);
   font-size: 12px;
   text-transform: uppercase;
@@ -884,12 +1089,13 @@
   top: 0;
   transform: translateX(-50%);
   white-space: nowrap;
+  text-transform: none;
 }
 
 .ndb-wf-tick:first-child { transform: none; }
 
 .ndb-wf-row {
-  padding: 7px 0;
+  padding: 9px 14px;
   border-bottom: 1px solid var(--ndb-border);
 }
 
@@ -908,7 +1114,7 @@
 
 .ndb-wf-section {
   display: block;
-  font-size: 11px;
+  font-size: 12px;
   text-transform: uppercase;
   letter-spacing: 0.06em;
   color: var(--ndb-dim);
@@ -922,13 +1128,13 @@
 
 .ndb-wf-grid {
   position: absolute;
-  inset: 0;
+  inset: -9px 0;
   background-image: repeating-linear-gradient(
     to right,
     var(--ndb-border) 0 1px,
     transparent 1px 25%
   );
-  opacity: 0.55;
+  opacity: 0.9;
 }
 
 .ndb-wf-bar {
@@ -970,7 +1176,8 @@
 
 .ndb-wf-timing small {
   display: block;
-  font-size: 11px;
+  font-size: 12px;
+  font-weight: 400;
 }
 
 @media (max-width: 720px) {

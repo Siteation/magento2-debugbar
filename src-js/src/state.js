@@ -513,6 +513,22 @@ export function debugBar() {
       return this.request.mode === 'developer' ? 'ok' : 'warn'
     },
 
+    /**
+     * The one line version of what happened, for the top of the overview.
+     *
+     * @returns {string}
+     */
+    get outcomePhrase() {
+      const status = Number(this.request.status || 0)
+      const took = `${this.number(this.metrics.duration_ms, 2)} ms`
+
+      if (status >= 500) return `Failed after ${took}`
+      if (status >= 400) return `Refused after ${took}`
+      if (status >= 300) return `Redirected after ${took}`
+
+      return `Completed successfully in ${took}`
+    },
+
     /** @returns {string} */
     get durationTone() {
       return Number(this.metrics.duration_ms || 0) >= 1000 ? 'warn' : 'ok'

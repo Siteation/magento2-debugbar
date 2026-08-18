@@ -114,7 +114,7 @@ engineering task, and not something to push toward.
 | B. Window | 5/5 | floating glass dock, modal sheet, `lockHost`, window controls |
 | C. Navigation | 6/7 | 210px sidebar, favourites with drag, section leads, inline findings |
 | D. Alpine | 6/7 | components, stores, deferred, health, sub-tabs, value policy |
-| E. Comfort | 3/6 | light theme, the type pass and the palette done; highlighting and history left |
+| E. Comfort | 4/7 | light theme, type, palette and their Request layout; highlighting and history left |
 
 Backlog is in `build-status.html`, which is the live tracker. Open it in a browser.
 
@@ -152,6 +152,8 @@ Beyond the three stale artifact traps, the ones most likely to bite again:
 * Inside a shadow root, `rem` resolves against the **document** root. Size in `px`.
 * A shadow root isolates the bar from the page, not from itself. Generic class names
   collide; `.ndb-facts` was defined twice and the header broke.
+* Label over value beats label beside value. `facts()` in `facts.js` builds the grid; use it
+  rather than writing another definition list.
 * Do not use tiny type. 15px body, 14px mono, 12px floor. The uppercase micro label in this
   bar is 12px, everywhere.
 * `x-show` defers every reveal after the first through a `setTimeout`, so nothing can be

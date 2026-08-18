@@ -1340,6 +1340,29 @@ inspect_debug_queries       slowest first, with call sites</code></pre>
     name: 'E. Comfort',
     goal: 'Nothing here unblocks anything, which is why it is last.',
     tasks: [
+      { t: 'Their Request and Timeline layouts, adopted', s: 'done',
+        d: `<p>Read from their screenshots rather than their source, because this is
+            presentation and the screenshots are the artefact.</p>
+            <p><strong>Fact grids.</strong> A small uppercase label with its value
+            underneath, four across, instead of a label column and a value column. The old
+            shape spent half the width on labels and forced one fact per line. Used by the
+            overview and by Alpine's health tab, so both improved at once.</p>
+            <p><strong>The overview is the request, told as stages.</strong> Received,
+            Matched, Responded on a rail, each with its own facts, under a card that
+            restates the request in one line. The same fourteen values as before, but in
+            the order they happened rather than as an alphabet of rows.</p>
+            <p><strong>The waterfall is framed.</strong> A "Waterfall" sub-heading with the
+            event count and span, a legend saying what a bar and a dot mean, filters that
+            say what they filter, and the table in a bordered shell with a header row and
+            ruled rows. Gridlines bleed into the row padding so they read as one ruled
+            table rather than as stripes.</p>
+            <p><strong>Callouts are tinted panels</strong> with the conclusion on the first
+            line, rather than one sentence behind a coloured edge.</p>
+            <p>Not adopted: their <code>select</code> for the activity filter. Two options
+            is one click as chips and two as a select. And only trouble is coloured in a
+            fact grid: the status is already green in the card above, and repeating every
+            healthy number in green made four of eight facts green on a request where
+            nothing was wrong.</p>` },
       { t: 'Tests for the JavaScript that has to be right', s: 'done',
         d: `<p>The value policy is the last thing between a component's state and the
             screen, and it was the only half of the redactor without tests. Twenty tests

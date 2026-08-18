@@ -17,6 +17,8 @@ entries for the work that led up to it.
   opened.
 * Renders in a shadow root with its own bundled Alpine, so it cannot collide with the
   theme's styles or its Alpine, and still works on a page whose own JavaScript failed.
+* The overview tells the request as stages, Received to Responded, with fact grids and a
+  one line summary of what happened.
 * A command palette on Cmd/Ctrl Shift P: every section, the themes, placement, pinning and
   the window controls, filtered as you type.
 * An Alpine section that reads the page's own instance: every component with its live

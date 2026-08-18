@@ -6,8 +6,10 @@ import { test } from 'node:test'
 import assert from 'node:assert/strict'
 
 import { SECTIONS, countFor } from '../src/sections.js'
+import { facts } from '../src/facts.js'
 import { navigation } from '../src/nav.js'
 import { subTabs } from '../src/tabs.js'
+import { template } from '../src/template.js'
 
 /**
  * @param {object} overrides
@@ -83,4 +85,43 @@ test('sub-tabs bind to the property they are given', () => {
   assert.ok(markup.includes('data-ndb-text="alpineComponents.length"'))
   assert.equal(markup.match(/role="tab"/g).length, 2)
   assert.equal(markup.match(/ndb-pill/g).length, 1, 'a tab without a count gets no pill')
+})
+
+test('a fact renders its value as an expression, not as text', () => {
+  const markup = facts([{ label: 'Duration', value: "number(metrics.duration_ms, 2) + ' ms'" }])
+
+  assert.ok(markup.includes('<dt>Duration</dt>'))
+  assert.ok(markup.includes(`data-ndb-text="number(metrics.duration_ms, 2) + ' ms'"`))
+  assert.ok(!markup.includes('>Duration<span'))
+})
+
+test('a fact can be mono, toned, or raw markup', () => {
+  const mono = facts([{ label: 'Route', value: 'request.route', mono: true }])
+  assert.ok(mono.includes('class="ndb-fact-value ndb-mono"'))
+
+  const toned = facts([{ label: 'Status', value: 'request.status', tone: 'statusTone' }])
+  assert.ok(toned.includes(`data-ndb-bind:class="'is-' + (statusTone)"`))
+
+  // Raw is for a value with its own markup, so it must not also be bound as text.
+  const raw = facts([{ label: 'Queries', value: '<span data-ndb-text="queries.count"></span>', raw: true }])
+  assert.ok(raw.includes('<span data-ndb-text="queries.count"></span>'))
+  assert.ok(!raw.includes('data-ndb-text="<span'))
+})
+
+test('the overview tells the request as stages rather than as a list', () => {
+  const steps = template.match(/<li class="ndb-step">/g) || []
+
+  assert.equal(steps.length, 3, 'received, matched, responded')
+  assert.ok(template.includes('<h3>Received</h3>'))
+  assert.ok(template.includes('<h3>Matched</h3>'))
+  assert.ok(template.includes('<h3>Responded</h3>'))
+  assert.ok(template.includes('ndb-summary'), 'the request is restated in one line above')
+})
+
+test('the waterfall says what it is and what its marks mean', () => {
+  assert.ok(template.includes('<h3>Waterfall</h3>'))
+  assert.ok(template.includes('ndb-legend-bar'), 'duration')
+  assert.ok(template.includes('ndb-legend-dot'), 'event')
+  assert.ok(template.includes('Show activity'), 'the filter says what it filters')
+  assert.ok(template.includes('Search activity'))
 })
