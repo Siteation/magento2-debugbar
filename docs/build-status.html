@@ -717,6 +717,14 @@ if ($themeId) {
             which on fully typed code only restates the signature.</p>
             <p>The ruleset excludes <code>Magento2.Annotation.*</code> and keeps the rest.
             Now 0 errors and 8 warnings, all deliberate.</p>` },
+      { t: 'Injection corrupted the payload', s: 'done',
+        d: `<p>Found once observers were collected.
+            <code>preg_replace</code> reads backslashes in the <em>replacement</em> as
+            escape sequences, so every PHP class name in the profile reached the page with
+            single backslashes and the JSON would not parse. The bar rendered every value
+            empty, with no error anywhere.</p>
+            <p>SQL has no backslashes, which is why the POC never hit it. Uses
+            <code>preg_replace_callback</code> now.</p>` },
       { t: 'Exit criteria met', s: 'done',
         d: `<p>Verified in Chrome against the real store:</p>
             <ul>
@@ -736,7 +744,7 @@ if ($themeId) {
     name: 'Collection',
     goal: 'All remaining collectors behind one interface, registered through di.xml.',
     tasks: [
-      { t: 'Api/CollectorInterface and AbstractCollector', s: 'todo',
+      { t: 'Api/CollectorInterface and AbstractCollector', s: 'done',
         d: `<p>Bounding and redaction happen once, for every collector, and totals stay
             accurate even when items are dropped.</p>
             <pre><code>public function record(array $item): void
@@ -756,12 +764,20 @@ if ($themeId) {
             <code>retained_count</code>, <code>dropped_count</code> and
             <code>truncated</code>, so the UI and an agent can say "there were 900
             queries, showing 500" instead of silently lying.</p>` },
-      { t: 'Event and observer collectors', s: 'todo',
+      { t: 'Event and observer collectors', s: 'done',
         d: `<p>Two plugins. <code>Event\\ManagerInterface::aroundDispatch</code> gives every
             dispatched event including the ones nobody listens to.
             <code>Event\\InvokerInterface::aroundDispatch</code> gives every observer that
-            actually ran, with its own timing.</p>` },
-      { t: 'Cache collector with hit rate', s: 'todo',
+            actually ran, with its own timing.</p>
+            <p>Both aggregate by name. A cart page dispatches 458 events and runs 385
+            observers; listed one by one that is noise, grouped it is 31 events and 22
+            observers ordered by cost.</p>
+            <p>Observer counts needed their own map. A dispatch can only be recorded once
+            <code>$proceed()</code> returns, but observers run inside that call, so
+            incrementing a counter on the event's own record dropped every observer of an
+            event's first dispatch. <code>layout_load_before</code> reported 0 observers
+            while three were listed against it.</p>` },
+      { t: 'Cache collector with hit rate', s: 'done',
         d: `<p><code>App\\CacheInterface</code> around <code>load</code>,
             <code>save</code> and <code>remove</code>, timing each and recording
             identifier plus payload size. An empty load result is a miss.</p>` },
@@ -782,7 +798,7 @@ if ($themeId) {
         d: `<p>Magento's nested <code>Magento\\Framework\\Profiler</code> when
             <code>MAGE_PROFILER</code> is set, plus our own spans. Stop the master timer
             before building the profile so the bar never measures itself.</p>` },
-      { t: 'Guard against the config recursion trap', s: 'todo',
+      { t: 'Guard against the config recursion trap', s: 'done',
         d: `<p>Do not read config inside the event or cache plugins. Config reads hit the
             cache, the cache dispatches events, and you get infinite recursion. Smile
             documents this in a source comment.</p>

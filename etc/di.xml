@@ -2,7 +2,11 @@
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
 
-    <!-- Brackets every web request in every area: frontend, adminhtml, GraphQL and REST -->
+    <!--
+        Brackets every web request in every area: frontend, adminhtml, GraphQL and REST.
+        Must be an around plugin: launch() switches the object manager to the request's
+        area, and an after listener does not survive that reload. See docs/research.md 13.1.
+    -->
     <type name="Magento\Framework\App\Http">
         <plugin name="siteation_debugbar_http"
                 type="Siteation\DebugBar\Plugin\App\HttpPlugin"
@@ -16,11 +20,34 @@
                 sortOrder="1"/>
     </type>
 
+    <!-- Every dispatched event, including the ones nobody observes -->
+    <type name="Magento\Framework\Event\ManagerInterface">
+        <plugin name="siteation_debugbar_event"
+                type="Siteation\DebugBar\Plugin\Event\ManagerPlugin"
+                sortOrder="1"/>
+    </type>
+
+    <!-- Every observer that actually ran, timed individually -->
+    <type name="Magento\Framework\Event\InvokerInterface">
+        <plugin name="siteation_debugbar_observer"
+                type="Siteation\DebugBar\Plugin\Event\InvokerPlugin"
+                sortOrder="1"/>
+    </type>
+
+    <type name="Magento\Framework\App\CacheInterface">
+        <plugin name="siteation_debugbar_cache"
+                type="Siteation\DebugBar\Plugin\App\CachePlugin"
+                sortOrder="1"/>
+    </type>
+
     <type name="Siteation\DebugBar\Model\ProfileManager">
         <arguments>
             <argument name="collectors" xsi:type="array">
                 <item name="request" xsi:type="object">Siteation\DebugBar\Collector\RequestCollector</item>
                 <item name="queries" xsi:type="object">Siteation\DebugBar\Collector\QueryCollector</item>
+                <item name="events" xsi:type="object">Siteation\DebugBar\Collector\EventCollector</item>
+                <item name="observers" xsi:type="object">Siteation\DebugBar\Collector\ObserverCollector</item>
+                <item name="cache" xsi:type="object">Siteation\DebugBar\Collector\CacheCollector</item>
             </argument>
         </arguments>
     </type>

@@ -1,9 +1,8 @@
 const STORAGE_KEY = 'siteation.debugbar.v1'
 
 /**
- * Read the profile the response embedded as JSON.
+ * The profile the response embedded as JSON.
  *
- * @param {ShadowRoot|Document} scope
  * @returns {object}
  */
 function readProfile() {
@@ -24,11 +23,29 @@ function readProfile() {
  * @returns {{open: boolean, section: string}}
  */
 function readPreferences() {
+  const fallback = { open: false, section: 'overview' }
+
   try {
-    return { open: false, section: 'overview', ...JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}') }
+    return { ...fallback, ...JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}') }
   } catch {
-    return { open: false, section: 'overview' }
+    return fallback
   }
+}
+
+/**
+ * @param {Array<object>} items
+ * @param {string} term
+ * @param {Array<string>} fields
+ * @returns {Array<object>}
+ */
+function search(items, term, fields) {
+  const needle = term.trim().toLowerCase()
+
+  if (!needle) return items
+
+  return items.filter((item) => fields.some(
+    (field) => String(item[field] ?? '').toLowerCase().includes(needle)
+  ))
 }
 
 /**
@@ -43,6 +60,9 @@ export function debugBar() {
     section: 'overview',
     queryFilter: 'all',
     querySearch: '',
+    eventFilter: 'all',
+    eventSearch: '',
+    observerSearch: '',
 
     init() {
       this.profile = readProfile()
@@ -52,14 +72,45 @@ export function debugBar() {
       this.section = preferences.section
     },
 
+    /**
+     * @param {string} key
+     * @returns {object}
+     */
+    summaryOf(key) {
+      return this.profile.sections?.[key]?.summary || {}
+    },
+
+    /**
+     * @param {string} key
+     * @returns {Array<object>}
+     */
+    itemsOf(key) {
+      return this.profile.sections?.[key]?.payload?.items || []
+    },
+
     /** @returns {object} */
     get request() {
-      return this.profile.sections?.request?.summary || {}
+      return this.summaryOf('request')
     },
 
     /** @returns {object} */
     get queries() {
-      return this.profile.sections?.queries?.summary || {}
+      return this.summaryOf('queries')
+    },
+
+    /** @returns {object} */
+    get events() {
+      return this.summaryOf('events')
+    },
+
+    /** @returns {object} */
+    get observers() {
+      return this.summaryOf('observers')
+    },
+
+    /** @returns {object} */
+    get cache() {
+      return this.summaryOf('cache')
     },
 
     /** @returns {object} */
@@ -68,25 +119,31 @@ export function debugBar() {
     },
 
     /** @returns {Array<object>} */
-    get queryItems() {
-      return this.profile.sections?.queries?.payload?.items || []
+    get visibleQueries() {
+      const items = this.queryFilter === 'slow'
+        ? this.itemsOf('queries').filter((query) => query.slow)
+        : this.itemsOf('queries')
+
+      return search(items, this.querySearch, ['sql'])
     },
 
     /** @returns {Array<object>} */
-    get visibleQueries() {
-      const search = this.querySearch.trim().toLowerCase()
+    get visibleEvents() {
+      const items = this.eventFilter === 'unobserved'
+        ? this.itemsOf('events').filter((event) => event.observer_count === 0)
+        : this.itemsOf('events')
 
-      return this.queryItems.filter((query) => {
-        if (this.queryFilter === 'slow' && !query.slow) return false
-        if (search && !String(query.sql).toLowerCase().includes(search)) return false
-
-        return true
-      })
+      return search(items, this.eventSearch, ['name'])
     },
 
-    /** @returns {boolean} */
-    get hasProfile() {
-      return Boolean(this.profile.id)
+    /** @returns {Array<object>} */
+    get visibleObservers() {
+      return search(this.itemsOf('observers'), this.observerSearch, ['name', 'event', 'instance'])
+    },
+
+    /** @returns {Array<object>} */
+    get cacheItems() {
+      return this.itemsOf('cache')
     },
 
     /** @returns {string} */
@@ -109,11 +166,32 @@ export function debugBar() {
       return Number(this.queries.slow_count || 0) > 0 ? 'warn' : 'ok'
     },
 
+    /** @returns {string} */
+    get cacheTone() {
+      const rate = this.cache.hit_rate
+
+      if (rate === null || rate === undefined) return 'ok'
+
+      return rate < 50 ? 'warn' : 'ok'
+    },
+
+    /**
+     * A cached page never reaches most of the application, so an empty profile is the
+     * expected result rather than a sign the bar is broken.
+     *
+     * @returns {boolean}
+     */
+    get looksLikeFullPageCacheHit() {
+      return Number(this.queries.count || 0) === 0
+        && Number(this.events.count || 0) === 0
+    },
+
     toggle() {
       this.open = !this.open
       this.persist()
     },
 
+    /** @param {string} section */
     select(section) {
       this.section = section
       this.open = true
@@ -130,7 +208,10 @@ export function debugBar() {
 
     persist() {
       try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify({ open: this.open, section: this.section }))
+        localStorage.setItem(
+          STORAGE_KEY,
+          JSON.stringify({ open: this.open, section: this.section })
+        )
       } catch {
         // A blocked localStorage is not a reason to lose the bar.
       }
@@ -143,6 +224,19 @@ export function debugBar() {
      */
     number(value, decimals = 0) {
       return Number(value || 0).toFixed(decimals)
+    },
+
+    /**
+     * @param {number} bytes
+     * @returns {string}
+     */
+    bytes(bytes) {
+      const value = Number(bytes || 0)
+
+      if (value < 1024) return `${value} B`
+      if (value < 1048576) return `${(value / 1024).toFixed(1)} kB`
+
+      return `${(value / 1048576).toFixed(1)} MB`
     },
   }
 }

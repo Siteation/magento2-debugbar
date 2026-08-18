@@ -94,7 +94,15 @@ class BarInjector
             $this->escape($this->assets->for('js/debugbar.js'))
         );
 
-        return (string) preg_replace('#</body\s*>#i', $markup . '$0', $html, 1);
+        // preg_replace would read the backslashes in the payload, PHP class names above
+        // all, as escape sequences in the replacement and corrupt the JSON. A callback
+        // hands the replacement back untouched.
+        return (string) preg_replace_callback(
+            '#</body\s*>#i',
+            static fn (array $matches): string => $markup . $matches[0],
+            $html,
+            1
+        );
     }
 
     private function escape(string $value): string

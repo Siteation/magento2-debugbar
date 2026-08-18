@@ -935,7 +935,58 @@ The first pass also sized text far too small, 13px base with 0.66rem labels. A t
 read all day should not ask for a squint: 15px base, 14px mono for SQL, 12px for uppercase
 labels.
 
-### 13.6 Smaller confirmations
+### 13.6 `preg_replace` corrupts the injected payload
+
+Injecting the bar with
+
+```php
+preg_replace('#</body\s*>#i', $markup . '$0', $html, 1)
+```
+
+silently mangles it. `preg_replace` reads backslashes in the **replacement** as escape
+sequences, and the profile is full of them the moment observers are collected:
+`Mollie\Payment\Observer\...` arrives in the page as `Mollie\Payment\Observer\...`
+with single backslashes, which is invalid JSON. The bar then renders every value as empty
+with no error anywhere.
+
+It did not show up until observers were collected, because SQL contains no backslashes.
+Use a callback so the replacement is handed back untouched:
+
+```php
+preg_replace_callback(
+    '#</body\s*>#i',
+    static fn (array $matches): string => $markup . $matches[0],
+    $html,
+    1
+);
+```
+
+### 13.7 New plugins need `cache:flush`, not `cache:clean config`
+
+The merged plugin list lives in the interception cache, which tag based invalidation does
+not reach. After adding a plugin, `bin/magento cache:clean config` leaves
+`PluginList::$_data` without the new entry, `hasPlugins()` still returns true for the type,
+and `getNext($type, $method)` returns null. The plugin simply never runs, with no error.
+
+`bin/magento cache:flush` purges the backend and fixes it. Worth knowing before spending an
+hour proving a correctly written plugin does not work.
+
+### 13.8 Observer counts arrive before their event is recorded
+
+`ManagerInterface::aroundDispatch` can only record a dispatch once `$proceed()` returns,
+because that is when its duration is known. Observers run *inside* that call, so an
+`InvokerInterface` plugin that increments a counter on the event's own record finds no
+record yet and drops it.
+
+The effect is subtle: events dispatched many times look almost right, because the entry
+exists from the second dispatch onward, while an event dispatched once reports zero
+observers. `layout_load_before` showed 0 observers while the observers section listed three
+running on it.
+
+Count observers in their own map keyed by event name and merge the two at read time, so
+neither has to arrive first.
+
+### 13.9 Smaller confirmations
 
 * One `aroundLaunch` plugin really does cover frontend, adminhtml, GraphQL and REST.
   Verified: all four return `X-Siteation-DebugBar-Profile`.
