@@ -84,6 +84,19 @@ else
     fail "profile endpoint" "skipped, no profile id"
 fi
 
+curl -sk "$BASE/siteation_debugbar/profile/history/" -o "$BODY"
+python3 - "$BODY" <<'HIST' && pass "lists stored profiles" || fail "lists stored profiles" ""
+import json, sys
+
+try:
+    data = json.load(open(sys.argv[1]))
+except Exception:
+    sys.exit(1)
+
+profiles = data.get("profiles")
+sys.exit(0 if isinstance(profiles, list)
+         and (not profiles or "profile_id" in profiles[0]) else 1)
+HIST
 BAD=$(curl -sk -o /dev/null -w '%{http_code}' "$BASE/siteation_debugbar/profile/view/id/..%2F..%2Fetc%2Fpasswd/")
 [ "$BAD" = "400" ] && pass "rejects a malformed id with 400" || fail "rejects a malformed id" "got $BAD"
 

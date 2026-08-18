@@ -3,10 +3,11 @@ import { keepFocusWithin, lockHost, unlockHost } from './host.js'
 import { SECTIONS, countFor } from './sections.js'
 import { commandsFor, matchCommands } from './palette.js'
 import { policyName } from './redact.js'
+import { highlight as highlightCode } from './highlight.js'
 import {
   alpineErrors,
   alpineHealth,
-  highlight,
+  outline,
   scanComponents,
   scanStores,
   stateJson,
@@ -119,6 +120,10 @@ export function debugBar() {
     loading: false,
     loadError: '',
     requests: [],
+    history: [],
+    historyLoading: false,
+    historyError: '',
+    historyLoaded: false,
     activeId: null,
     pageProfile: {},
 
@@ -147,6 +152,14 @@ export function debugBar() {
       this.syncAlpineLive()
 
       this.$watch('paletteSearch', () => { this.paletteIndex = 0 })
+
+      // Fetched on arrival rather than on load: it is a second request, and most visits to
+      // the bar never open this section.
+      this.$watch('section', (value) => {
+        if (value === 'history') this.loadHistory()
+      })
+
+      if (this.open && this.section === 'history') this.loadHistory()
 
       // On the document, not on the bar: the shortcut has to work while the page has
       // focus, which is most of the time. Events from the shadow root are composed, so
@@ -215,6 +228,61 @@ export function debugBar() {
       } finally {
         this.loading = false
       }
+    },
+
+    /**
+     * @param {boolean} force refetch even if the list is already loaded
+     * @returns {Promise<void>}
+     */
+    async loadHistory(force = false) {
+      if (this.historyLoading || (this.historyLoaded && !force)) return
+
+      const url = this.rootElement()?.dataset.historyUrl
+
+      if (!url) return
+
+      this.historyLoading = true
+      this.historyError = ''
+
+      try {
+        const response = await fetch(url, { headers: { Accept: 'application/json' } })
+
+        if (!response.ok) throw new Error(`HTTP ${response.status}`)
+
+        const body = await response.json()
+
+        this.history = Array.isArray(body.profiles) ? body.profiles : []
+        this.historyLoaded = true
+      } catch (error) {
+        this.historyError = String(error.message || error)
+      } finally {
+        this.historyLoading = false
+      }
+    },
+
+    /**
+     * Loading one from the history means looking at a different request, so it lands on
+     * the overview rather than leaving the reader on a panel about the old one.
+     *
+     * @param {string} id
+     */
+    async openFromHistory(id) {
+      await this.showProfile(id)
+
+      if (!this.loadError) this.section = 'overview'
+    },
+
+    /**
+     * @param {number} seconds a unix timestamp
+     * @returns {string}
+     */
+    ago(seconds) {
+      const elapsed = Math.max(0, Date.now() / 1000 - Number(seconds || 0))
+
+      if (elapsed < 60) return `${Math.round(elapsed)}s ago`
+      if (elapsed < 3600) return `${Math.round(elapsed / 60)}m ago`
+
+      return `${Math.round(elapsed / 3600)}h ago`
     },
 
     /** Go back to the request that rendered the page. */
@@ -815,7 +883,7 @@ export function debugBar() {
      * @param {boolean} on
      */
     highlightAlpine(id, on) {
-      highlight(id, on)
+      outline(id, on)
     },
 
     /**
@@ -967,6 +1035,25 @@ export function debugBar() {
       return Object.entries(plugin.methods || {})
         .map(([method, kind]) => `${kind} ${method}`)
         .join(', ')
+    },
+
+    /**
+     * @param {unknown} code
+     * @param {string} language
+     * @returns {string} HTML for x-html, escaped by the highlighter
+     */
+    highlight(code, language) {
+      return highlightCode(code, language)
+    },
+
+    /**
+     * @param {number} count
+     * @param {string} one
+     * @param {string} many
+     * @returns {string}
+     */
+    plural(count, one, many) {
+      return `${count} ${Number(count) === 1 ? one : many}`
     },
 
     /**

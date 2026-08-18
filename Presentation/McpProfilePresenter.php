@@ -26,6 +26,7 @@ class McpProfilePresenter
 
     public function __construct(
         private readonly ProfileStore $store,
+        private readonly ProfileSummary $summary,
         private readonly int $maxItems = 50,
         private readonly int $maxBytes = 100000
     ) {
@@ -45,7 +46,7 @@ class McpProfilePresenter
         $summaries = [];
 
         foreach ($this->store->recent() as $profile) {
-            $summary = $this->summarize($profile);
+            $summary = $this->summary->for($profile);
 
             if ($this->matches($summary, $filters)) {
                 $summaries[] = $summary;
@@ -193,41 +194,10 @@ class McpProfilePresenter
      * @param array<string, mixed> $profile
      * @return array<string, mixed>
      */
-    private function summarize(array $profile): array
-    {
-        $request = $profile['sections']['request']['summary'] ?? [];
-        $findings = is_array($profile['findings'] ?? null) ? $profile['findings'] : [];
-
-        return [
-            'profile_id' => $profile['id'] ?? null,
-            'method' => $request['method'] ?? null,
-            'path' => $request['path'] ?? null,
-            'action' => $request['action'] ?? null,
-            'area' => $request['area'] ?? null,
-            'status' => $request['status'] ?? null,
-            'duration_ms' => $profile['metrics']['duration_ms'] ?? null,
-            'query_count' => $profile['sections']['queries']['summary']['count'] ?? 0,
-            'finding_count' => count($findings),
-            'worst_severity' => $this->worstSeverity($findings),
-            'started_at' => $profile['started_at'] ?? null,
-        ];
-    }
 
     /**
      * @param list<array<string, mixed>> $findings
      */
-    private function worstSeverity(array $findings): ?string
-    {
-        foreach (['error', 'warning', 'info'] as $severity) {
-            foreach ($findings as $finding) {
-                if (($finding['severity'] ?? null) === $severity) {
-                    return $severity;
-                }
-            }
-        }
-
-        return null;
-    }
 
     /**
      * @param array<string, mixed> $profile

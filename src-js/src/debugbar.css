@@ -1578,3 +1578,111 @@
   font-size: 12px;
   text-align: center;
 }
+
+/* history */
+
+.ndb-history {
+  appearance: none;
+  border: 1px solid var(--ndb-border);
+  border-radius: 10px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 9px 12px;
+  margin-bottom: 8px;
+}
+
+.ndb-history:hover { background: var(--ndb-hover); }
+
+.ndb-history.is-active {
+  border-color: var(--ndb-accent);
+  background: var(--ndb-accent-soft);
+}
+
+.ndb-history-method {
+  flex: none;
+  border-radius: 6px;
+  background: var(--ndb-accent-soft);
+  color: var(--ndb-accent);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  padding: 3px 8px;
+}
+
+.ndb-history-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.ndb-history-path {
+  display: block;
+  font-weight: 600;
+}
+
+.ndb-history-meta {
+  display: flex;
+  gap: 10px;
+  color: var(--ndb-dim);
+  font-size: 13px;
+}
+
+.ndb-history-status {
+  flex: none;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.ndb-history-status.is-ok { color: var(--ndb-ok); }
+.ndb-history-status.is-bad { color: var(--ndb-bad); }
+
+.ndb-history-timing {
+  flex: none;
+  width: 74px;
+  text-align: right;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.ndb-history-timing small {
+  display: block;
+  font-size: 12px;
+  font-weight: 400;
+}
+
+.ndb-tag.is-bad {
+  border-color: var(--ndb-bad);
+  color: var(--ndb-bad);
+}
+
+/*
+ * Syntax colours, from the bar's own tokens rather than a highlight.js theme. A theme
+ * would hardcode a palette that only works against one background, and this renders on
+ * two.
+ */
+
+.hljs-keyword,
+.hljs-built_in,
+.hljs-literal { color: var(--ndb-accent); }
+
+.hljs-string { color: var(--ndb-ok); }
+
+/* A JSON key is not a string value, and colouring both green loses the distinction. */
+.hljs-attr { color: var(--ndb-accent); }
+
+.hljs-number { color: var(--ndb-warn); }
+
+.hljs-comment { color: var(--ndb-dim); font-style: italic; }
+
+.hljs-operator,
+.hljs-punctuation { color: var(--ndb-dim); }
+
+.hljs-title,
+.hljs-title.function_,
+.hljs-variable { color: var(--ndb-text); }

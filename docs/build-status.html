@@ -525,7 +525,7 @@
 
   <h2 class="section" style="margin-top:2.25rem">What is left</h2>
   <p class="lede">
-    Three items are to do, and one is parked. Anything marked
+    One item is to do, and one is parked. Anything marked
     <span class="tag closed">Closed</span> is a decision that was taken rather than work
     that was dropped: moved into another phase, superseded, or deliberately not built.
     Those are listed underneath so the reasoning stays findable. The
@@ -1436,13 +1436,38 @@ inspect_debug_queries       slowest first, with call sites</code></pre>
             <p>Severity text had to become a token of its own. Dark paints bright amber and
             red, so text on them must be dark; light paints dark ones, so text must be
             white. A single value gave white on bright amber, which is unreadable.</p>` },
-      { t: 'Syntax highlighting', s: 'todo',
-        d: `<p><code>highlight.js/lib/core</code> with only <code>sql</code>,
-            <code>json</code> and a hand rolled PHP grammar. About 20 kB against about
-            900 kB for the full bundle.</p>` },
-      { t: 'History section', s: 'todo',
-        d: `<p>Recent profiles listed in the bar, so the request list is not the only way
-            back to an earlier request.</p>` }
+      { t: 'Syntax highlighting', s: 'done',
+        d: `<p><code>highlight.js/lib/core</code> with three grammars rather than the two
+            hundred the full package carries. SQL for the query list, JSON for Alpine's
+            state and stores, JavaScript for an <code>x-data</code> expression.</p>
+            <p>PHP is not among them, despite being the language of everything the bar
+            profiles, because no panel renders PHP source: a call site is a file and a
+            line, an observer is a class name, a plugin is a method list. The plan asked
+            for it; nothing would have shown it.</p>
+            <p>Colours come from the bar's own tokens rather than a highlight.js theme. A
+            theme hardcodes a palette that works against one background, and this renders
+            on two.</p>
+            <p>Output is HTML, so it reaches the DOM through <code>x-html</code>. That is
+            safe because highlight.js escapes what it is given, which a test asserts rather
+            than assumes. Results are cached by string: 175 statements cost 10 ms cold and
+            0.3 ms once seen, and every keystroke in the filter re-renders every row that
+            survives it.</p>
+            <p>Cost: 60 kB raw, 18 kB gzipped. The plan guessed 20 kB, which was optimistic
+            about the core and about SQL's keyword list.</p>` },
+      { t: 'History section', s: 'done',
+        d: `<p>Every profile still on disk, newest first, with its area, query count,
+            findings, status, duration and age. Clicking one loads it and lands on the
+            overview, since it is a different request now.</p>
+            <p>The list needed an endpoint: <code>profile/history</code>, gated exactly as
+            <code>profile/view</code> is, because an endpoint that hands out profile ids
+            has to sit behind the same address check as the one that hands out profiles.
+            Summaries only, for the same reason nothing else ships whole profiles.</p>
+            <p>The MCP server was already listing profiles for agents, so the summarizer
+            moved to <code>Presentation/ProfileSummary</code> and both read it. Two
+            summarizers for one question drift apart.</p>
+            <p>It also caught a small lie: "No clear problem found" was appearing on
+            History, a section about other requests entirely. Sections now declare whether
+            a rule can grade them.</p>` }
     ]
   }
 ];
@@ -1481,12 +1506,6 @@ const REMAINING = [
     why: 'Not an engineering task. Packagist can only read a public repository, and making '
       + 'this one public is Rutger\'s decision. Everything it would ship is built, tested '
       + 'and verified against a running store.' },
-  { name: 'Syntax highlighting', phase: '1.1, E. Comfort', status: 'todo',
-    why: 'SQL, JSON and a small PHP grammar through highlight.js/lib/core, about 20 kB '
-      + 'rather than the 900 kB of the full package. Nothing depends on it.' },
-  { name: 'History section', phase: '1.1, E. Comfort', status: 'todo',
-    why: 'Recent profiles as a list, so the request switcher is not the only way back to an '
-      + 'earlier request. It is also what cross request comparison needs first.' },
   { name: 'Magento integration test suite', phase: '1.0, Hardening', status: 'backlog',
     why: 'Deferred until the interface stops moving. What it would assert is covered today '
       + 'by dev/smoke over HTTP, 24 assertions against a running store, without needing the '

@@ -411,10 +411,12 @@ export function alpineHealth() {
  * Outlines the element a row belongs to, which is the fastest way to answer "which one is
  * that". The inline style is put back exactly as it was found.
  *
+ * Named for what it draws rather than "highlight", which in this bar means syntax.
+ *
  * @param {number} id
  * @param {boolean} on
  */
-export function highlight(id, on) {
+export function outline(id, on) {
   const element = elements.get(id)
 
   if (!element || !element.style) return

@@ -65,7 +65,8 @@ export const template = `
       </div>
 
       <div class="ndb-callout is-clear"
-           data-ndb-show="section !== 'findings' && sectionFindings.length === 0">
+           data-ndb-show="currentSection.graded !== false && section !== 'findings'
+                          && sectionFindings.length === 0">
         <p class="ndb-callout-title">No clear problem found</p>
         <p>Nothing in this section matched a rule.</p>
       </div>
@@ -306,7 +307,7 @@ export const template = `
                 <span class="ndb-query-time" data-ndb-text="number(query.duration_ms, 2) + ' ms'"></span>
                 <span class="ndb-query-type" data-ndb-text="query.type"></span>
               </div>
-              <code class="ndb-query-sql" data-ndb-text="query.sql"></code>
+              <code class="ndb-query-sql" data-ndb-html="highlight(query.sql, 'sql')"></code>
             </li>
           </template>
         </ol>
@@ -503,6 +504,60 @@ export const template = `
         <p class="ndb-empty" data-ndb-show="visiblePlugins.length === 0">No plugins match.</p>
       </div>
 
+      <div data-ndb-show="isSection('history')">
+        <div class="ndb-subhead">
+          <div>
+            <h3>Recent requests</h3>
+            <p>
+              <span data-ndb-text="history.length"></span> profiles on disk, newest first.
+              The store keeps the last 20, or the last hour.
+            </p>
+          </div>
+          <button type="button" class="ndb-chip" data-ndb-on:click="loadHistory(true)"
+                  title="Read the store again">Refresh</button>
+        </div>
+
+        <p class="ndb-note" data-ndb-show="historyLoading">Loading the history.</p>
+        <p class="ndb-note" data-ndb-show="historyError">
+          Could not load the history: <span data-ndb-text="historyError"></span>
+        </p>
+
+        <ol class="ndb-list">
+          <template data-ndb-for="entry in history" data-ndb-bind:key="entry.profile_id">
+            <li>
+              <button type="button" class="ndb-history"
+                      data-ndb-bind:class="activeId === entry.profile_id && 'is-active'"
+                      data-ndb-on:click="openFromHistory(entry.profile_id)">
+                <span class="ndb-history-method" data-ndb-text="entry.method || 'GET'"></span>
+                <span class="ndb-history-body">
+                  <span class="ndb-history-path ndb-mono ndb-truncate"
+                        data-ndb-text="entry.path || '/'"></span>
+                  <span class="ndb-history-meta">
+                    <span data-ndb-text="entry.area"></span>
+                    <span data-ndb-text="plural(entry.query_count, 'query', 'queries')"></span>
+                    <span data-ndb-show="activeId === entry.profile_id">Showing now</span>
+                  </span>
+                </span>
+                <span class="ndb-tag" data-ndb-show="entry.finding_count"
+                      data-ndb-bind:class="entry.worst_severity === 'error' ? 'is-bad' : 'is-warn'"
+                      data-ndb-text="plural(entry.finding_count, 'finding', 'findings')"></span>
+                <span class="ndb-history-status"
+                      data-ndb-bind:class="entry.status >= 400 ? 'is-bad' : 'is-ok'"
+                      data-ndb-text="entry.status"></span>
+                <span class="ndb-history-timing">
+                  <span data-ndb-text="number(entry.duration_ms, 1) + ' ms'"></span>
+                  <small class="ndb-dim" data-ndb-text="ago(entry.started_at)"></small>
+                </span>
+              </button>
+            </li>
+          </template>
+        </ol>
+
+        <p class="ndb-empty" data-ndb-show="!historyLoading && history.length === 0">
+          Nothing stored yet.
+        </p>
+      </div>
+
       <div data-ndb-show="isSection('alpine')">
         <p class="ndb-note" data-ndb-show="!alpineHealth.present">
           No Alpine on this page. This section reads the page's own instance, so it has
@@ -570,8 +625,8 @@ export const template = `
 
                   <div class="ndb-alpine-body" data-ndb-show="isAlpineExpanded(component.id)">
                     <code class="ndb-alpine-expression" data-ndb-show="component.expression"
-                          data-ndb-text="component.expression"></code>
-                    <pre class="ndb-json" data-ndb-text="alpineStates[component.id]"></pre>
+                          data-ndb-html="highlight(component.expression, 'javascript')"></code>
+                    <pre class="ndb-json" data-ndb-html="highlight(alpineStates[component.id], 'json')"></pre>
                   </div>
                 </li>
               </template>
@@ -599,7 +654,7 @@ export const template = `
                           data-ndb-text="store.keys"></span>
                   </div>
                   <div class="ndb-alpine-body">
-                    <pre class="ndb-json" data-ndb-text="store.value"></pre>
+                    <pre class="ndb-json" data-ndb-html="highlight(store.value, 'json')"></pre>
                   </div>
                 </li>
               </template>

@@ -30,6 +30,7 @@ function state(overrides = {}) {
     cache: {},
     interception: {},
     alpineComponents: [],
+    history: [],
     ...overrides,
   }
 

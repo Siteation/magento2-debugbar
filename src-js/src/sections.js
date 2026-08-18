@@ -7,7 +7,10 @@
  * `lead` is not decoration. A panel that says what it is for is one a developer explores;
  * one that does not is one they guess at.
  *
- * @type {Array<{id: string, label: string, lead: string}>}
+ * `graded` is false where no rule can produce a finding, so those panels do not claim that
+ * nothing is wrong with a request they are not about.
+ *
+ * @type {Array<{id: string, label: string, lead: string, graded?: boolean}>}
  */
 export const SECTIONS = [
   {
@@ -59,6 +62,13 @@ export const SECTIONS = [
     id: 'alpine',
     label: 'Alpine',
     lead: 'The components on the page right now, their state, and what has not started.',
+    graded: false,
+  },
+  {
+    id: 'history',
+    label: 'History',
+    lead: 'Every request still on disk, so an earlier one is one click away.',
+    graded: false,
   },
 ]
 
@@ -85,6 +95,7 @@ export function countFor(id, state) {
     case 'cache': return state.cache.count || null
     case 'plugins': return state.interception.plugin_count || null
     case 'alpine': return state.alpineComponents.length || null
+    case 'history': return state.history.length || null
     default: return null
   }
 }

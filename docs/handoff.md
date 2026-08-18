@@ -81,6 +81,10 @@ bind every handler twice. See `research.md` 13.3.
 **Only summaries are embedded** in the page, about 1.5 kB. Section payloads are fetched from
 `siteation_debugbar/profile/view` on first open.
 
+**Two endpoints**, both behind the same gate as the bar: `profile/view` for one profile,
+`profile/history` for the list the history section reads. Anything that hands out profile
+ids sits behind the same address check as the thing that hands out profiles.
+
 **MCP** is `bin/magento siteation:debugbar:mcp`, hand rolled JSON-RPC 2.0 over stdio, four
 read only tools. Starts in about 0.2 seconds because it only reads files. Registered in
 Claude Code as `siteation-debugbar`.
@@ -92,8 +96,8 @@ bin/magento cache:flush                                        # after any plugi
 vendor/bin/phpcs  --standard=<pkg>/phpcs.xml.dist <pkg>
 vendor/bin/phpstan analyse -c <pkg>/phpstan.neon.dist
 vendor/bin/phpunit --configuration <pkg>/phpunit.xml.dist      # 71 tests
-<pkg>/dev/smoke https://mage-debugbar.test magedebugbar_admin  # 24 assertions
-cd <pkg>/src-js && npm test                                    # 20 tests, no dependency
+<pkg>/dev/smoke https://mage-debugbar.test magedebugbar_admin  # 25 assertions
+cd <pkg>/src-js && npm test                                    # 34 tests, no dependency
 cd <pkg>/src-js && npm run build                               # output is committed
 ```
 
@@ -114,14 +118,15 @@ engineering task, and not something to push toward.
 | B. Window | 5/5 | floating glass dock, modal sheet, `lockHost`, window controls |
 | C. Navigation | 6/7 | 210px sidebar, favourites with drag, section leads, inline findings |
 | D. Alpine | 6/7 | components, stores, deferred, health, sub-tabs, value policy |
-| E. Comfort | 4/7 | light theme, type, palette and their Request layout; highlighting and history left |
+| E. Comfort | 6/7 | all of it: light theme, type, palette, their layouts, highlighting, history |
 
 Backlog is in `build-status.html`, which is the live tracker. Open it in a browser.
 
 ## Next
 
-Syntax highlighting and a history section, in either order. Neither unblocks anything, and
-the history section is what cross request comparison would need first.
+1.1 is done bar the interface polish Rutger keeps finding, which is the point of him
+looking. The backlog's next real item is cross request comparison, which the history
+section was the prerequisite for.
 
 ## Decided in D, worth not relitigating
 
