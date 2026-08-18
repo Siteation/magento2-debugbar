@@ -519,8 +519,22 @@
   <h2 class="section" style="margin-top:2.25rem">Backlog</h2>
   <div class="backlog-grid" id="backlog"></div>
 
+  <div class="progress" style="margin-top:2.25rem">
+    <div class="top">
+      <span><strong>Next: 1.1, the interface</strong></span>
+      <span>docs/plan-1.1.md</span>
+    </div>
+    <p style="margin:0.4rem 0 0;color:var(--text-dim);font-size:0.9rem">
+      Adopts New Debug Bar's layout: a floating glass window, a 210px sidebar with
+      favourites, sections that explain themselves, and a real waterfall. Plus an Alpine.js
+      section, which is ours and which no debug bar has. The waterfall comes first, because
+      it needs every collector to stamp when things happened, and retrofitting that under a
+      finished interface would be worse.
+    </p>
+  </div>
+
   <footer class="page">
-    Source of truth for scope is <code>docs/plan.md</code>. Prior art, verified framework
+    Source of truth for scope is <code>docs/plan.md</code>, and <code>docs/plan-1.1.md</code> for what comes next. Prior art, verified framework
     hooks and extracted code are in <code>docs/research.md</code>. Update the
     <code>PHASES</code> array in this file as work lands.
   </footer>
