@@ -1053,11 +1053,28 @@ inspect_debug_queries       slowest first, with call sites</code></pre>
             developer: the redactor, including all three value policies, and the injector
             guards, including that a page survives injection and that backslashes in the
             payload still parse.</p>` },
-      { t: 'Integration tests', s: 'todo',
-        d: `<p>Assert a profile is produced for frontend, adminhtml, GraphQL and AJAX
-            requests, and that a collector which throws leaves the response untouched.</p>
-            <p>All of this has been verified by hand against the running store. It is not
-            yet automated.</p>` },
+      { t: 'End to end smoke test', s: 'done',
+        d: `<p><code>dev/smoke &lt;base-url&gt; [admin-path]</code>. 23 assertions covering
+            what a Magento integration test would, without the integration framework, a
+            second database or a separate install. Everything goes through HTTP and the
+            module's own profile endpoint, so it runs against any instance.</p>
+            <p>Checks all four areas return the profile header, that GraphQL and REST
+            bodies come back as valid JSON rather than being injected into, that the
+            endpoint serves every section and rejects a traversal id with 400, that only
+            summaries are embedded in the page, and that the bar does not profile its own
+            endpoint.</p>
+            <p>Writing it caught a bad assertion rather than a bug: grepping the whole page
+            for <code>"items"</code> matched Magento's own section data. It is scoped to
+            the profile tag now.</p>` },
+      { t: 'The never break the page guarantee, tested', s: 'done',
+        d: `<p>More reliable as a unit test than a smoke check. Four paths, each asserting
+            the original response comes back untouched: not eligible, a collector that
+            throws during finalize, a failure to start, and a store that cannot write.</p>` },
+      { t: 'Magento integration test suite', s: 'backlog',
+        d: `<p>The full <code>dev/tests/integration</code> framework needs its own database
+            and install and runs in minutes. The smoke test covers the regressions that
+            actually bite for a fraction of that, so this waits until the interface has
+            stopped moving after 1.1.</p>` },
       { t: 'Tag 1.0.0 and publish', s: 'todo',
         d: `<p>No longer blocked. The package is its own repository with composer.json at
             its root, so Packagist can read it directly and no subtree split or mirror repo
@@ -1242,8 +1259,7 @@ shadow-[0_18px_60px_-18px_rgba(24,24,27,0.4)]</code></pre>
 const BACKLOG = [
   { name: 'Integration tests',
     why: 'The last gap in 1.0. Assert a profile is produced for every area and that a collector which throws leaves the response untouched. Verified by hand today, not automated.' },
-  { name: 'Smoke test before tagging',
-    why: 'Hit all four areas, assert the profile header and shape, and assert a thrown collector leaves the response untouched. Cheaper than Magento\'s integration framework and covers the regressions that actually bite.' },
+
   { name: 'Ignition integration',
     why: 'Detect swissup/module-ignition, hand exceptions to it, and inject our profile id and a link into its error page. Its optional dependency is the one thing that would justify a second package, which would simply be its own repository.' },
   { name: 'Cross request comparison',

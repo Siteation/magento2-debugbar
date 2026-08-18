@@ -1,0 +1,113 @@
+#!/usr/bin/env bash
+#
+# End to end check against a running store.
+#
+# Covers what a Magento integration test would assert about this module, without needing
+# the integration framework, a second database or a separate install. Everything goes
+# through HTTP and the module's own profile endpoint, so it can run against any instance.
+#
+#   dev/smoke https://your-store.test [admin-path]
+
+set -uo pipefail
+
+BASE="${1:-}"
+ADMIN_PATH="${2:-admin}"
+
+if [ -z "$BASE" ]; then
+    echo "usage: dev/smoke <base-url> [admin-path]" >&2
+    exit 64
+fi
+
+BASE="${BASE%/}"
+HEADER='x-siteation-debugbar-profile'
+PASS=0
+FAIL=0
+
+pass() { printf '  \033[32m✓\033[0m %s\n' "$1"; PASS=$((PASS + 1)); }
+fail() { printf '  \033[31m✗\033[0m %s\n' "$1"; printf '      %s\n' "${2:-}"; FAIL=$((FAIL + 1)); }
+group() { printf '\n\033[1m%s\033[0m\n' "$1"; }
+
+# Echoes the profile id, or nothing.
+profile_id() {
+    grep -i "^${HEADER}:" "$1" | tr -d '\r' | awk '{print $2}'
+}
+
+BODY=$(mktemp); HEAD=$(mktemp)
+trap 'rm -f "$BODY" "$HEAD"' EXIT
+
+group "Storefront HTML"
+STATUS=$(curl -sk -o "$BODY" -D "$HEAD" -w '%{http_code}' "$BASE/checkout/cart/")
+ID=$(profile_id "$HEAD")
+
+[ "$STATUS" = "200" ] && pass "responds 200" || fail "responds 200" "got $STATUS"
+[ -n "$ID" ] && pass "returns the profile header" || fail "returns the profile header" "no $HEADER"
+grep -q 'id="siteation-debugbar"' "$BODY" \
+    && pass "injects the bar" || fail "injects the bar" "root element missing"
+grep -q 'debugbar-early.js' "$BODY" \
+    && pass "loads the early request watcher in the head" || fail "loads the early request watcher" ""
+grep -q '<script type="application/json" id="siteation-debugbar-profile">' "$BODY" \
+    && pass "embeds the profile as data, not script" || fail "embeds the profile as data" ""
+# Scoped to the profile tag: a storefront page has plenty of unrelated JSON in it.
+python3 - "$BODY" <<'PY' && pass "embeds summaries only" || fail "embeds summaries only" "section items are inline; the payload should be fetched"
+import json, re, sys
+
+page = open(sys.argv[1], encoding='utf-8', errors='replace').read()
+match = re.search(
+    r'<script type="application/json" id="siteation-debugbar-profile">(.*?)</script>',
+    page, re.S,
+)
+sys.exit(1 if match is None else 0 if all(
+    'items' not in section.get('payload', {})
+    for section in json.loads(match.group(1)).get('sections', {}).values()
+) else 1)
+PY
+
+group "Profile endpoint"
+if [ -n "$ID" ]; then
+    curl -sk "$BASE/siteation_debugbar/profile/view/id/$ID/" -o "$BODY"
+    for section in request queries events observers blocks cache interception timeline; do
+        python3 -c "
+import json,sys
+d=json.load(open('$BODY'))
+sys.exit(0 if '$section' in d.get('sections',{}) else 1)
+" 2>/dev/null && pass "serves the $section section" || fail "serves the $section section" ""
+    done
+    python3 -c "
+import json,sys
+d=json.load(open('$BODY'))
+sys.exit(0 if isinstance(d.get('findings'), list) else 1)
+" 2>/dev/null && pass "serves findings" || fail "serves findings" ""
+else
+    fail "profile endpoint" "skipped, no profile id"
+fi
+
+BAD=$(curl -sk -o /dev/null -w '%{http_code}' "$BASE/siteation_debugbar/profile/view/id/..%2F..%2Fetc%2Fpasswd/")
+[ "$BAD" = "400" ] && pass "rejects a malformed id with 400" || fail "rejects a malformed id" "got $BAD"
+
+MISSING=$(curl -sk -o /dev/null -w '%{http_code}' \
+    "$BASE/siteation_debugbar/profile/view/id/00000000-0000-4000-8000-000000000000/")
+[ "$MISSING" = "404" ] && pass "reports an unknown id as 404" || fail "reports an unknown id as 404" "got $MISSING"
+
+group "Other areas"
+curl -sk -o /dev/null -D "$HEAD" "$BASE/$ADMIN_PATH"
+[ -n "$(profile_id "$HEAD")" ] && pass "adminhtml is profiled" || fail "adminhtml is profiled" "no header"
+
+curl -sk -o "$BODY" -D "$HEAD" -X POST -H 'Content-Type: application/json' \
+    -d '{"query":"{storeConfig{store_code}}"}' "$BASE/graphql"
+[ -n "$(profile_id "$HEAD")" ] && pass "GraphQL is profiled" || fail "GraphQL is profiled" "no header"
+python3 -c "import json;json.load(open('$BODY'))" 2>/dev/null \
+    && pass "GraphQL body is untouched" || fail "GraphQL body is untouched" "response is not valid JSON"
+
+curl -sk -o "$BODY" -D "$HEAD" "$BASE/rest/V1/directory/countries"
+[ -n "$(profile_id "$HEAD")" ] && pass "REST is profiled" || fail "REST is profiled" "no header"
+python3 -c "import json;json.load(open('$BODY'))" 2>/dev/null \
+    && pass "REST body is untouched" || fail "REST body is untouched" "response is not valid JSON"
+
+group "The bar keeps out of the way"
+curl -sk -o "$BODY" -D "$HEAD" "$BASE/siteation_debugbar/profile/view/id/00000000-0000-4000-8000-000000000000/"
+[ -z "$(profile_id "$HEAD")" ] \
+    && pass "does not profile its own endpoint" \
+    || fail "does not profile its own endpoint" "fetching a profile would evict real ones"
+
+printf '\n\033[1m%d passed, %d failed\033[0m\n' "$PASS" "$FAIL"
+[ "$FAIL" -eq 0 ]
