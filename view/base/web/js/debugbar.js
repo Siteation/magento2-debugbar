@@ -7142,8 +7142,9 @@ const Dc = `
             Pick a request and compare. Nothing is fetched until you do.
           </p>
 
-          <div data-ndb-show="comparison">
-            <div class="ndb-callout is-warn" data-ndb-show="comparison && !comparison.same_path">
+          <template data-ndb-if="comparison">
+          <div>
+            <div class="ndb-callout is-warn" data-ndb-show="!comparison.same_path">
               <p class="ndb-callout-title">These are different pages</p>
               <p>Comparing unlike requests measures the difference between the pages, not
                 the difference a change made.</p>
@@ -7175,8 +7176,8 @@ const Dc = `
               </tbody>
             </table>
 
-            <div class="ndb-subhead" data-ndb-show="comparison
-                 && (comparison.findings.new.length || comparison.findings.resolved.length)">
+            <div class="ndb-subhead" data-ndb-show="comparison.findings.new.length
+                 || comparison.findings.resolved.length">
               <div>
                 <h3>Findings</h3>
                 <p>
@@ -7220,9 +7221,8 @@ const Dc = `
               </div>
             </div>
 
-            <p class="ndb-empty" data-ndb-show="comparison
-               && !comparison.queries.added_total && !comparison.queries.removed_total
-               && !comparison.queries.changed_total">
+            <p class="ndb-empty" data-ndb-show="!comparison.queries.added_total
+               && !comparison.queries.removed_total && !comparison.queries.changed_total">
               The same statements ran the same number of times.
             </p>
 
@@ -7265,6 +7265,7 @@ const Dc = `
               </template>
             </ol>
           </div>
+          </template>
         </div>
       </div>
 

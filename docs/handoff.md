@@ -116,6 +116,12 @@ cd <pkg>/src-js && npm run build                               # output is commi
 Browser work: measure geometry with `javascript_tool` before diagnosing layout from a
 screenshot. Screenshots are scaled and have misled me twice.
 
+The bar records its own Alpine errors, because `early.js` watches `console.warn` for every
+instance on the page. After touching the template, walk every section and sub-tab and read
+`window.__siteationDebugBar.alpineErrors`: empty is the only acceptable answer, and the
+Alpine section's Health tab shows the same list. Nothing else catches a binding that throws,
+because a throwing binding renders as an empty element and says nothing.
+
 ## State
 
 **1.0**: 53 done, 2 closed, **1 open**. The open item is *tag 1.0.0 and publish*, which is
@@ -192,6 +198,9 @@ Beyond the three stale artifact traps, the ones most likely to bite again:
 * `x-show` defers every reveal after the first through a `setTimeout`, so nothing can be
   timed against it. Anything that has to focus an element as it appears should be shown with
   a class instead.
+* `x-show` also **evaluates everything inside it while hidden**. A panel bound to state that
+  starts as `null` therefore throws once per binding on every page load, invisibly. Use
+  `x-if` for a panel that has no data yet, not `x-show`.
 * A background tab throttles timers and stops `requestAnimationFrame`, so anything timing
   sensitive measures as broken there. Check the tab is in front before believing it.
 * An `x-for` variable that shares a name with a component property silently redirects every

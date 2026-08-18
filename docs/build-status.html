@@ -1470,6 +1470,21 @@ inspect_debug_queries       slowest first, with call sites</code></pre>
             survives it.</p>
             <p>Cost: 60 kB raw, 18 kB gzipped. The plan guessed 20 kB, which was optimistic
             about the core and about SQL's keyword list.</p>` },
+      { t: 'Fixed: the comparison panel threw on every page load', s: 'done',
+        d: `<p>The panel was wrapped in <code>x-show="comparison"</code>, and
+            <code>comparison</code> starts as null. x-show hides an element and evaluates
+            every expression inside it anyway, so sixteen bindings threw on every single
+            page load, before anyone opened the bar.</p>
+            <p>Invisible unless you had the console open: a binding that throws renders as
+            an empty element and says nothing. Reported by Rutger, from the console, which
+            is the only place it appeared.</p>
+            <p>Fixed with <code>x-if</code>, which does not create the subtree at all until
+            there is something to render. <code>comparison</code> was the only null the
+            template dereferenced; the other seven null properties are never read from
+            markup.</p>
+            <p>The bar catches this class of error itself, since early.js watches
+            console.warn for every Alpine on the page and the Health tab lists what it
+            found. Walking every section now reports none.</p>` },
       { t: 'Open in editor links', s: 'done',
         d: `<p>Rutger's objection was that developers use many editors. That is exactly why
             this is a URL template rather than a set of integrations: <code>%f</code> is the

@@ -145,3 +145,20 @@ test('the header offers no control the palette owns', () => {
   assert.ok(!dock.includes('cycleTheme'), 'all three themes are palette commands')
   assert.ok(!dock.includes('movePlacement'), 'placement is a palette command')
 })
+
+test('a panel with no data yet is not rendered at all', () => {
+  // x-show hides an element and evaluates every expression inside it anyway, so a panel
+  // bound to a null object throws once per binding on every page load, in silence unless
+  // someone opens the console.
+  assert.ok(template.includes('data-ndb-if="comparison"'))
+  assert.ok(!template.includes('data-ndb-show="comparison"'))
+
+  const guarded = template.slice(template.indexOf('data-ndb-if="comparison"'))
+  const before = template.slice(0, template.indexOf('data-ndb-if="comparison"'))
+
+  assert.ok(
+    !/data-ndb-(text|for|html)="comparison\./.test(before),
+    'every comparison expression belongs inside the guard'
+  )
+  assert.ok(/data-ndb-text="comparison\./.test(guarded), 'and there are some')
+})
