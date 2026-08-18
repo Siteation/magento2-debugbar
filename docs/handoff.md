@@ -114,18 +114,14 @@ engineering task, and not something to push toward.
 | B. Window | 5/5 | floating glass dock, modal sheet, `lockHost`, window controls |
 | C. Navigation | 6/7 | 210px sidebar, favourites with drag, section leads, inline findings |
 | D. Alpine | 6/7 | components, stores, deferred, health, sub-tabs, value policy |
-| E. Comfort | 2/6 | light theme and the type pass done; palette, highlighting, history left |
+| E. Comfort | 3/6 | light theme, the type pass and the palette done; highlighting and history left |
 
 Backlog is in `build-status.html`, which is the live tracker. Open it in a browser.
 
 ## Next
 
-The command palette is the last thing the header is waiting on: it is where the placement
-toggle went, and where search belongs. After that, syntax highlighting and a history
-section.
-
-One duplication is still open. The findings icon and the mode dot both go amber for the
-same reason, so the header says "something is wrong" twice.
+Syntax highlighting and a history section, in either order. Neither unblocks anything, and
+the history section is what cross request comparison would need first.
 
 ## Decided in D, worth not relitigating
 
@@ -158,6 +154,11 @@ Beyond the three stale artifact traps, the ones most likely to bite again:
   collide; `.ndb-facts` was defined twice and the header broke.
 * Do not use tiny type. 15px body, 14px mono, 12px floor. The uppercase micro label in this
   bar is 12px, everywhere.
+* `x-show` defers every reveal after the first through a `setTimeout`, so nothing can be
+  timed against it. Anything that has to focus an element as it appears should be shown with
+  a class instead.
+* A background tab throttles timers and stops `requestAnimationFrame`, so anything timing
+  sensitive measures as broken there. Check the tab is in front before believing it.
 * An `x-for` variable that shares a name with a component property silently redirects every
   write inside the loop. `select(id) { this.section = id }` wrote to the loop's `section`,
   which blanked the row's own label and never changed the panel. Nothing throws.

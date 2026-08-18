@@ -1,5 +1,6 @@
 import { header } from './header.js'
 import { navigation } from './nav.js'
+import { palette } from './palette.js'
 import { subTabs } from './tabs.js'
 import { icon } from './icons.js'
 
@@ -22,6 +23,8 @@ export const template = `
   <div class="ndb-dock" data-ndb-show="!open && !dismissed" data-ndb-cloak>
     ${header({ sheet: false })}
   </div>
+
+  ${palette()}
 
   <div class="ndb-overlay" data-ndb-show="open && !dismissed" data-ndb-cloak>
     <div class="ndb-backdrop" data-ndb-on:click="closeInspector()"></div>

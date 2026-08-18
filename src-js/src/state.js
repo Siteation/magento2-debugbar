@@ -1,6 +1,7 @@
 import { watchRequests } from './requests.js'
 import { keepFocusWithin, lockHost, unlockHost } from './host.js'
 import { SECTIONS, countFor } from './sections.js'
+import { commandsFor, matchCommands } from './palette.js'
 import { policyName } from './redact.js'
 import {
   alpineErrors,
@@ -110,6 +111,10 @@ export function debugBar() {
     timelineFilter: 'key',
     timelineSearch: '',
     returnFocusTo: null,
+    paletteOpen: false,
+    paletteSearch: '',
+    paletteIndex: 0,
+    paletteReturnFocus: null,
     payloads: {},
     loading: false,
     loadError: '',
@@ -140,6 +145,13 @@ export function debugBar() {
 
       this.$watch('alpineLiveWanted', () => this.syncAlpineLive())
       this.syncAlpineLive()
+
+      this.$watch('paletteSearch', () => { this.paletteIndex = 0 })
+
+      // On the document, not on the bar: the shortcut has to work while the page has
+      // focus, which is most of the time. Events from the shadow root are composed, so
+      // this sees those too.
+      document.addEventListener('keydown', (event) => this.paletteShortcut(event))
 
       if (this.open) this.$nextTick(() => this.lock())
 
@@ -455,6 +467,16 @@ export function debugBar() {
       return this.alpineHealth.csp ? 'CSP friendly' : 'standard'
     },
 
+    /** @returns {Array<object>} */
+    get commands() {
+      return commandsFor(this)
+    },
+
+    /** @returns {Array<object>} */
+    get visibleCommands() {
+      return matchCommands(this.commands, this.paletteSearch)
+    },
+
     /** @returns {boolean} whether the page should be re-read on a timer */
     get alpineLiveWanted() {
       return this.open && !this.dismissed && this.alpineLive && this.section === 'alpine'
@@ -479,6 +501,16 @@ export function debugBar() {
       if (status >= 400) return 'warn'
 
       return 'ok'
+    },
+
+    /**
+     * Developer mode is where the bar belongs. Default mode still allows it, and is close
+     * enough to production to be worth a colour.
+     *
+     * @returns {string}
+     */
+    get modeTone() {
+      return this.request.mode === 'developer' ? 'ok' : 'warn'
     },
 
     /** @returns {string} */
@@ -609,11 +641,17 @@ export function debugBar() {
       this.stopWatchingScheme = () => query.removeEventListener('change', apply)
     },
 
-    cycleTheme() {
-      const order = ['system', 'light', 'dark']
-      this.theme = order[(order.indexOf(this.theme) + 1) % order.length]
+    /** @param {string} theme */
+    setTheme(theme) {
+      this.theme = ['system', 'light', 'dark'].includes(theme) ? theme : 'system'
       this.watchColorScheme()
       this.persist()
+    },
+
+    cycleTheme() {
+      const order = ['system', 'light', 'dark']
+
+      this.setTheme(order[(order.indexOf(this.theme) + 1) % order.length])
     },
 
     openInspector() {
@@ -647,7 +685,6 @@ export function debugBar() {
       this.persist()
     },
 
-    /** No control reaches this yet: the placement toggle left the header for the palette. */
     movePlacement() {
       this.placement = this.placement === 'bottom' ? 'top' : 'bottom'
       this.persist()
@@ -763,6 +800,115 @@ export function debugBar() {
      */
     highlightAlpine(id, on) {
       highlight(id, on)
+    },
+
+    /**
+     * The palette does not lock the host itself. When the inspector is open the page is
+     * already inert, and when it is not, locking here would have to be undone in the one
+     * case where the command that just ran opened the inspector.
+     */
+    openPalette() {
+      if (this.paletteOpen || this.dismissed) return
+
+      this.paletteReturnFocus = this.$root.getRootNode().activeElement
+      this.paletteSearch = ''
+      this.paletteIndex = 0
+      this.paletteOpen = true
+      this.$nextTick(() => this.$refs.paletteInput?.focus())
+    },
+
+    closePalette() {
+      if (!this.paletteOpen) return
+
+      this.paletteOpen = false
+
+      if (typeof this.paletteReturnFocus?.focus === 'function') {
+        this.paletteReturnFocus.focus()
+      }
+
+      this.paletteReturnFocus = null
+    },
+
+    togglePalette() {
+      this.paletteOpen ? this.closePalette() : this.openPalette()
+    },
+
+    /** @param {KeyboardEvent} event */
+    paletteShortcut(event) {
+      // KeyP rather than the key itself, so a layout that puts P elsewhere still works.
+      if (event.code !== 'KeyP' || !event.shiftKey || !(event.metaKey || event.ctrlKey)) return
+
+      event.preventDefault()
+      this.togglePalette()
+    },
+
+    /** @param {KeyboardEvent} event */
+    paletteKeys(event) {
+      if (event.key === 'Escape') {
+        event.stopPropagation()
+        this.closePalette()
+
+        return
+      }
+
+      if (event.key === 'ArrowDown') {
+        event.preventDefault()
+        this.movePalette(1)
+
+        return
+      }
+
+      if (event.key === 'ArrowUp') {
+        event.preventDefault()
+        this.movePalette(-1)
+
+        return
+      }
+
+      if (event.key === 'Enter') {
+        event.preventDefault()
+        this.runCommand(this.visibleCommands[this.paletteIndex])
+
+        return
+      }
+
+      keepFocusWithin(event, this.$refs.palette)
+    },
+
+    /** @param {number} step */
+    movePalette(step) {
+      const total = this.visibleCommands.length
+
+      if (total === 0) return
+
+      this.paletteIndex = (this.paletteIndex + step + total) % total
+      this.$nextTick(() => {
+        this.$refs.palette?.querySelector('.ndb-palette-item.is-active')
+          ?.scrollIntoView({ block: 'nearest' })
+      })
+    },
+
+    /**
+     * The palette closes first, so focus goes back to whatever opened it before the
+     * command moves it somewhere else.
+     *
+     * @param {object} command
+     */
+    runCommand(command) {
+      if (!command) return
+
+      this.closePalette()
+
+      switch (command.kind) {
+        case 'section': this.select(command.arg); break
+        case 'theme': this.setTheme(command.arg); break
+        case 'placement': this.movePlacement(); break
+        case 'favourite': this.toggleFavourite(command.arg); break
+        case 'inspector': this.toggle(); break
+        case 'maximise': this.toggleMaximised(); break
+        case 'dismiss': this.dismiss(); break
+        default: break
+      }
     },
 
     /**

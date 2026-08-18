@@ -11,6 +11,9 @@ import { icon } from './icons.js'
  * header a second navigation over the same destinations as the sidebar and gave the row a
  * tab bar's weight. Four of them, as New Debug Bar has, and the sidebar navigates.
  *
+ * The mode dot reports the deploy mode and nothing else. It used to take its colour from
+ * the worst finding, which is what the findings icon beside it already says, with a count.
+ *
  * @param {{sheet: boolean}} options
  * @returns {string}
  */
@@ -32,7 +35,7 @@ export function header({ sheet }) {
 
   <div class="ndb-stats">
     <div class="ndb-stat">
-      <span class="ndb-env-dot" data-ndb-bind:class="'is-' + findingsTone"></span>
+      <span class="ndb-env-dot" data-ndb-bind:class="'is-' + modeTone"></span>
       <span>
         <span class="ndb-stat-key">Mode</span>
         <span class="ndb-stat-value" data-ndb-text="request.mode || 'unknown'"></span>
@@ -69,6 +72,11 @@ export function header({ sheet }) {
   </div>
 
   <div class="ndb-controls-group">
+    <button type="button" class="ndb-icon-button" data-ndb-on:click="openPalette()"
+            title="Search sections and settings">
+      ${icon('search')}
+    </button>
+
     <button type="button" class="ndb-icon-button" data-ndb-on:click="select('findings')"
             data-ndb-bind:class="findings.length > 0 && 'is-' + findingsTone"
             title="Findings">

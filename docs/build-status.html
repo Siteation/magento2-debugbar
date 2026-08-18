@@ -525,7 +525,7 @@
 
   <h2 class="section" style="margin-top:2.25rem">What is left</h2>
   <p class="lede">
-    Four items are to do, and one is parked. Anything marked
+    Three items are to do, and one is parked. Anything marked
     <span class="tag closed">Closed</span> is a decision that was taken rather than work
     that was dropped: moved into another phase, superseded, or deliberately not built.
     Those are listed underneath so the reasoning stays findable. The
@@ -1379,13 +1379,24 @@ inspect_debug_queries       slowest first, with call sites</code></pre>
             warn and bad are coloured.</p>
             <p>Placement is still stored and still applied; nothing reaches
             <code>movePlacement()</code> until the palette does.</p>` },
-      { t: 'Search and the command palette', s: 'todo',
-        d: `<p>The header carried a search icon that opened findings, which was a lie about
-            what the control did. It is a warning icon now, and search waits until the
-            palette exists to sit behind it.</p>
-            <p><code>Cmd/Ctrl Shift P</code>. Centered modal listing sections and settings,
-            keyboard driven, with <code>↑↓ Navigate</code> and <code>↵ Select</code> in the
-            footer.</p>` },
+      { t: 'Search and the command palette', s: 'done',
+        d: `<p><code>Cmd/Ctrl Shift P</code> anywhere on the page, or the search icon that
+            is now honest about what it opens. Eighteen commands in three groups: every
+            section, the three themes, placement, pinning, and the window controls.</p>
+            <p>The commands are plain descriptors with a <code>kind</code> and an
+            <code>arg</code> rather than closures, so they survive Alpine's reactive proxy
+            and can be read in a test. Matching is substring across label, group and
+            keywords; fuzzy matching reorders results in ways nobody can predict and this
+            list is short enough to read.</p>
+            <p>The list stays flat even though it renders as groups, because the
+            highlighted row is an index into it and grouping into arrays would mean two
+            numbers to keep in step. Each row only knows whether it opens a group.</p>
+            <p>Shown by a class rather than <code>x-show</code>. x-show defers every reveal
+            after the first through a <code>setTimeout</code>, so the input could not be
+            focused as the palette appeared: neither <code>$nextTick</code> nor a frame is
+            late enough. A class lands in the effect itself.</p>
+            <p>This is where the placement toggle went when it left the header, so
+            <code>movePlacement()</code> has a caller again.</p>` },
       { t: 'Command palette (superseded)', s: 'closed',
         d: `<p><code>Cmd/Ctrl Shift P</code>. Centered modal listing sections and settings,
             keyboard driven, with <code>↑↓ Navigate</code> and <code>↵ Select</code> in the
@@ -1447,10 +1458,6 @@ const REMAINING = [
     why: 'Not an engineering task. Packagist can only read a public repository, and making '
       + 'this one public is Rutger\'s decision. Everything it would ship is built, tested '
       + 'and verified against a running store.' },
-  { name: 'Search and the command palette', phase: '1.1, E. Comfort', status: 'todo',
-    why: 'Cmd/Ctrl Shift P over sections and settings. It is also where the dock placement '
-      + 'toggle went when it left the header, so it is the one open item another piece is '
-      + 'already waiting on.' },
   { name: 'Syntax highlighting', phase: '1.1, E. Comfort', status: 'todo',
     why: 'SQL, JSON and a small PHP grammar through highlight.js/lib/core, about 20 kB '
       + 'rather than the 900 kB of the full package. Nothing depends on it.' },
