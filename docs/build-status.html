@@ -1484,7 +1484,13 @@ inspect_debug_queries       slowest first, with call sites</code></pre>
             wins. The link is built in the browser from a template and a root, so a
             developer's editor never ends up baked into a stored profile.</p>
             <p>Findings link too, where their location is a file and a line rather than a
-            class name.</p>` },
+            class name.</p>
+            <p><strong>Every path style template was wrong at first.</strong> They were
+            written <code>://file/%f</code>, and <code>%f</code> is absolute, so the URL
+            carried two slashes. Zed opens the single slash form and ignores the double one
+            without a word: no error, no log line, nothing. Proved by opening both against a
+            file type whose language server had not started yet and watching which one made
+            Zed start it.</p>` },
       { t: 'A report an assistant can read', s: 'done',
         d: `<p>The MCP server already serves an agent that can call it. This is for the
             ones that cannot: an assistant in a browser tab, a colleague in a chat window,

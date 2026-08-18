@@ -178,6 +178,10 @@ Beyond the three stale artifact traps, the ones most likely to bite again:
 * The header is built once and used twice, and the difference is the `sheet` flag. Metrics
   belong to the collapsed dock: open, the overview already says all of it. Preferences
   belong to the palette, not to a header icon.
+* An editor URL template writes `://file%f`, never `://file/%f`: `%f` is absolute, so the
+  second form carries two slashes. Zed ignores that silently. To test one, open both forms
+  against a file whose language server has not started yet and watch `~/Library/Logs/Zed/`
+  for which one starts it. Rutger uses Zed.
 * A query's call site is stored under `callsite`, one word, relative to the application
   root. Two things read it wrong before anyone noticed, because a missing key looks like a
   query that simply had no frame.

@@ -152,7 +152,7 @@ Every query shows the application frame it came from. Name an editor and that fr
 a link that opens the file at the line:
 
 ```
-bin/magento config:set dev/siteation_debugbar/editor phpstorm
+bin/magento config:set dev/siteation_debugbar/editor zed
 ```
 
 PhpStorm, VS Code and Insiders, Cursor, Windsurf, Zed, Sublime Text and TextMate are named.
@@ -163,6 +163,10 @@ Anything else with a URL scheme works through `custom`, where `%f` is the absolu
 bin/magento config:set dev/siteation_debugbar/editor custom
 bin/magento config:set dev/siteation_debugbar/editor_template 'myeditor://open?file=%f&line=%l'
 ```
+
+`%f` is absolute and so already starts with a slash. A path style template is therefore
+`myeditor://file%f:%l`, with no slash of its own: `://file/%f` produces two, which some
+editors open nothing at all for, without saying so.
 
 If the application runs somewhere your editor cannot see, a container for instance, map the
 root across. Paths are stored relative to it, so mapping the root maps every path:

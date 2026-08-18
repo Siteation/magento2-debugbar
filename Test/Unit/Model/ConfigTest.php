@@ -114,7 +114,19 @@ class ConfigTest extends TestCase
     {
         $config = $this->enabled(['dev/siteation_debugbar/editor' => 'vscode']);
 
-        $this->assertSame('vscode://file/%f:%l', $config->editor());
+        $this->assertSame('vscode://file%f:%l', $config->editor());
+    }
+
+    #[Test]
+    public function aPathStyleTemplateDoesNotAddItsOwnSlash(): void
+    {
+        // %f is absolute, so ://file/%f would produce two slashes. Zed opens nothing at all
+        // when it sees that, without complaining.
+        foreach (['vscode', 'vscode_insiders', 'cursor', 'windsurf', 'zed'] as $editor) {
+            $template = $this->enabled(['dev/siteation_debugbar/editor' => $editor])->editor();
+
+            $this->assertStringContainsString('://file%f', $template, $editor);
+        }
     }
 
     #[Test]
