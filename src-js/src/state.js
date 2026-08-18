@@ -1,4 +1,5 @@
 import { watchRequests } from './requests.js'
+import { keepFocusWithin, lockHost, unlockHost } from './host.js'
 
 const STORAGE_KEY = 'siteation.debugbar.v1'
 const ID_PLACEHOLDER = '__PROFILE_ID__'
@@ -61,6 +62,11 @@ export function debugBar() {
     profile: {},
     open: false,
     section: 'findings',
+    placement: 'bottom',
+    maximised: false,
+    // Deliberately not persisted. Hiding the bar for good with no way back would be a
+    // trap, so closing it lasts until the next page load.
+    dismissed: false,
     queryFilter: 'all',
     querySearch: '',
     eventFilter: 'all',
@@ -70,6 +76,7 @@ export function debugBar() {
     pluginSearch: '',
     timelineFilter: 'key',
     timelineSearch: '',
+    returnFocusTo: null,
     payloads: {},
     loading: false,
     loadError: '',
@@ -86,6 +93,10 @@ export function debugBar() {
       const preferences = readPreferences()
       this.open = preferences.open
       this.section = preferences.section
+      this.placement = preferences.placement === 'top' ? 'top' : 'bottom'
+      this.maximised = Boolean(preferences.maximised)
+
+      if (this.open) this.$nextTick(() => this.lock())
 
       this.requests = watchRequests((entry) => {
         if (this.requests.some((seen) => seen.id === entry.id)) return
@@ -364,6 +375,17 @@ export function debugBar() {
     },
 
     /** @returns {string} */
+    get statusPhrase() {
+      const status = Number(this.request.status || 0)
+
+      if (status >= 500) return 'Error'
+      if (status >= 400) return 'Refused'
+      if (status >= 300) return 'Redirect'
+
+      return 'Success'
+    },
+
+    /** @returns {string} */
     get statusTone() {
       const status = Number(this.request.status || 0)
 
@@ -403,19 +425,68 @@ export function debugBar() {
         && Number(this.events.count || 0) === 0
     },
 
-    toggle() {
-      this.open = !this.open
-      this.persist()
+    openInspector() {
+      if (this.open) return
 
-      if (this.open) this.loadPayloads()
+      this.returnFocusTo = this.$root.getRootNode().activeElement
+      this.open = true
+      this.persist()
+      this.loadPayloads()
+      this.$nextTick(() => this.lock())
+    },
+
+    closeInspector() {
+      if (!this.open) return
+
+      this.open = false
+      this.persist()
+      unlockHost()
+
+      if (this.returnFocusTo && typeof this.returnFocusTo.focus === 'function') {
+        this.returnFocusTo.focus()
+      }
+    },
+
+    toggle() {
+      this.open ? this.closeInspector() : this.openInspector()
+    },
+
+    toggleMaximised() {
+      this.maximised = !this.maximised
+      this.persist()
+    },
+
+    movePlacement() {
+      this.placement = this.placement === 'bottom' ? 'top' : 'bottom'
+      this.persist()
+    },
+
+    dismiss() {
+      this.closeInspector()
+      this.dismissed = true
+    },
+
+    lock() {
+      lockHost(document.getElementById('siteation-debugbar'))
+      this.$refs.sheet?.focus()
+    },
+
+    /** @param {KeyboardEvent} event */
+    trapFocus(event) {
+      if (event.key === 'Escape') {
+        this.closeInspector()
+
+        return
+      }
+
+      keepFocusWithin(event, this.$refs.sheet)
     },
 
     /** @param {string} section */
     select(section) {
       this.section = section
-      this.open = true
+      this.openInspector()
       this.persist()
-      this.loadPayloads()
     },
 
     /**
@@ -445,10 +516,12 @@ export function debugBar() {
 
     persist() {
       try {
-        localStorage.setItem(
-          STORAGE_KEY,
-          JSON.stringify({ open: this.open, section: this.section })
-        )
+        localStorage.setItem(STORAGE_KEY, JSON.stringify({
+          open: this.open,
+          section: this.section,
+          placement: this.placement,
+          maximised: this.maximised,
+        }))
       } catch {
         // A blocked localStorage is not a reason to lose the bar.
       }

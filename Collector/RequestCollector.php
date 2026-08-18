@@ -8,6 +8,7 @@ use Magento\Framework\App\Request\Http as HttpRequest;
 use Magento\Framework\App\Response\HttpInterface as HttpResponse;
 use Magento\Framework\App\ResponseInterface;
 use Magento\Framework\App\State;
+use Magento\Framework\HTTP\PhpEnvironment\Response as ReadableResponse;
 use Siteation\DebugBar\Model\Config;
 use Siteation\DebugBar\Model\Clock;
 use Siteation\DebugBar\Model\Redactor;
@@ -71,6 +72,10 @@ class RequestCollector extends AbstractCollector
                 ? (int) $response->getHttpResponseCode()
                 : 200,
             'content_type' => $this->contentType($response),
+            // Measured before the bar is injected, so it reports the application's
+            // response rather than the application plus the bar.
+            'response_bytes' => $this->responseBytes($response),
+            'mode' => $this->mode(),
         ];
     }
 
@@ -98,6 +103,20 @@ class RequestCollector extends AbstractCollector
     {
         try {
             return (string) $this->appState->getAreaCode();
+        } catch (Throwable) {
+            return 'unknown';
+        }
+    }
+
+    private function responseBytes(ResponseInterface $response): int
+    {
+        return $response instanceof ReadableResponse ? strlen((string) $response->getContent()) : 0;
+    }
+
+    private function mode(): string
+    {
+        try {
+            return $this->appState->getMode();
         } catch (Throwable) {
             return 'unknown';
         }

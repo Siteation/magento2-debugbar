@@ -1183,7 +1183,18 @@ in this project: static assets served from a URL that only changes on deploy, th
 interception cache that `cache:clean config` does not reach, and this. All three cost time
 looking for a bug that was not there.
 
-### 13.22 Smaller confirmations
+### 13.22 A shadow root does not protect the bar from itself
+
+Building the new header, its metrics stacked vertically instead of sitting in a row. The
+cause was a collision between the header's `.ndb-facts` and the overview's `.ndb-facts`,
+which is a definition list laid out as a grid. Later rule wins.
+
+The shadow root isolates the bar from the host page's CSS in both directions, and it is
+easy to read that as isolation from everything. It is not. Inside the root the bar is one
+flat namespace, and the more sections it grows the more likely a generic name is already
+taken. Names like `fact`, `item`, `row` and `panel` are the ones to avoid.
+
+### 13.23 Smaller confirmations
 
 * One `aroundLaunch` plugin really does cover frontend, adminhtml, GraphQL and REST.
   Verified: all four return `X-Siteation-DebugBar-Profile`.

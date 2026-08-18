@@ -1,5 +1,11 @@
+import { header } from './header.js'
+
 /**
  * The bar's markup, rendered into the shadow root before Alpine initialises it.
+ *
+ * Two states share one header. Collapsed, it floats as a centered pill. Open, it is a
+ * modal sheet with a backdrop, so the page behind it stops being interactive rather than
+ * merely being covered up.
  *
  * Directives use the data-ndb- prefix so the host theme's own Alpine, which reads x-,
  * never sees them.
@@ -7,10 +13,23 @@
  * @type {string}
  */
 export const template = `
-<div class="ndb" data-ndb-data="debugBar" data-ndb-cloak>
+<div class="ndb" data-ndb-data="debugBar" data-ndb-cloak
+     data-ndb-bind:class="'is-' + placement">
 
-  <section class="ndb-panel" data-ndb-show="open" data-ndb-cloak>
-    <nav class="ndb-tabs">
+  <div class="ndb-dock" data-ndb-show="!open && !dismissed" data-ndb-cloak>
+    ${header({ sheet: false })}
+  </div>
+
+  <div class="ndb-overlay" data-ndb-show="open && !dismissed" data-ndb-cloak>
+    <div class="ndb-backdrop" data-ndb-on:click="closeInspector()"></div>
+
+    <div class="ndb-sheet" data-ndb-ref="sheet" tabindex="-1"
+         role="dialog" aria-modal="true" aria-label="Request inspector"
+         data-ndb-bind:class="maximised && 'is-maximised'"
+         data-ndb-on:keydown="trapFocus($event)">
+      ${header({ sheet: true })}
+
+      <nav class="ndb-tabs">
       <button type="button" class="ndb-tab" data-ndb-on:click="select('findings')"
               data-ndb-bind:class="isSection('findings') && 'is-active'">
         Findings
@@ -47,7 +66,7 @@ export const template = `
               data-ndb-bind:class="isSection('plugins') && 'is-active'">
         Plugins <span class="ndb-pill" data-ndb-text="interception.plugin_count || 0"></span>
       </button>
-    </nav>
+      </nav>
 
     <div class="ndb-panel-body">
 
@@ -421,80 +440,6 @@ export const template = `
       </div>
 
     </div>
-  </section>
-
-  <div class="ndb-strip">
-    <button type="button" class="ndb-brand" data-ndb-on:click="toggle()"
-            data-ndb-bind:aria-expanded="open ? 'true' : 'false'">
-      <span class="ndb-logo">S</span>
-      <span class="ndb-caret" data-ndb-bind:class="open && 'is-open'"></span>
-    </button>
-
-    <button type="button" class="ndb-metric ndb-metric-path" data-ndb-on:click="select('overview')">
-      <span class="ndb-metric-key" data-ndb-text="request.method"></span>
-      <span class="ndb-metric-value ndb-mono ndb-truncate" data-ndb-text="request.path"></span>
-    </button>
-
-    <button type="button" class="ndb-metric" data-ndb-on:click="select('findings')">
-      <span class="ndb-metric-key">Findings</span>
-      <span class="ndb-metric-value" data-ndb-bind:class="'is-' + findingsTone"
-            data-ndb-text="findings.length"></span>
-    </button>
-
-    <button type="button" class="ndb-metric" data-ndb-on:click="select('overview')">
-      <span class="ndb-metric-key">Status</span>
-      <span class="ndb-metric-value" data-ndb-bind:class="'is-' + statusTone"
-            data-ndb-text="request.status"></span>
-    </button>
-
-    <button type="button" class="ndb-metric" data-ndb-on:click="select('overview')">
-      <span class="ndb-metric-key">Time</span>
-      <span class="ndb-metric-value" data-ndb-bind:class="'is-' + durationTone">
-        <span data-ndb-text="number(metrics.duration_ms, 0)"></span> ms
-      </span>
-    </button>
-
-    <button type="button" class="ndb-metric is-secondary" data-ndb-on:click="select('timeline')">
-      <span class="ndb-metric-key">Timeline</span>
-      <span class="ndb-metric-value" data-ndb-text="timeline.count || 0"></span>
-    </button>
-
-    <button type="button" class="ndb-metric" data-ndb-on:click="select('queries')">
-      <span class="ndb-metric-key">Queries</span>
-      <span class="ndb-metric-value" data-ndb-bind:class="'is-' + queryTone">
-        <span data-ndb-text="queries.count || 0"></span>
-        <span class="ndb-dim">/ <span data-ndb-text="number(queries.duration_ms, 0)"></span> ms</span>
-      </span>
-    </button>
-
-    <button type="button" class="ndb-metric" data-ndb-on:click="select('observers')">
-      <span class="ndb-metric-key">Observers</span>
-      <span class="ndb-metric-value">
-        <span data-ndb-text="observers.count || 0"></span>
-        <span class="ndb-dim">/ <span data-ndb-text="number(observers.duration_ms, 0)"></span> ms</span>
-      </span>
-    </button>
-
-    <button type="button" class="ndb-metric is-secondary" data-ndb-on:click="select('blocks')">
-      <span class="ndb-metric-key">Blocks</span>
-      <span class="ndb-metric-value">
-        <span data-ndb-text="blocks.unique_count || 0"></span>
-        <span class="ndb-dim">/ <span data-ndb-text="number(blocks.duration_ms, 0)"></span> ms</span>
-      </span>
-    </button>
-
-    <button type="button" class="ndb-metric is-secondary" data-ndb-on:click="select('cache')">
-      <span class="ndb-metric-key">Cache</span>
-      <span class="ndb-metric-value" data-ndb-bind:class="'is-' + cacheTone"
-            data-ndb-text="cache.hit_rate === null ? '-' : number(cache.hit_rate, 0) + '%'"></span>
-    </button>
-
-    <button type="button" class="ndb-metric is-secondary" data-ndb-on:click="select('overview')">
-      <span class="ndb-metric-key">Memory</span>
-      <span class="ndb-metric-value">
-        <span data-ndb-text="number(metrics.memory_peak_mb, 1)"></span> MB
-      </span>
-    </button>
   </div>
 
 </div>

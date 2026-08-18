@@ -1137,34 +1137,52 @@ inspect_debug_queries       slowest first, with call sites</code></pre>
     name: 'B. Window',
     goal: 'The floating glass window and the modal sheet, which is most of why theirs reads as a tool.',
     tasks: [
-      { t: 'Floating, centered, glass toolbar', s: 'todo',
-        d: `<p>Theirs does not touch the viewport edge:</p>
-            <pre><code>fixed left-1/2 -translate-x-1/2 bottom-3
-w-[calc(100vw-24px)] max-w-5xl
-rounded-[18px] border border-white/70 bg-white/80
-backdrop-blur-xl backdrop-brightness-110 backdrop-saturate-125
-shadow-[0_18px_60px_-18px_rgba(24,24,27,0.4)]</code></pre>
-            <p>Also supports <code>top-3</code>, so it can move out of the way of a fixed
-            footer. Persist the choice with the other preferences.</p>` },
-      { t: 'Rebuild the header', s: 'todo',
-        d: `<p>Method badge, path, and a second line with status and response size on the
-            left. Metrics on the right as icon plus stacked label and value: label
-            <code>11px uppercase tracking-wider</code>, value
-            <code>12px bold tabular-nums</code>. Environment gets a dot, emerald normally
-            and amber when something is wrong.</p>
-            <p>Ours gives label and value the same weight and no icons, which is why the
-            strip reads as a wall of numbers.</p>` },
-      { t: 'Modal sheet with backdrop and focus trap', s: 'todo',
-        d: `<p>Not an expanding panel. <code>role="dialog" aria-modal="true"</code>, a
-            dimmed backdrop, and a slide up from <code>translate-y-full</code> over 200ms,
-            sized <code>h-[min(82vh,780px)]</code> with <code>rounded-t-2xl</code>.</p>
-            <p><strong>Port lockHost here.</strong> It was pointless until there was
-            something to lock the page behind.</p>` },
-      { t: 'Window controls', s: 'todo',
-        d: `<p>Maximise, minimise and close, with the choice remembered.</p>` }
+      { t: 'Floating, centered, glass toolbar', s: 'done',
+        d: `<p>No longer attached to the viewport edge. Centered, 1024px at most, 18px
+            radius, translucent with a blur behind it and a long soft shadow. Their
+            proportions, written by hand rather than through Tailwind, because the shadow
+            root already isolates the styles.</p>
+            <p>Placement moves between top and bottom from a control in the header and is
+            remembered, so it can get out of the way of a fixed footer.</p>` },
+      { t: 'Rebuild the header', s: 'done',
+        d: `<p>Method badge, path, then status, phrase and response size underneath.
+            Metrics to the right as icon plus stacked label and value: 11px uppercase
+            label, 13px bold tabular value. A mode dot that turns amber or red with the
+            worst finding.</p>
+            <p>Built once and used twice, since the collapsed bar and the top of the sheet
+            show the same thing.</p>
+            <p>Two facts had to be collected for it: response size, measured before the bar
+            is injected so it reports the application's response rather than the
+            application plus the bar, and the deploy mode.</p>
+            <p>Icons are inline SVG. A sprite sheet would need its own request from inside
+            the shadow root and an icon font would need an @font-face the host page's CSP
+            may not allow.</p>` },
+      { t: 'Modal sheet with backdrop and focus trap', s: 'done',
+        d: `<p>A real dialog rather than an expanding panel:
+            <code>role="dialog" aria-modal="true"</code>, a backdrop at 55% that closes on
+            click, focus moved to the sheet on open and returned on close, Tab kept inside,
+            Escape to close, and a 200ms slide that respects
+            <code>prefers-reduced-motion</code>.</p>
+            <p><code>lockHost</code> is ported and finally earns its place: every sibling of
+            the bar is marked <code>inert</code>, body scroll is locked, and the scrollbar's
+            width is replaced as padding so the page does not jump sideways. All of it
+            recorded and put back exactly on close.</p>
+            <p>Verified: focus lands on the sheet, the body locks, Escape closes it, and
+            afterwards nothing is left inert and the overflow is restored.</p>` },
+      { t: 'Window controls', s: 'done',
+        d: `<p>Maximise, minimise and close, plus the placement toggle. Maximise and
+            placement are remembered.</p>
+            <p>Close is deliberately not remembered. Hiding the bar for good with no way
+            back would be a trap, so it lasts until the next page load.</p>` },
+      { t: 'Fixed: a class name collision', s: 'done',
+        d: `<p>The new header's <code>.ndb-facts</code> clashed with the overview's
+            <code>.ndb-facts</code>, a definition list laid out as a grid. The later rule
+            won and the header's metrics stacked vertically.</p>
+            <p>Renamed to <code>.ndb-stat</code>. Worth recording because a shadow root
+            protects against the host page's CSS, not against the bar colliding with
+            itself.</p>` }
     ]
   },
-
   {
     release: '1.1',
     id: 'navigation',
