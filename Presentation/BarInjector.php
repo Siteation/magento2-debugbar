@@ -7,6 +7,7 @@ namespace Siteation\DebugBar\Presentation;
 use Magento\Framework\App\Response\HttpInterface as HttpResponse;
 use Magento\Framework\App\ResponseInterface;
 use Magento\Framework\UrlInterface;
+use Siteation\DebugBar\Model\RequestEligibility;
 
 /**
  * Adds the bar to HTML responses, and the profile id to every profiled response.
@@ -26,6 +27,12 @@ class BarInjector
 
     private const ROOT_ID = 'siteation-debugbar';
     private const DATA_ID = 'siteation-debugbar-profile';
+
+    /**
+     * The URL is emitted as a template so the bar can load any profile it discovers, not
+     * only the one that rendered the page.
+     */
+    private const ID_PLACEHOLDER = '__PROFILE_ID__';
 
     public function __construct(
         private readonly AssetUrl $assets,
@@ -48,7 +55,8 @@ class BarInjector
             return;
         }
 
-        $html = $this->insertBody((string) $response->getContent(), $profile);
+        $html = $this->insertHead((string) $response->getContent());
+        $html = $this->insertBody($html, $profile);
 
         $response->setBody($html);
         $response->clearHeader('Content-Length');
@@ -78,6 +86,30 @@ class BarInjector
     /**
      * @param array<string, mixed> $profile
      */
+    /**
+     * The request watcher has to block in the head. By the time a deferred module at the
+     * end of the body runs, the theme has already fetched its private content, and those
+     * requests would never be seen.
+     */
+    private function insertHead(string $html): string
+    {
+        $script = sprintf(
+            '<script src="%s"></script>',
+            $this->escape($this->assets->for('js/debugbar-early.js'))
+        );
+
+        if (preg_match('#</head\s*>#i', $html) !== 1) {
+            return $html;
+        }
+
+        return (string) preg_replace_callback(
+            '#</head\s*>#i',
+            static fn (array $matches): string => $script . $matches[0],
+            $html,
+            1
+        );
+    }
+
     private function insertBody(string $html, array $profile): string
     {
         $json = json_encode(
@@ -86,12 +118,13 @@ class BarInjector
         );
 
         $markup = sprintf(
-            '<div id="%s" data-css="%s" data-profile-url="%s"></div>'
+            '<div id="%s" data-css="%s" data-profile-url="%s" data-front-name="%s"></div>'
             . '<script type="application/json" id="%s">%s</script>'
             . '<script type="module" src="%s" defer></script>',
             self::ROOT_ID,
             $this->escape($this->assets->for('css/debugbar.css')),
-            $this->escape($this->profileUrl((string) $profile['id'])),
+            $this->escape($this->profileUrl(self::ID_PLACEHOLDER)),
+            RequestEligibility::FRONT_NAME,
             self::DATA_ID,
             $json === false ? '{}' : $json,
             $this->escape($this->assets->for('js/debugbar.js'))

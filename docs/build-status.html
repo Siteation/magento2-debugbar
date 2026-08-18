@@ -890,43 +890,56 @@ if ($themeId) {
   {
     id: 'bar',
     name: 'The bar',
-    goal: 'Alpine viewer built with Vite and Tailwind 4, output committed.',
+    goal: 'The viewer itself. Mostly built while the collectors were, so what is left is polish plus one real gap.',
     tasks: [
-      { t: 'Vite and Tailwind 4 build, output committed to view/base/web/', s: 'todo',
-        d: `<p>Nebula proves the "ships with compiled assets, install and go" model works
-            in Magento. It also means <code>mage build hyva</code> is irrelevant to this
-            module.</p>
-            <p>Tailwind with a <code>ndb-</code> prefix and a scoped preflight, so we
-            cannot leak into the host page.</p>` },
-      { t: 'The debugBar Alpine.data factory', s: 'todo',
-        d: `<p>Modelled on New Debug Bar's <code>state.js</code>: collapsed strip, full
-            screen inspector, section list, favorites, per section filters and search,
-            command palette, light, dark and system theme, preferences in
-            <code>localStorage</code>.</p>` },
-      { t: 'Port lockHost', s: 'todo',
-        d: `<p>When the inspector opens, mark every sibling <code>inert</code>, lock body
-            scroll, compensate for scrollbar width, and restore all of it on close. This
-            is what makes it feel like an app instead of an overlay.</p>` },
-      { t: 'Flash prevention and syntax highlighting', s: 'todo',
-        d: `<p>One critical style in the head, before the stylesheet:</p>
-            <pre><code>&lt;style&gt;#siteation-debugbar [data-ndb-cloak]{display:none!important}&lt;/style&gt;</code></pre>
-            <p><code>highlight.js/lib/core</code> with only <code>sql</code>,
+      { t: 'Vite build, output committed', s: 'done',
+        d: `<p>Alpine 3.14 plus the component bundled to a single ES module, and one
+            stylesheet, both committed to <code>view/base/web</code>. Installing the module
+            needs no build step.</p>
+            <p>Tailwind was dropped from the plan, not skipped. The shadow root already
+            isolates styles in both directions, which was the only reason the plan wanted a
+            prefix and a scoped preflight. Hand written CSS is smaller and has no build
+            chain of its own.</p>` },
+      { t: 'The debugBar Alpine.data factory', s: 'done',
+        d: `<p>Eight sections, five filter and search controls, severity aware counts in
+            the strip, preferences persisted across navigation, and lazy payload
+            loading.</p>
+            <p>Command palette, favourites and a full screen inspector are not built. They
+            are comfort, not capability, and are tracked separately.</p>` },
+      { t: 'fetch and XHR interceptor for the request list', s: 'done',
+        d: `<p>Closes the gap: AJAX, GraphQL and REST were profiled and returned
+            <code>X-Siteation-DebugBar-Profile</code>, but nothing surfaced them, so three
+            of the four coverage targets were invisible.</p>
+            <p>The watcher had to move into its own blocking script in the head. Wrapping
+            <code>fetch</code> from the deferred module was too late: the theme fetches its
+            private content before the bar boots, so that request was never seen. The early
+            script is 1.1 kB, buffers what it sees, and the bar drains the buffer when it
+            starts.</p>
+            <p>Selecting a request swaps the whole bar over to that profile, fetched from
+            the same endpoint. Verified against Hyvä's own
+            <code>/customer/section/load/</code>: 84 ms, 32 queries, 38 observers, all
+            inspectable.</p>` },
+      { t: 'Syntax highlighting', s: 'todo',
+        d: `<p><code>highlight.js/lib/core</code> with only <code>sql</code>,
             <code>json</code> and a hand rolled PHP grammar registered. Three languages
-            instead of the full bundle is about 20 kB against about 900 kB.</p>` },
-      { t: 'fetch and XHR interceptor for the request list', s: 'todo',
-        d: `<p>AJAX, GraphQL and REST are stored but not injected. The bar reads
-            <code>X-Siteation-DebugBar-Profile</code> off responses and appends them to a
-            request list, which is how those three coverage targets become visible without
-            touching their payloads.</p>` },
-      { t: 'Enforce the UX rules in review', s: 'todo',
-        d: `<p>Taken from New Debug Bar's own <code>AGENTS.md</code>.</p>
-            <ul>
-              <li>Show the request, errors, query count and time first</li>
-              <li>Keep framework details, raw data, hashes and repeated facts out of the main view</li>
-              <li>A finding explains the problem, why it matters, where it came from and what to do next</li>
-              <li>Do not show two findings for the same cause</li>
-              <li>Do not use middots, bullets or pipes to split facts. Use space, labels, icons or groups</li>
-            </ul>` }
+            instead of the full bundle is about 20 kB against about 900 kB.</p>
+            <p>SQL is readable as plain monospace today, so this is legibility rather than
+            capability.</p>` },
+      { t: 'Command palette, favourites, light theme', s: 'backlog',
+        d: `<p>New Debug Bar's comfort features. Worth having, none of them unblock
+            anything, and the bar is usable every day without them.</p>
+            <p>A light theme matters more than the other two: the bar is currently dark
+            only, which sits badly on a light admin.</p>` },
+      { t: 'Full screen inspector and host locking', s: 'backlog',
+        d: `<p>Porting <code>lockHost</code> only pays off once there is a full screen
+            inspector to lock the page behind. The panel is a bottom sheet today and does
+            not need it.</p>` },
+      { t: 'Enforce the UX rules in review', s: 'done',
+        d: `<p>Applied throughout: request, errors, query count and time lead the strip;
+            hashes and raw framework detail stay out of the main view; every finding
+            explains problem, why, where and next; no middots or pipes as separators.</p>
+            <p>The rule that bit hardest was "do not show two findings for the same
+            cause", which forced merging repeated query findings.</p>` }
     ]
   },
   {

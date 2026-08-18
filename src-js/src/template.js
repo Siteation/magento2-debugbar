@@ -47,6 +47,23 @@ export const template = `
 
     <div class="ndb-panel-body">
 
+      <div class="ndb-requests" data-ndb-show="requests.length > 0">
+        <span class="ndb-requests-label">Requests</span>
+        <button type="button" class="ndb-chip" data-ndb-on:click="showPageProfile()"
+                data-ndb-bind:class="activeId === pageProfile.id && 'is-active'">
+          Page
+        </button>
+        <template data-ndb-for="(entry, index) in requests" data-ndb-bind:key="index">
+          <button type="button" class="ndb-chip"
+                  data-ndb-on:click="showProfile(entry.id)"
+                  data-ndb-bind:class="activeId === entry.id && 'is-active'">
+            <span data-ndb-text="entry.method"></span>
+            <span class="ndb-mono" data-ndb-text="shortUrl(entry.url)"></span>
+            <span class="ndb-dim" data-ndb-text="entry.status"></span>
+          </button>
+        </template>
+      </div>
+
       <p class="ndb-note" data-ndb-show="loading">Loading profile details.</p>
       <p class="ndb-note" data-ndb-show="loadError">
         Could not load profile details: <span data-ndb-text="loadError"></span>

@@ -1030,7 +1030,19 @@ repeated query group separately produced three near identical findings out of se
 buried everything else. They are merged into one finding now. Distinct queries, yes, but
 "queries are repeating" is one thing to go and look at.
 
-### 13.12 Smaller confirmations
+### 13.12 A request watcher has to load before the theme does
+
+Wrapping `fetch` from the bar's own deferred module catches nothing on page load. Hyvä
+fetches its private content while that module is still waiting for the parser, so the one
+AJAX request every storefront page makes is invisible.
+
+The watcher belongs in a separate classic script in the head, blocking, with no dependency
+on the bundle. It buffers what it sees into `window.__siteationDebugBar` and the bar drains
+the buffer when it boots. At 1.1 kB that is an acceptable thing to put in front of a page
+in developer mode, and it is still an external file, so nothing about the CSP story
+changes.
+
+### 13.13 Smaller confirmations
 
 * One `aroundLaunch` plugin really does cover frontend, adminhtml, GraphQL and REST.
   Verified: all four return `X-Siteation-DebugBar-Profile`.

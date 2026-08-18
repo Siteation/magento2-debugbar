@@ -1,4 +1,7 @@
+import { watchRequests } from './requests.js'
+
 const STORAGE_KEY = 'siteation.debugbar.v1'
+const ID_PLACEHOLDER = '__PROFILE_ID__'
 
 /**
  * The profile the response embedded as JSON.
@@ -68,15 +71,97 @@ export function debugBar() {
     payloads: {},
     loading: false,
     loadError: '',
+    requests: [],
+    activeId: null,
+    pageProfile: {},
 
     init() {
       this.profile = readProfile()
+
+      this.pageProfile = this.profile
+      this.activeId = this.profile.id || null
 
       const preferences = readPreferences()
       this.open = preferences.open
       this.section = preferences.section
 
+      this.requests = watchRequests((entry) => {
+        if (this.requests.some((seen) => seen.id === entry.id)) return
+
+        this.requests = [entry, ...this.requests].slice(0, 25)
+      }).filter((entry) => entry.id !== this.profile.id)
+
       if (this.open) this.loadPayloads()
+    },
+
+    /**
+     * @param {string} id
+     * @returns {string|null}
+     */
+    profileUrlFor(id) {
+      const template = document.getElementById('siteation-debugbar')?.dataset.profileUrl
+
+      return template ? template.replace(ID_PLACEHOLDER, encodeURIComponent(id)) : null
+    },
+
+    /**
+     * Swap the whole bar over to another profile the page has since produced.
+     *
+     * @param {string} id
+     * @returns {Promise<void>}
+     */
+    async showProfile(id) {
+      if (id === this.activeId) return
+
+      const url = this.profileUrlFor(id)
+
+      if (!url) return
+
+      this.loading = true
+      this.loadError = ''
+
+      try {
+        const response = await fetch(url, { headers: { Accept: 'application/json' } })
+
+        if (!response.ok) throw new Error(`HTTP ${response.status}`)
+
+        const full = await response.json()
+        const payloads = {}
+
+        Object.entries(full.sections || {}).forEach(([key, section]) => {
+          payloads[key] = section.payload || {}
+        })
+
+        this.profile = full
+        this.payloads = payloads
+        this.activeId = id
+      } catch (error) {
+        this.loadError = String(error.message || error)
+      } finally {
+        this.loading = false
+      }
+    },
+
+    /** Go back to the request that rendered the page. */
+    showPageProfile() {
+      if (this.activeId === this.pageProfile.id) return
+
+      this.profile = this.pageProfile
+      this.payloads = {}
+      this.activeId = this.pageProfile.id || null
+      this.loadPayloads()
+    },
+
+    /**
+     * @param {string} url
+     * @returns {string}
+     */
+    shortUrl(url) {
+      try {
+        return new URL(url, window.location.origin).pathname
+      } catch {
+        return url
+      }
     },
 
     /**
@@ -89,7 +174,7 @@ export function debugBar() {
     async loadPayloads() {
       if (!this.profile.lazy || this.loading || Object.keys(this.payloads).length) return
 
-      const url = document.getElementById('siteation-debugbar')?.dataset.profileUrl
+      const url = this.profileUrlFor(this.profile.id || '')
 
       if (!url) return
 

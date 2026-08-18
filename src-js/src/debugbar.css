@@ -374,6 +374,30 @@
   overflow-wrap: anywhere;
 }
 
+/* request switcher */
+
+.ndb-requests {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  padding-bottom: 12px;
+  margin-bottom: 12px;
+  border-bottom: 1px solid var(--ndb-border);
+}
+
+.ndb-requests-label {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--ndb-dim);
+}
+
+.ndb-requests .ndb-chip {
+  max-width: 28rem;
+  overflow: hidden;
+}
+
 /* findings */
 
 .ndb-finding {
