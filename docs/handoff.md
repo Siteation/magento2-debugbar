@@ -157,6 +157,9 @@ Beyond the three stale artifact traps, the ones most likely to bite again:
 * Inside a shadow root, `rem` resolves against the **document** root. Size in `px`.
 * A shadow root isolates the bar from the page, not from itself. Generic class names
   collide; `.ndb-facts` was defined twice and the header broke.
+* The header is built once and used twice, and the difference is the `sheet` flag. Metrics
+  belong to the collapsed dock: open, the overview already says all of it. Preferences
+  belong to the palette, not to a header icon.
 * Label over value beats label beside value. `facts()` in `facts.js` builds the grid; use it
   rather than writing another definition list.
 * Do not use tiny type. 15px body, 14px mono, 12px floor. The uppercase micro label in this

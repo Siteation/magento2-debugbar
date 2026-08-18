@@ -223,12 +223,17 @@
   outline-offset: -2px;
 }
 
+/*
+ * Sized to its content, with the slack pushed after it. Growing would stretch the hover
+ * background across the whole header now that the sheet carries no metrics.
+ */
 .ndb-request {
   display: flex;
   align-items: center;
   gap: 9px;
   min-width: 0;
-  flex: 1 1 auto;
+  flex: 0 1 auto;
+  margin-right: auto;
   text-align: left;
 }
 

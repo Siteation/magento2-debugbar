@@ -7,12 +7,18 @@ import { icon } from './icons.js'
  * and interpolated into both. That is also why it carries the window controls: they mean
  * the same in either state.
  *
- * The metrics are text, not buttons. They used to jump to their section, which made the
- * header a second navigation over the same destinations as the sidebar and gave the row a
- * tab bar's weight. Four of them, as New Debug Bar has, and the sidebar navigates.
+ * The metrics belong to the collapsed dock and not to the open sheet. Numbers at a glance
+ * are the only reason a collapsed bar exists; once the sheet is open the overview carries
+ * every one of them and the sidebar carries the counts. They were taking 480 of the
+ * header's 1022 pixels to repeat what was already on the page below.
+ *
+ * They are text either way. They used to jump to their section, which made the header a
+ * second navigation over the same destinations as the sidebar.
  *
  * The mode dot reports the deploy mode and nothing else. It used to take its colour from
  * the worst finding, which is what the findings icon beside it already says, with a count.
+ *
+ * There is no theme control here. All three themes are palette commands, as placement is.
  *
  * @param {{sheet: boolean}} options
  * @returns {string}
@@ -33,7 +39,7 @@ export function header({ sheet }) {
     </span>
   </button>
 
-  <div class="ndb-stats">
+${sheet ? '' : `  <div class="ndb-stats">
     <div class="ndb-stat">
       <span class="ndb-env-dot" data-ndb-bind:class="'is-' + modeTone"></span>
       <span>
@@ -69,7 +75,7 @@ export function header({ sheet }) {
         <span class="ndb-stat-value" data-ndb-text="number(metrics.memory_peak_mb, 1) + ' MB'"></span>
       </span>
     </div>
-  </div>
+  </div>`}
 
   <div class="ndb-controls-group">
     <button type="button" class="ndb-icon-button" data-ndb-on:click="openPalette()"
@@ -83,13 +89,6 @@ export function header({ sheet }) {
       ${icon('alert')}
       <span class="ndb-badge" data-ndb-show="findings.length > 0"
             data-ndb-text="findings.length"></span>
-    </button>
-
-    <button type="button" class="ndb-icon-button" data-ndb-on:click="cycleTheme()"
-            data-ndb-bind:title="'Theme: ' + theme + '. Click to change.'">
-      <span data-ndb-show="theme === 'system'">${icon('monitor')}</span>
-      <span data-ndb-show="theme === 'light'">${icon('sun')}</span>
-      <span data-ndb-show="theme === 'dark'">${icon('moon')}</span>
     </button>
 
     <span class="ndb-controls-divider"></span>

@@ -335,9 +335,9 @@ function ms(e) {
 }
 function Me(e, t, n = {}) {
   let i;
-  return Z(e, t)((s) => i = s, n), i;
+  return J(e, t)((s) => i = s, n), i;
 }
-function Z(...e) {
+function J(...e) {
   return _s(...e);
 }
 var _s = () => {
@@ -485,7 +485,7 @@ function ws(e) {
     Alpine: et,
     effect: i,
     cleanup: n,
-    evaluateLater: Z.bind(Z, e),
+    evaluateLater: J.bind(J, e),
     evaluate: Me.bind(Me, e)
   }, () => t.forEach((o) => o())];
 }
@@ -751,13 +751,13 @@ function lo(e, t, n) {
 function co(e, t, n) {
   Ps(e, Xt);
   let i = !t.includes("in") && !t.includes("out") && !n, s = i || t.includes("in") || ["enter"].includes(n), r = i || t.includes("out") || ["leave"].includes(n);
-  t.includes("in") && !i && (t = t.filter((P, G) => G < t.indexOf("out"))), t.includes("out") && !i && (t = t.filter((P, G) => G > t.indexOf("out")));
-  let a = !t.includes("opacity") && !t.includes("scale"), o = a || t.includes("opacity"), c = a || t.includes("scale"), d = o ? 0 : 1, p = c ? st(t, "scale", 95) / 100 : 1, m = st(t, "delay", 0) / 1e3, O = st(t, "origin", "center"), M = "opacity, transform", z = st(t, "duration", 150) / 1e3, _ = st(t, "duration", 75) / 1e3, $ = "cubic-bezier(0.4, 0.0, 0.2, 1)";
+  t.includes("in") && !i && (t = t.filter((P, z) => z < t.indexOf("out"))), t.includes("out") && !i && (t = t.filter((P, z) => z > t.indexOf("out")));
+  let a = !t.includes("opacity") && !t.includes("scale"), o = a || t.includes("opacity"), c = a || t.includes("scale"), d = o ? 0 : 1, p = c ? st(t, "scale", 95) / 100 : 1, m = st(t, "delay", 0) / 1e3, O = st(t, "origin", "center"), M = "opacity, transform", K = st(t, "duration", 150) / 1e3, _ = st(t, "duration", 75) / 1e3, $ = "cubic-bezier(0.4, 0.0, 0.2, 1)";
   s && (e._x_transition.enter.during = {
     transformOrigin: O,
     transitionDelay: `${m}s`,
     transitionProperty: M,
-    transitionDuration: `${z}s`,
+    transitionDuration: `${K}s`,
     transitionTimingFunction: $
   }, e._x_transition.enter.start = {
     opacity: d,
@@ -1203,7 +1203,7 @@ var Do = {
   addScopeToNode: xt,
   deferMutations: Ta,
   mapAttributes: ii,
-  evaluateLater: Z,
+  evaluateLater: J,
   interceptInit: eo,
   initInterceptors: ei,
   injectMagics: pt,
@@ -2150,7 +2150,7 @@ dr.inline = (e, { modifiers: t }, { cleanup: n }) => {
 };
 q("ignore", dr);
 q("effect", ye((e, { expression: t }, { effect: n }) => {
-  n(Z(e, t));
+  n(J(e, t));
 }));
 function Ve(e, t, n, i) {
   let s = e, r = (c) => i(c), a = {}, o = (c, d) => (p) => d(c, p);
@@ -2247,8 +2247,8 @@ function Wi(e) {
 q("model", (e, { modifiers: t, expression: n }, { effect: i, cleanup: s }) => {
   let r = e;
   t.includes("parent") && (r = fe(e, (_) => _ !== e));
-  let a = Z(r, n), o;
-  typeof n == "string" ? o = Z(r, `${n} = __placeholder`) : typeof n == "function" && typeof n() == "string" ? o = Z(r, `${n()} = __placeholder`) : o = () => {
+  let a = J(r, n), o;
+  typeof n == "string" ? o = J(r, `${n} = __placeholder`) : typeof n == "function" && typeof n() == "string" ? o = J(r, `${n()} = __placeholder`) : o = () => {
   };
   let c = () => {
     let _;
@@ -2263,30 +2263,30 @@ q("model", (e, { modifiers: t, expression: n }, { effect: i, cleanup: s }) => {
   typeof n == "string" && e.type === "radio" && B(() => {
     e.hasAttribute("name") || e.setAttribute("name", n);
   });
-  let p = t.includes("change") || t.includes("lazy"), m = t.includes("blur"), O = t.includes("enter"), M = p || m || O, z;
+  let p = t.includes("change") || t.includes("lazy"), m = t.includes("blur"), O = t.includes("enter"), M = p || m || O, K;
   if (ve)
-    z = () => {
+    K = () => {
     };
   else if (M) {
     let _ = [], $ = (P) => d(Lt(e, t, P, c()));
     if (p && _.push(Ve(e, "change", t, $)), m && (_.push(Ve(e, "blur", t, $)), e.form)) {
-      let P = e.form, G = () => $({ target: e });
-      P._x_pendingModelUpdates || (P._x_pendingModelUpdates = []), P._x_pendingModelUpdates.push(G), s(() => {
-        P._x_pendingModelUpdates && P._x_pendingModelUpdates.splice(P._x_pendingModelUpdates.indexOf(G), 1);
+      let P = e.form, z = () => $({ target: e });
+      P._x_pendingModelUpdates || (P._x_pendingModelUpdates = []), P._x_pendingModelUpdates.push(z), s(() => {
+        P._x_pendingModelUpdates && P._x_pendingModelUpdates.splice(P._x_pendingModelUpdates.indexOf(z), 1);
       });
     }
     O && _.push(Ve(e, "keydown", t, (P) => {
       P.key === "Enter" && $(P);
-    })), z = () => _.forEach((P) => P());
+    })), K = () => _.forEach((P) => P());
   } else {
     let _ = e.tagName.toLowerCase() === "select" || ["checkbox", "radio"].includes(e.type) ? "change" : "input";
-    z = Ve(e, _, t, ($) => {
+    K = Ve(e, _, t, ($) => {
       d(Lt(e, t, $, c()));
     });
   }
   if (t.includes("fill") && ([void 0, null, ""].includes(c()) || Kt(e) && Array.isArray(c()) || e.tagName.toLowerCase() === "select" && e.multiple) && d(
     Lt(e, t, { target: e }, c())
-  ), e._x_removeModelListeners || (e._x_removeModelListeners = {}), e._x_removeModelListeners.default = z, s(() => e._x_removeModelListeners.default()), e.form) {
+  ), e._x_removeModelListeners || (e._x_removeModelListeners = {}), e._x_removeModelListeners.default = K, s(() => e._x_removeModelListeners.default()), e.form) {
     let _ = Ve(e.form, "reset", [], ($) => {
       ai(() => e._x_model && e._x_model.set(Lt(e, t, { target: e }, c())));
     });
@@ -2381,7 +2381,7 @@ ii(Es(":", Ss(Qe("bind:"))));
 var pr = (e, { value: t, modifiers: n, expression: i, original: s }, { effect: r, cleanup: a }) => {
   if (!t) {
     let c = {};
-    $o(c), Z(e, i)((p) => {
+    $o(c), J(e, i)((p) => {
       zs(e, p, s);
     }, { scope: c });
     return;
@@ -2390,7 +2390,7 @@ var pr = (e, { value: t, modifiers: n, expression: i, original: s }, { effect: r
     return kl(e, i);
   if (e._x_inlineBindings && e._x_inlineBindings[t] && e._x_inlineBindings[t].extract)
     return;
-  let o = Z(e, i);
+  let o = J(e, i);
   r(() => o((c) => {
     c === void 0 && typeof i == "string" && i.match(/\./) && (c = ""), B(() => js(e, t, c, n));
   })), a(() => {
@@ -2451,7 +2451,7 @@ function Tl(e) {
   return ve ? Bn ? !0 : e.hasAttribute("data-has-alpine-state") : !1;
 }
 q("show", (e, { modifiers: t, expression: n }, { effect: i }) => {
-  let s = Z(e, n);
+  let s = J(e, n);
   e._x_doHide || (e._x_doHide = () => {
     B(() => {
       e.style.setProperty("display", "none", t.includes("important") ? "important" : void 0);
@@ -2476,7 +2476,7 @@ q("show", (e, { modifiers: t, expression: n }, { effect: i }) => {
   }));
 });
 q("for", ye((e, { expression: t }, { effect: n, cleanup: i }) => {
-  let s = Cl(t), r = Z(e, s.items), a = Z(
+  let s = Cl(t), r = J(e, s.items), a = J(
     e,
     // the x-bind:key expression is stored for our use instead of evaluated.
     e._x_keyExpression || "index"
@@ -2520,8 +2520,8 @@ function Nl(e, t, n, i) {
           return;
         }
         e.content.children.length > 1 && oe("x-for templates require a single root element, additional elements will be ignored.", e);
-        let M = document.importNode(e.content, !0).firstElementChild, z = Xe(O);
-        xt(M, z, e), M._x_refreshXForScope = Rl(z), a.set(m, M), d.add(M), p.after(M), p = M;
+        let M = document.importNode(e.content, !0).firstElementChild, K = Xe(O);
+        xt(M, K, e), M._x_refreshXForScope = Rl(K), a.set(m, M), d.add(M), p.after(M), p = M;
       }), d.forEach((m) => pe(m)), p !== e ? e._x_lastRenderedEl = p : delete e._x_lastRenderedEl;
     });
   });
@@ -2558,7 +2558,7 @@ hr.inline = (e, { expression: t }, { cleanup: n }) => {
 q("ref", hr);
 q("if", ye((e, { expression: t }, { effect: n, cleanup: i }) => {
   e.tagName.toLowerCase() !== "template" && oe("x-if can only be used on a <template> tag", e);
-  let s = Z(e, t), r = () => {
+  let s = J(e, t), r = () => {
     if (e._x_currentIfEl)
       return e._x_currentIfEl;
     let o = e.content.cloneNode(!0).firstElementChild;
@@ -2584,7 +2584,7 @@ Yt((e, t) => {
 });
 ii(Es("@", Ss(Qe("on:"))));
 q("on", ye((e, { value: t, modifiers: n, expression: i }, { cleanup: s }) => {
-  let r = i ? Z(e, i) : () => {
+  let r = i ? J(e, i) : () => {
   };
   e.tagName.toLowerCase() === "template" && (e._x_forwardEvents || (e._x_forwardEvents = []), e._x_forwardEvents.includes(t) || e._x_forwardEvents.push(t));
   let a = Ve(e, t, n, (o) => {
@@ -2759,7 +2759,7 @@ const ql = {
   menu: '<path d="M4 7h16M4 12h16M4 17h16"/>',
   caret: '<path d="m6 9 6 6 6-6"/>'
 };
-function K(e, t = "") {
+function Z(e, t = "") {
   return `<svg class="ndb-icon ${t}" viewBox="0 0 24 24" fill="none" stroke="currentColor"
     stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"
     aria-hidden="true">${ql[e] || ""}</svg>`;
@@ -2864,7 +2864,7 @@ function zl() {
   <div class="ndb-palette-box" data-ndb-ref="palette"
        role="dialog" aria-modal="true" aria-label="Commands">
     <div class="ndb-palette-field">
-      ${K("search")}
+      ${Z("search")}
       <input class="ndb-palette-input" type="text" data-ndb-ref="paletteInput"
              data-ndb-model="paletteSearch" autocomplete="off" spellcheck="false"
              placeholder="Search sections and settings" aria-label="Search commands">
@@ -3165,7 +3165,7 @@ function ac() {
   function M(l) {
     return _("(?:", l, ")*");
   }
-  function z(l) {
+  function K(l) {
     return _("(?:", l, ")?");
   }
   function _(...l) {
@@ -3178,7 +3178,7 @@ function ac() {
   function P(...l) {
     return "(" + ($(l).capture ? "" : "?:") + l.map((E) => m(E)).join("|") + ")";
   }
-  function G(l) {
+  function z(l) {
     return new RegExp(l.toString() + "|").exec("").length - 1;
   }
   function qe(l, u) {
@@ -3199,7 +3199,7 @@ function ac() {
     /\\./
     // any other escape sequence
   ));
-  function J(l, { joinWith: u }) {
+  function V(l, { joinWith: u }) {
     let h = 0;
     return l.map((E) => {
       h += 1;
@@ -3476,7 +3476,7 @@ function ac() {
     let E = 0;
     const L = l[h], D = {}, v = {};
     for (let g = 1; g <= u.length; g++)
-      v[g + E] = L[g], D[g + E] = !0, E += G(u[g - 1]);
+      v[g + E] = L[g], D[g + E] = !0, E += z(u[g - 1]);
     l[h] = v, l[h]._emit = D, l[h]._multi = !0;
   }
   function qr(l) {
@@ -3485,7 +3485,7 @@ function ac() {
         throw Ee("skip, excludeBegin, returnBegin not compatible with beginScope: {}"), Mt;
       if (typeof l.beginScope != "object" || l.beginScope === null)
         throw Ee("beginScope must be object"), Mt;
-      xi(l, l.begin, { key: "beginScope" }), l.begin = J(l.begin, { joinWith: "" });
+      xi(l, l.begin, { key: "beginScope" }), l.begin = V(l.begin, { joinWith: "" });
     }
   }
   function Fr(l) {
@@ -3494,7 +3494,7 @@ function ac() {
         throw Ee("skip, excludeEnd, returnEnd not compatible with endScope: {}"), Mt;
       if (typeof l.endScope != "object" || l.endScope === null)
         throw Ee("endScope must be object"), Mt;
-      xi(l, l.end, { key: "endScope" }), l.end = J(l.end, { joinWith: "" });
+      xi(l, l.end, { key: "endScope" }), l.end = V(l.end, { joinWith: "" });
     }
   }
   function Hr(l) {
@@ -3516,12 +3516,12 @@ function ac() {
       }
       // @ts-ignore
       addRule(g, w) {
-        w.position = this.position++, this.matchIndexes[this.matchAt] = w, this.regexes.push([w, g]), this.matchAt += G(g) + 1;
+        w.position = this.position++, this.matchIndexes[this.matchAt] = w, this.regexes.push([w, g]), this.matchAt += z(g) + 1;
       }
       compile() {
         this.regexes.length === 0 && (this.exec = () => null);
         const g = this.regexes.map((w) => w[1]);
-        this.matcherRe = u(J(g, { joinWith: "|" }), !0), this.lastIndex = 0;
+        this.matcherRe = u(V(g, { joinWith: "|" }), !0), this.lastIndex = 0;
       }
       /** @param {string} s */
       exec(g) {
@@ -3681,9 +3681,9 @@ https://github.com/highlightjs/highlight.js/issues/2277`), F = f, C = x), k === 
         let y = S.keywordPatternRe.exec(I), A = "";
         for (; y; ) {
           A += I.substring(b, y.index);
-          const T = re.case_insensitive ? y[0].toLowerCase() : y[0], V = te(S, T);
-          if (V) {
-            const [le, ua] = V;
+          const T = re.case_insensitive ? y[0].toLowerCase() : y[0], G = te(S, T);
+          if (G) {
+            const [le, ua] = G;
             if (W.addText(A), A = "", F[T] = (F[T] || 0) + 1, F[T] <= Vr && (It += ua), le.startsWith("_"))
               A += y[0];
             else {
@@ -3724,8 +3724,8 @@ https://github.com/highlightjs/highlight.js/issues/2277`), F = f, C = x), k === 
             A++;
             continue;
           }
-          const V = re.classNameAliases[b[A]] || b[A], le = y[A];
-          V ? se(le, V) : (I = le, me(), I = ""), A++;
+          const G = re.classNameAliases[b[A]] || b[A], le = y[A];
+          G ? se(le, G) : (I = le, me(), I = ""), A++;
         }
       }
       function Ri(b, y) {
@@ -3735,8 +3735,8 @@ https://github.com/highlightjs/highlight.js/issues/2277`), F = f, C = x), k === 
         let T = qe(b.endRe, A);
         if (T) {
           if (b["on:end"]) {
-            const V = new t(b);
-            b["on:end"](y, V), V.isMatchIgnored && (T = !1);
+            const G = new t(b);
+            b["on:end"](y, G), G.isMatchIgnored && (T = !1);
           }
           if (T) {
             for (; b.endsParent && b.parent; )
@@ -3751,8 +3751,8 @@ https://github.com/highlightjs/highlight.js/issues/2277`), F = f, C = x), k === 
         return S.matcher.regexIndex === 0 ? (I += b[0], 1) : (pn = !0, 0);
       }
       function oa(b) {
-        const y = b[0], A = b.rule, T = new t(A), V = [A.__beforeBegin, A["on:begin"]];
-        for (const le of V)
+        const y = b[0], A = b.rule, T = new t(A), G = [A.__beforeBegin, A["on:begin"]];
+        for (const le of G)
           if (le && (le(b, T), T.isMatchIgnored))
             return aa(y);
         return A.skip ? I += y : (A.excludeBegin && (I += y), Q(), !A.returnBegin && !A.excludeBegin && (I = y)), Ri(A, b), A.returnBegin ? 0 : y.length;
@@ -3761,12 +3761,12 @@ https://github.com/highlightjs/highlight.js/issues/2277`), F = f, C = x), k === 
         const y = b[0], A = x.substring(b.index), T = Ni(S, b, A);
         if (!T)
           return Si;
-        const V = S;
-        S.endScope && S.endScope._wrap ? (Q(), se(y, S.endScope._wrap)) : S.endScope && S.endScope._multi ? (Q(), Ti(S.endScope, b)) : V.skip ? I += y : (V.returnEnd || V.excludeEnd || (I += y), Q(), V.excludeEnd && (I = y));
+        const G = S;
+        S.endScope && S.endScope._wrap ? (Q(), se(y, S.endScope._wrap)) : S.endScope && S.endScope._multi ? (Q(), Ti(S.endScope, b)) : G.skip ? I += y : (G.returnEnd || G.excludeEnd || (I += y), Q(), G.excludeEnd && (I = y));
         do
           S.scope && W.closeNode(), !S.skip && !S.subLanguage && (It += S.relevance), S = S.parent;
         while (S !== T.parent);
-        return T.starts && Ri(T.starts, b), V.returnEnd ? 0 : y.length;
+        return T.starts && Ri(T.starts, b), G.returnEnd ? 0 : y.length;
       }
       function ca() {
         const b = [];
@@ -4028,7 +4028,7 @@ https://github.com/highlightjs/highlight.js/issues/2277`), F = f, C = x), k === 
       concat: _,
       lookahead: O,
       either: P,
-      optional: z,
+      optional: K,
       anyNumberOfTimes: M
     };
     for (const f in kt)
@@ -4266,7 +4266,7 @@ function fc(e) {
       ],
       subLanguage: "xml"
     }
-  }, z = {
+  }, K = {
     begin: ".?css`",
     end: "",
     starts: {
@@ -4298,7 +4298,7 @@ function fc(e) {
       e.BACKSLASH_ESCAPE,
       O
     ]
-  }, G = {
+  }, z = {
     className: "comment",
     variants: [
       e.COMMENT(
@@ -4347,7 +4347,7 @@ function fc(e) {
     e.APOS_STRING_MODE,
     e.QUOTE_STRING_MODE,
     M,
-    z,
+    K,
     _,
     $,
     // Skip numbers when they are part of a variable name
@@ -4367,7 +4367,7 @@ function fc(e) {
       "self"
     ].concat(qe)
   });
-  const Fe = [].concat(G, O.contains), J = Fe.concat([
+  const Fe = [].concat(z, O.contains), V = Fe.concat([
     // eat recursive parens in sub expressions
     {
       begin: /(\s*)\(/,
@@ -4384,7 +4384,7 @@ function fc(e) {
     excludeBegin: !0,
     excludeEnd: !0,
     keywords: o,
-    contains: J
+    contains: V
   }, He = {
     variants: [
       // class Car extends vehicle
@@ -4546,7 +4546,7 @@ function fc(e) {
     aliases: ["js", "jsx", "mjs", "cjs"],
     keywords: o,
     // this will be extended by TypeScript
-    exports: { PARAMS_CONTAINS: J, CLASS_REFERENCE: he },
+    exports: { PARAMS_CONTAINS: V, CLASS_REFERENCE: he },
     illegal: /#(?![$_A-Za-z])/,
     contains: [
       e.SHEBANG({
@@ -4558,10 +4558,10 @@ function fc(e) {
       e.APOS_STRING_MODE,
       e.QUOTE_STRING_MODE,
       M,
-      z,
+      K,
       _,
       $,
-      G,
+      z,
       // Skip numbers when they are part of a variable name
       { match: /\$\d+/ },
       m,
@@ -4578,7 +4578,7 @@ function fc(e) {
         keywords: "return throw case",
         relevance: 0,
         contains: [
-          G,
+          z,
           e.REGEXP_MODE,
           {
             className: "function",
@@ -4607,7 +4607,7 @@ function fc(e) {
                     excludeBegin: !0,
                     excludeEnd: !0,
                     keywords: o,
-                    contains: J
+                    contains: V
                   }
                 ]
               }
@@ -5285,10 +5285,10 @@ function gc(e) {
     "nulls last",
     "depth first",
     "breadth first"
-  ], M = p, z = [
+  ], M = p, K = [
     ...d,
     ...c
-  ].filter((J) => !p.includes(J)), _ = {
+  ].filter((V) => !p.includes(V)), _ = {
     scope: "variable",
     match: /@[a-z0-9][a-z0-9_]*/
   }, $ = {
@@ -5300,24 +5300,24 @@ function gc(e) {
     relevance: 0,
     keywords: { built_in: M }
   };
-  function G(J) {
+  function z(V) {
     return t.concat(
       /\b/,
-      t.either(...J.map((Y) => Y.replace(/\s+/, "\\s+"))),
+      t.either(...V.map((Y) => Y.replace(/\s+/, "\\s+"))),
       /\b/
     );
   }
   const qe = {
     scope: "keyword",
-    match: G(O),
+    match: z(O),
     relevance: 0
   };
-  function Fe(J, {
+  function Fe(V, {
     exceptions: Y,
     when: He
   } = {}) {
     const he = He;
-    return Y = Y || [], J.map((ee) => ee.match(/\|\d+$/) || Y.includes(ee) ? ee : he(ee) ? `${ee}|0` : ee);
+    return Y = Y || [], V.map((ee) => ee.match(/\|\d+$/) || Y.includes(ee) ? ee : he(ee) ? `${ee}|0` : ee);
   }
   return {
     name: "SQL",
@@ -5326,7 +5326,7 @@ function gc(e) {
     illegal: /[{}]|<\//,
     keywords: {
       $pattern: /\b[\w\.]+/,
-      keyword: Fe(z, { when: (J) => J.length < 3 }),
+      keyword: Fe(K, { when: (V) => V.length < 3 }),
       literal: r,
       type: o,
       built_in: m
@@ -5334,7 +5334,7 @@ function gc(e) {
     contains: [
       {
         scope: "type",
-        match: G(a)
+        match: z(a)
       },
       qe,
       P,
@@ -6002,10 +6002,6 @@ function $c() {
     setTheme(e) {
       this.theme = ["system", "light", "dark"].includes(e) ? e : "system", this.watchColorScheme(), this.persist();
     },
-    cycleTheme() {
-      const e = ["system", "light", "dark"];
-      this.setTheme(e[(e.indexOf(this.theme) + 1) % e.length]);
-    },
     openInspector() {
       this.open || (this.returnFocusTo = this.$root.getRootNode().activeElement, this.open = !0, this.persist(), this.loadPayloads(), this.$nextTick(() => this.lock()));
     },
@@ -6260,7 +6256,7 @@ function es({ sheet: e }) {
     </span>
   </button>
 
-  <div class="ndb-stats">
+${e ? "" : `  <div class="ndb-stats">
     <div class="ndb-stat">
       <span class="ndb-env-dot" data-ndb-bind:class="'is-' + modeTone"></span>
       <span>
@@ -6270,7 +6266,7 @@ function es({ sheet: e }) {
     </div>
 
     <div class="ndb-stat">
-      ${K("database", "is-accent")}
+      ${Z("database", "is-accent")}
       <span>
         <span class="ndb-stat-key">Queries</span>
         <span class="ndb-stat-value">
@@ -6281,7 +6277,7 @@ function es({ sheet: e }) {
     </div>
 
     <div class="ndb-stat">
-      ${K("clock", "is-accent")}
+      ${Z("clock", "is-accent")}
       <span>
         <span class="ndb-stat-key">Duration</span>
         <span class="ndb-stat-value" data-ndb-bind:class="'is-' + durationTone"
@@ -6290,33 +6286,26 @@ function es({ sheet: e }) {
     </div>
 
     <div class="ndb-stat is-secondary">
-      ${K("chip", "is-accent")}
+      ${Z("chip", "is-accent")}
       <span>
         <span class="ndb-stat-key">Peak</span>
         <span class="ndb-stat-value" data-ndb-text="number(metrics.memory_peak_mb, 1) + ' MB'"></span>
       </span>
     </div>
-  </div>
+  </div>`}
 
   <div class="ndb-controls-group">
     <button type="button" class="ndb-icon-button" data-ndb-on:click="openPalette()"
             title="Search sections and settings">
-      ${K("search")}
+      ${Z("search")}
     </button>
 
     <button type="button" class="ndb-icon-button" data-ndb-on:click="select('findings')"
             data-ndb-bind:class="findings.length > 0 && 'is-' + findingsTone"
             title="Findings">
-      ${K("alert")}
+      ${Z("alert")}
       <span class="ndb-badge" data-ndb-show="findings.length > 0"
             data-ndb-text="findings.length"></span>
-    </button>
-
-    <button type="button" class="ndb-icon-button" data-ndb-on:click="cycleTheme()"
-            data-ndb-bind:title="'Theme: ' + theme + '. Click to change.'">
-      <span data-ndb-show="theme === 'system'">${K("monitor")}</span>
-      <span data-ndb-show="theme === 'light'">${K("sun")}</span>
-      <span data-ndb-show="theme === 'dark'">${K("moon")}</span>
     </button>
 
     <span class="ndb-controls-divider"></span>
@@ -6324,23 +6313,23 @@ function es({ sheet: e }) {
     ${e ? `
     <button type="button" class="ndb-icon-button" data-ndb-on:click="toggleMaximised()"
             data-ndb-bind:title="maximised ? 'Restore' : 'Maximise'">
-      <span data-ndb-show="!maximised">${K("expand")}</span>
-      <span data-ndb-show="maximised">${K("collapse")}</span>
+      <span data-ndb-show="!maximised">${Z("expand")}</span>
+      <span data-ndb-show="maximised">${Z("collapse")}</span>
     </button>
     <button type="button" class="ndb-icon-button" data-ndb-on:click="closeInspector()"
             title="Minimise">
-      ${K("minimise")}
+      ${Z("minimise")}
     </button>
     ` : `
     <button type="button" class="ndb-icon-button" data-ndb-on:click="openInspector()"
             title="Open the inspector">
-      ${K("expand")}
+      ${Z("expand")}
     </button>
     `}
 
     <button type="button" class="ndb-icon-button" data-ndb-on:click="dismiss()"
             title="Hide until the next page load">
-      ${K("close")}
+      ${Z("close")}
     </button>
   </div>
 </div>`;
@@ -6367,7 +6356,7 @@ function ts(e, t) {
             data-ndb-bind:class="isFavourite(item.id) && 'is-on'"
             data-ndb-on:click="toggleFavourite(item.id)"
             data-ndb-bind:title="isFavourite(item.id) ? 'Unpin' : 'Pin to favourites'">
-      ${K("star")}
+      ${Z("star")}
     </button>
   </div>
 </template>`;
@@ -6415,7 +6404,7 @@ const Dc = `
       <div class="ndb-body">
         <button type="button" class="ndb-nav-toggle" data-ndb-on:click="navOpen = !navOpen"
                 title="Sections">
-          ${K("menu")}
+          ${Z("menu")}
           <span data-ndb-text="currentSection.label"></span>
         </button>
 
@@ -6983,7 +6972,7 @@ const Dc = `
                           data-ndb-on:mouseleave="highlightAlpine(component.id, false)"
                           data-ndb-on:focus="highlightAlpine(component.id, true)"
                           data-ndb-on:blur="highlightAlpine(component.id, false)">
-                    ${K("caret", "ndb-alpine-caret")}
+                    ${Z("caret", "ndb-alpine-caret")}
                     <span class="ndb-alpine-name" data-ndb-text="component.name"></span>
                     <span class="ndb-tag is-warn" data-ndb-show="!component.initialised">
                       not started

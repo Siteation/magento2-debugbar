@@ -1385,6 +1385,22 @@ inspect_debug_queries       slowest first, with call sites</code></pre>
             the install block now says what to do before there is a tagged release, and the
             Alpine section is named where the privacy story is told, since it is the one
             section that reads live data.</p>` },
+      { t: 'The metrics moved to the dock, where they earn their place', s: 'done',
+        d: `<p>Measured rather than eyeballed: the sheet header is 1022px and was holding
+            request 277, metrics 480 and controls 225. Forty pixels of slack across three
+            groups, and the metrics alone taking 47% of the bar to repeat what the overview
+            says three lines below.</p>
+            <p>Collapsed, numbers at a glance are the only reason the dock is on the page,
+            so it keeps all four. Open, the overview's Responded stage carries every one of
+            them and the sidebar carries the counts, so the sheet drops them. The header is
+            built once and takes a <code>sheet</code> flag, which is where the difference
+            lives.</p>
+            <p>The theme icon went too. All three themes are palette commands, as placement
+            already was, which left <code>cycleTheme()</code> with no caller at all: deleted
+            rather than kept for a control that no longer exists.</p>
+            <p>Sheet header now: request 302 and controls 189 of 1022, with five icons
+            instead of six. The request block stopped growing to fill the gap, because an
+            803px hover target is not a button.</p>` },
       { t: 'Type, icons and a header that stopped being a second menu', s: 'done',
         d: `<p>Measured rather than judged from a screenshot, which at this display scale
             makes 15px look like 10px.</p>

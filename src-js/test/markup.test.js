@@ -7,6 +7,7 @@ import assert from 'node:assert/strict'
 
 import { SECTIONS, countFor } from '../src/sections.js'
 import { facts } from '../src/facts.js'
+import { header } from '../src/header.js'
 import { navigation } from '../src/nav.js'
 import { subTabs } from '../src/tabs.js'
 import { template } from '../src/template.js'
@@ -125,4 +126,22 @@ test('the waterfall says what it is and what its marks mean', () => {
   assert.ok(template.includes('ndb-legend-dot'), 'event')
   assert.ok(template.includes('Show activity'), 'the filter says what it filters')
   assert.ok(template.includes('Search activity'))
+})
+
+test('the metrics belong to the dock, not to the open sheet', () => {
+  const dock = header({ sheet: false })
+  const sheet = header({ sheet: true })
+
+  // Collapsed, the numbers are the only reason the bar is on the page. Open, the overview
+  // carries all of them and they were taking half the header to repeat it.
+  assert.ok(dock.includes('ndb-stat-key'))
+  assert.ok(!sheet.includes('ndb-stat-key'))
+  assert.ok(sheet.includes('ndb-request'), 'the sheet still says which request this is')
+})
+
+test('the header offers no control the palette owns', () => {
+  const dock = header({ sheet: false })
+
+  assert.ok(!dock.includes('cycleTheme'), 'all three themes are palette commands')
+  assert.ok(!dock.includes('movePlacement'), 'placement is a palette command')
 })

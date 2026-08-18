@@ -732,12 +732,6 @@ export function debugBar() {
       this.persist()
     },
 
-    cycleTheme() {
-      const order = ['system', 'light', 'dark']
-
-      this.setTheme(order[(order.indexOf(this.theme) + 1) % order.length])
-    },
-
     openInspector() {
       if (this.open) return
 
