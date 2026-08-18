@@ -50,6 +50,9 @@ grep -q '<script type="application/json" id="siteation-debugbar-profile">' "$BOD
 # The Alpine section reads live objects, so it applies the policy in the browser.
 grep -q 'data-value-policy="' "$BODY" \
     && pass "tells the bar the value policy" || fail "tells the bar the value policy" ""
+# Editor links are built in the browser, from the template and the root the bar is given.
+grep -q 'data-editor-root="' "$BODY" \
+    && pass "tells the bar where the code is" || fail "tells the bar where the code is" ""
 # Scoped to the profile tag: a storefront page has plenty of unrelated JSON in it.
 python3 - "$BODY" <<'PY' && pass "embeds summaries only" || fail "embeds summaries only" "section items are inline; the payload should be fetched"
 import json, re, sys

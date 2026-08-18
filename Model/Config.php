@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace Siteation\DebugBar\Model;
 
 use Magento\Framework\App\Config\ScopeConfigInterface;
+use Magento\Framework\App\Filesystem\DirectoryList;
 use Magento\Framework\App\State;
+use Siteation\DebugBar\Model\Config\Source\Editor;
 use Throwable;
 
 /**
@@ -29,6 +31,9 @@ class Config
     private const XML_PATH_ALLOWED_IPS = 'dev/siteation_debugbar/allowed_ips';
     private const XML_PATH_VALUE_POLICY = 'dev/siteation_debugbar/value_policy';
     private const XML_PATH_AREAS = 'dev/siteation_debugbar/areas';
+    private const XML_PATH_EDITOR = 'dev/siteation_debugbar/editor';
+    private const XML_PATH_EDITOR_TEMPLATE = 'dev/siteation_debugbar/editor_template';
+    private const XML_PATH_EDITOR_PATH_MAP = 'dev/siteation_debugbar/editor_path_map';
 
     private const DEFAULT_SLOW_QUERY_MS = 100.0;
     private const DEFAULT_SLOW_REQUEST_MS = 1000.0;
@@ -49,9 +54,14 @@ class Config
     /** @var list<string> */
     private array $areas = [];
 
+    private string $editor = '';
+
+    private string $editorRoot = '';
+
     public function __construct(
         private readonly ScopeConfigInterface $scopeConfig,
         private readonly State $appState,
+        private readonly DirectoryList $directoryList,
         private readonly int $maxItemsPerCollector = 500,
         private readonly int $maxProfiles = 20,
         private readonly int $maxAgeMinutes = 60
@@ -145,6 +155,29 @@ class Config
         return $this->areas;
     }
 
+    /**
+     * The URL template a call site becomes a link with, or an empty string when no editor
+     * is configured. `%f` is the absolute file, `%l` the line.
+     */
+    public function editor(): string
+    {
+        $this->isEnabled();
+
+        return $this->editor;
+    }
+
+    /**
+     * The root that a stored path is relative to, as the editor sees it. Inside a
+     * container the application root is not the path the editor has to open, which is what
+     * the path map exists to correct.
+     */
+    public function editorRoot(): string
+    {
+        $this->isEnabled();
+
+        return $this->editorRoot;
+    }
+
     public function allowsArea(?string $area): bool
     {
         if ($this->areas() === []) {
@@ -187,8 +220,47 @@ class Config
         $this->allowedIps = $this->ipList($this->scopeConfig->getValue(self::XML_PATH_ALLOWED_IPS));
         $this->valuePolicy = $this->policy($this->scopeConfig->getValue(self::XML_PATH_VALUE_POLICY));
         $this->areas = $this->csv($this->scopeConfig->getValue(self::XML_PATH_AREAS));
+        $this->editor = $this->editorTemplate();
+        $this->editorRoot = $this->mappedRoot();
 
         return true;
+    }
+
+    private function editorTemplate(): string
+    {
+        $choice = (string) $this->scopeConfig->getValue(self::XML_PATH_EDITOR);
+
+        if ($choice === Editor::CUSTOM) {
+            return trim((string) $this->scopeConfig->getValue(self::XML_PATH_EDITOR_TEMPLATE));
+        }
+
+        return Editor::EDITORS[$choice]['template'] ?? '';
+    }
+
+    /**
+     * The map is `container:host` pairs, and the first one that matches the root wins.
+     * Only the root is mapped: a stored path is relative to it, so mapping the root maps
+     * every path built on it.
+     */
+    private function mappedRoot(): string
+    {
+        try {
+            $root = rtrim($this->directoryList->getRoot(), '/');
+        } catch (Throwable) {
+            return '';
+        }
+
+        foreach ($this->csv($this->scopeConfig->getValue(self::XML_PATH_EDITOR_PATH_MAP)) as $pair) {
+            [$from, $to] = array_pad(explode(':', $pair, 2), 2, '');
+            $from = rtrim(trim($from), '/');
+            $to = rtrim(trim($to), '/');
+
+            if ($from !== '' && $to !== '' && str_starts_with($root, $from)) {
+                return $to . substr($root, strlen($from));
+            }
+        }
+
+        return $root;
     }
 
     private function policy(mixed $value): string

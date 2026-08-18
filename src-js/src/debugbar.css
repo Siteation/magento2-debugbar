@@ -1741,3 +1741,22 @@ select.ndb-search {
   cursor: pointer;
   max-width: 100%;
 }
+
+/* call sites */
+
+.ndb-callsite {
+  margin: 6px 0 0;
+  font-size: 13px;
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.ndb-callsite-link {
+  font-family: var(--ndb-mono);
+  color: var(--ndb-accent);
+  text-decoration: none;
+  border-bottom: 1px dotted currentColor;
+}
+
+.ndb-callsite-link:hover { border-bottom-style: solid; }

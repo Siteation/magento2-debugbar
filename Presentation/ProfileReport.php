@@ -182,7 +182,7 @@ class ProfileReport
                 $this->trim((string) ($query['sql'] ?? ''))
             );
 
-            $frame = $query['call_site'][0] ?? null;
+            $frame = $query['callsite'][0] ?? null;
 
             if (is_array($frame) && isset($frame['file'], $frame['line'])) {
                 $lines[] = sprintf('   %s:%d', $frame['file'], $frame['line']);

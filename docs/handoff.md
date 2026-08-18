@@ -107,8 +107,8 @@ Claude Code as `siteation-debugbar`.
 bin/magento cache:flush                                        # after any plugin change
 vendor/bin/phpcs  --standard=<pkg>/phpcs.xml.dist <pkg>
 vendor/bin/phpstan analyse -c <pkg>/phpstan.neon.dist
-vendor/bin/phpunit --configuration <pkg>/phpunit.xml.dist      # 79 tests
-<pkg>/dev/smoke https://mage-debugbar.test magedebugbar_admin  # 28 assertions
+vendor/bin/phpunit --configuration <pkg>/phpunit.xml.dist      # 85 tests
+<pkg>/dev/smoke https://mage-debugbar.test magedebugbar_admin  # 29 assertions
 cd <pkg>/src-js && npm test                                    # 36 tests, no dependency
 cd <pkg>/src-js && npm run build                               # output is committed
 ```
@@ -136,17 +136,14 @@ Backlog is in `build-status.html`, which is the live tracker. Open it in a brows
 
 ## Next
 
-**Open in editor links**, which Rutger scheduled. A URL template in config
-(`phpstorm://open?file=%f&line=%l`, `vscode://file/%f:%l`, `cursor://file/%f:%l`) plus a
-second field mapping a container path to a host path, then a link renderer over the call
-sites already collected. The editor spread is not the problem; a template setting is how
-Ignition, Whoops and Laravel all solve it.
+Nothing is scheduled. The backlog holds, in the order I would take them: capturing the
+exception on a 5xx so a failed request says what threw, the Magento integration suite,
+message queue and cron profiling (parked until async work is what you are debugging), and
+MCP over HTTP (a network endpoint is a security question before it is a feature).
 
-After that the backlog holds: capturing the exception on a 5xx, message queue and cron
-profiling (parked until async work is what you are debugging), MCP over HTTP, and the
-integration suite. Tagging 1.0.0 remains Rutger's, and needs the repository public.
+Tagging 1.0.0 remains Rutger's, and needs the repository public.
 
-Dropped, with the reasoning in `build-status.html`: Ignition integration and a browser
+Dropped, with the reasoning kept in `build-status.html`: Ignition integration and a browser
 extension.
 
 ## Decided in D, worth not relitigating
@@ -181,6 +178,9 @@ Beyond the three stale artifact traps, the ones most likely to bite again:
 * The header is built once and used twice, and the difference is the `sheet` flag. Metrics
   belong to the collapsed dock: open, the overview already says all of it. Preferences
   belong to the palette, not to a header icon.
+* A query's call site is stored under `callsite`, one word, relative to the application
+  root. Two things read it wrong before anyone noticed, because a missing key looks like a
+  query that simply had no frame.
 * Label over value beats label beside value. `facts()` in `facts.js` builds the grid; use it
   rather than writing another definition list.
 * Do not use tiny type. 15px body, 14px mono, 12px floor. The uppercase micro label in this

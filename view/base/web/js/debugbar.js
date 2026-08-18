@@ -5624,12 +5624,14 @@ function Pc() {
     compareError: "",
     copyState: "",
     copyFallback: "",
+    editorTemplate: "",
+    editorRoot: "",
     activeId: null,
     pageProfile: {},
     init() {
       this.profile = Ic(), this.pageProfile = this.profile, this.activeId = this.profile.id || null;
       const e = $c();
-      this.open = e.open, this.section = e.section, this.placement = e.placement === "top" ? "top" : "bottom", this.maximised = !!e.maximised, this.theme = ["system", "light", "dark"].includes(e.theme) ? e.theme : "system", this.favourites = Array.isArray(e.favourites) ? e.favourites.filter((t) => Wn.some((n) => n.id === t)) : [], this.watchColorScheme(), this.valuePolicy = ec(this.rootElement()?.dataset.valuePolicy), this.refreshAlpine(), this.$watch("alpineLiveWanted", () => this.syncAlpineLive()), this.syncAlpineLive(), this.$watch("paletteSearch", () => {
+      this.open = e.open, this.section = e.section, this.placement = e.placement === "top" ? "top" : "bottom", this.maximised = !!e.maximised, this.theme = ["system", "light", "dark"].includes(e.theme) ? e.theme : "system", this.favourites = Array.isArray(e.favourites) ? e.favourites.filter((t) => Wn.some((n) => n.id === t)) : [], this.watchColorScheme(), this.valuePolicy = ec(this.rootElement()?.dataset.valuePolicy), this.editorTemplate = this.rootElement()?.dataset.editor || "", this.editorRoot = this.rootElement()?.dataset.editorRoot || "", this.refreshAlpine(), this.$watch("alpineLiveWanted", () => this.syncAlpineLive()), this.syncAlpineLive(), this.$watch("paletteSearch", () => {
         this.paletteIndex = 0;
       }), this.$watch("section", (t) => {
         t === "history" && this.loadHistory();
@@ -6316,6 +6318,45 @@ function Pc() {
       return vc(e, t);
     },
     /**
+     * A link that opens the file at the line, or an empty string when no editor is
+     * configured, in which case the call site stays plain text.
+     *
+     * Stored paths are relative to the application root, so the root is what gets mapped
+     * for a container. An absolute path is left alone: it came from outside the root and
+     * nothing here knows where it went.
+     *
+     * @param {string} file
+     * @param {number} line
+     * @returns {string}
+     */
+    editorUrl(e, t) {
+      if (!this.editorTemplate || !e) return "";
+      const n = e.startsWith("/") ? e : `${this.editorRoot}/${e}`;
+      return this.editorTemplate.replace("%f", encodeURI(n)).replace("%l", String(t || 1));
+    },
+    /**
+     * A finding's location is a class name as often as it is a file, so it only becomes a
+     * link when it is one: `path/to/File.php:120`.
+     *
+     * @param {string} location
+     * @returns {string}
+     */
+    locationUrl(e) {
+      const t = String(e || "").match(/^(.+\.php):(\d+)$/);
+      return t ? this.editorUrl(t[1], Number(t[2])) : "";
+    },
+    /**
+     * The frame a query came from. The resolver drops framework and generated code, so the
+     * first frame left is the application's own.
+     *
+     * @param {object} query
+     * @returns {object|null}
+     */
+    callSite(e) {
+      const t = e?.callsite?.[0];
+      return t && t.file ? t : null;
+    },
+    /**
      * @param {number} count
      * @param {string} one
      * @param {string} many
@@ -6583,7 +6624,12 @@ const Dc = `
                 <strong>Next</strong> <span data-ndb-text="finding.next"></span>
               </p>
               <p class="ndb-finding-where" data-ndb-show="finding.location">
-                <strong>Where</strong> <code data-ndb-text="finding.location"></code>
+                <strong>Where</strong>
+                <a class="ndb-callsite-link" data-ndb-show="locationUrl(finding.location)"
+                   data-ndb-bind:href="locationUrl(finding.location)"
+                   data-ndb-text="finding.location" title="Open at this line"></a>
+                <code data-ndb-show="!locationUrl(finding.location)"
+                      data-ndb-text="finding.location"></code>
               </p>
               <button type="button" class="ndb-chip" data-ndb-show="finding.action"
                       data-ndb-on:click="follow(finding.action)"
@@ -6786,6 +6832,20 @@ const Dc = `
                 <span class="ndb-query-type" data-ndb-text="query.type"></span>
               </div>
               <code class="ndb-query-sql" data-ndb-html="highlight(query.sql, 'sql')"></code>
+
+              <p class="ndb-callsite" data-ndb-show="callSite(query)">
+                <template data-ndb-if="callSite(query)">
+                  <span>
+                    <a class="ndb-callsite-link" data-ndb-show="editorTemplate"
+                       data-ndb-bind:href="editorUrl(callSite(query).file, callSite(query).line)"
+                       data-ndb-text="callSite(query).file + ':' + callSite(query).line"
+                       title="Open at this line"></a>
+                    <span class="ndb-mono" data-ndb-show="!editorTemplate"
+                          data-ndb-text="callSite(query).file + ':' + callSite(query).line"></span>
+                    <span class="ndb-dim" data-ndb-text="callSite(query).call"></span>
+                  </span>
+                </template>
+              </p>
             </li>
           </template>
         </ol>

@@ -131,6 +131,8 @@ export function debugBar() {
     compareError: '',
     copyState: '',
     copyFallback: '',
+    editorTemplate: '',
+    editorRoot: '',
     activeId: null,
     pageProfile: {},
 
@@ -153,6 +155,8 @@ export function debugBar() {
         : []
       this.watchColorScheme()
       this.valuePolicy = policyName(this.rootElement()?.dataset.valuePolicy)
+      this.editorTemplate = this.rootElement()?.dataset.editor || ''
+      this.editorRoot = this.rootElement()?.dataset.editorRoot || ''
       this.refreshAlpine()
 
       this.$watch('alpineLiveWanted', () => this.syncAlpineLive())
@@ -1186,6 +1190,54 @@ export function debugBar() {
      */
     highlight(code, language) {
       return highlightCode(code, language)
+    },
+
+    /**
+     * A link that opens the file at the line, or an empty string when no editor is
+     * configured, in which case the call site stays plain text.
+     *
+     * Stored paths are relative to the application root, so the root is what gets mapped
+     * for a container. An absolute path is left alone: it came from outside the root and
+     * nothing here knows where it went.
+     *
+     * @param {string} file
+     * @param {number} line
+     * @returns {string}
+     */
+    editorUrl(file, line) {
+      if (!this.editorTemplate || !file) return ''
+
+      const absolute = file.startsWith('/') ? file : `${this.editorRoot}/${file}`
+
+      return this.editorTemplate
+        .replace('%f', encodeURI(absolute))
+        .replace('%l', String(line || 1))
+    },
+
+    /**
+     * A finding's location is a class name as often as it is a file, so it only becomes a
+     * link when it is one: `path/to/File.php:120`.
+     *
+     * @param {string} location
+     * @returns {string}
+     */
+    locationUrl(location) {
+      const match = String(location || '').match(/^(.+\.php):(\d+)$/)
+
+      return match ? this.editorUrl(match[1], Number(match[2])) : ''
+    },
+
+    /**
+     * The frame a query came from. The resolver drops framework and generated code, so the
+     * first frame left is the application's own.
+     *
+     * @param {object} query
+     * @returns {object|null}
+     */
+    callSite(query) {
+      const frame = query?.callsite?.[0]
+
+      return frame && frame.file ? frame : null
     },
 
     /**

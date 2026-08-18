@@ -113,7 +113,12 @@ export const template = `
                 <strong>Next</strong> <span data-ndb-text="finding.next"></span>
               </p>
               <p class="ndb-finding-where" data-ndb-show="finding.location">
-                <strong>Where</strong> <code data-ndb-text="finding.location"></code>
+                <strong>Where</strong>
+                <a class="ndb-callsite-link" data-ndb-show="locationUrl(finding.location)"
+                   data-ndb-bind:href="locationUrl(finding.location)"
+                   data-ndb-text="finding.location" title="Open at this line"></a>
+                <code data-ndb-show="!locationUrl(finding.location)"
+                      data-ndb-text="finding.location"></code>
               </p>
               <button type="button" class="ndb-chip" data-ndb-show="finding.action"
                       data-ndb-on:click="follow(finding.action)"
@@ -319,6 +324,20 @@ export const template = `
                 <span class="ndb-query-type" data-ndb-text="query.type"></span>
               </div>
               <code class="ndb-query-sql" data-ndb-html="highlight(query.sql, 'sql')"></code>
+
+              <p class="ndb-callsite" data-ndb-show="callSite(query)">
+                <template data-ndb-if="callSite(query)">
+                  <span>
+                    <a class="ndb-callsite-link" data-ndb-show="editorTemplate"
+                       data-ndb-bind:href="editorUrl(callSite(query).file, callSite(query).line)"
+                       data-ndb-text="callSite(query).file + ':' + callSite(query).line"
+                       title="Open at this line"></a>
+                    <span class="ndb-mono" data-ndb-show="!editorTemplate"
+                          data-ndb-text="callSite(query).file + ':' + callSite(query).line"></span>
+                    <span class="ndb-dim" data-ndb-text="callSite(query).call"></span>
+                  </span>
+                </template>
+              </p>
             </li>
           </template>
         </ol>

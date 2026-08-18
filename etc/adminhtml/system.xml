@@ -44,6 +44,25 @@
                     <comment><![CDATA[Query bindings are positional, so a value a customer typed cannot be recognised by name. Full keeps them, which is what makes SQL readable. Mask or drop them if this instance is shared.]]></comment>
                     <depends><field id="enabled">1</field></depends>
                 </field>
+                <field id="editor" translate="label comment" type="select" sortOrder="60"
+                       showInDefault="1" showInWebsite="0" showInStore="0" canRestore="1">
+                    <label>Open In Editor</label>
+                    <source_model>Siteation\DebugBar\Model\Config\Source\Editor</source_model>
+                    <comment><![CDATA[Turns the call site behind a query into a link that opens the file at the line. Your browser will ask once whether to hand the link to the editor.]]></comment>
+                    <depends><field id="enabled">1</field></depends>
+                </field>
+                <field id="editor_template" translate="label comment" type="text" sortOrder="70"
+                       showInDefault="1" showInWebsite="0" showInStore="0" canRestore="1">
+                    <label>Editor URL Template</label>
+                    <comment><![CDATA[<code>%f</code> is the absolute file, <code>%l</code> the line. For example <code>myeditor://open?file=%f&amp;line=%l</code>.]]></comment>
+                    <depends><field id="enabled">1</field><field id="editor">custom</field></depends>
+                </field>
+                <field id="editor_path_map" translate="label comment" type="text" sortOrder="80"
+                       showInDefault="1" showInWebsite="0" showInStore="0" canRestore="1">
+                    <label>Editor Path Map</label>
+                    <comment><![CDATA[Only needed when the application runs somewhere your editor cannot see, a container for instance. Comma separated <code>inside:outside</code> pairs, for example <code>/var/www/html:/Users/you/dev/shop</code>.]]></comment>
+                    <depends><field id="enabled">1</field></depends>
+                </field>
             </group>
         </section>
     </system>

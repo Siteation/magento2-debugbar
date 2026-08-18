@@ -146,6 +146,33 @@ An IP allowlist covers both the bar and the profile endpoint:
 bin/magento config:set dev/siteation_debugbar/allowed_ips 127.0.0.1
 ```
 
+## Open in your editor
+
+Every query shows the application frame it came from. Name an editor and that frame becomes
+a link that opens the file at the line:
+
+```
+bin/magento config:set dev/siteation_debugbar/editor phpstorm
+```
+
+PhpStorm, VS Code and Insiders, Cursor, Windsurf, Zed, Sublime Text and TextMate are named.
+Anything else with a URL scheme works through `custom`, where `%f` is the absolute file and
+`%l` the line:
+
+```
+bin/magento config:set dev/siteation_debugbar/editor custom
+bin/magento config:set dev/siteation_debugbar/editor_template 'myeditor://open?file=%f&line=%l'
+```
+
+If the application runs somewhere your editor cannot see, a container for instance, map the
+root across. Paths are stored relative to it, so mapping the root maps every path:
+
+```
+bin/magento config:set dev/siteation_debugbar/editor_path_map '/var/www/html:/Users/you/dev/shop'
+```
+
+Left unset, the file and line are shown as plain text.
+
 ## What it costs
 
 Measured on this instance against an uncached category page with roughly 860 queries,

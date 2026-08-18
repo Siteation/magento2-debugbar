@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Siteation\DebugBar\Test\Unit\Model;
 
 use Magento\Framework\App\Config\ScopeConfigInterface;
+use Magento\Framework\App\Filesystem\DirectoryList;
 use Magento\Framework\App\State;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
@@ -101,6 +102,60 @@ class ConfigTest extends TestCase
     /**
      * @param array<string, mixed> $values
      */
+    #[Test]
+    public function noEditorMeansNoLink(): void
+    {
+        $this->assertSame('', $this->enabled([])->editor());
+        $this->assertSame('', $this->enabled(['dev/siteation_debugbar/editor' => 'nonsense'])->editor());
+    }
+
+    #[Test]
+    public function aNamedEditorResolvesToItsTemplate(): void
+    {
+        $config = $this->enabled(['dev/siteation_debugbar/editor' => 'vscode']);
+
+        $this->assertSame('vscode://file/%f:%l', $config->editor());
+    }
+
+    #[Test]
+    public function aCustomEditorUsesTheTemplateThatWasTyped(): void
+    {
+        $config = $this->enabled([
+            'dev/siteation_debugbar/editor' => 'custom',
+            'dev/siteation_debugbar/editor_template' => '  myeditor://go?f=%f&l=%l  ',
+        ]);
+
+        $this->assertSame('myeditor://go?f=%f&l=%l', $config->editor());
+    }
+
+    #[Test]
+    public function withoutAPathMapTheRootIsTheApplicationRoot(): void
+    {
+        $this->assertSame('/var/www/html', $this->enabled([])->editorRoot());
+    }
+
+    #[Test]
+    public function aPathMapMovesTheRootToWhereTheEditorCanSeeIt(): void
+    {
+        $config = $this->enabled([
+            'dev/siteation_debugbar/editor_path_map' => '/srv/app:/elsewhere,/var/www/html:/Users/you/shop',
+        ]);
+
+        $this->assertSame(
+            '/Users/you/shop',
+            $config->editorRoot(),
+            'The first pair that matches wins, and the one that does not match is skipped.'
+        );
+    }
+
+    #[Test]
+    public function aHalfWrittenPathMapChangesNothing(): void
+    {
+        $config = $this->enabled(['dev/siteation_debugbar/editor_path_map' => '/var/www/html:, :/somewhere']);
+
+        $this->assertSame('/var/www/html', $config->editorRoot());
+    }
+
     private function config(string $mode, array $values): Config
     {
         $scopeConfig = $this->createStub(ScopeConfigInterface::class);
@@ -112,6 +167,9 @@ class ConfigTest extends TestCase
         $state = $this->createStub(State::class);
         $state->method('getMode')->willReturn($mode);
 
-        return new Config($scopeConfig, $state);
+        $directoryList = $this->createStub(DirectoryList::class);
+        $directoryList->method('getRoot')->willReturn('/var/www/html');
+
+        return new Config($scopeConfig, $state, $directoryList);
     }
 }

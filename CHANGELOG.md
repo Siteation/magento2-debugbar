@@ -17,6 +17,9 @@ entries for the work that led up to it.
   opened.
 * Renders in a shadow root with its own bundled Alpine, so it cannot collide with the
   theme's styles or its Alpine, and still works on a page whose own JavaScript failed.
+* Every query shows the application frame it came from, and that frame is a link into your
+  editor when one is configured. Eight are named, anything with a URL scheme works, and a
+  path map covers running in a container.
 * A markdown report of any profile, for assistants that cannot call MCP:
   `bin/magento siteation:debugbar:report`, `format/markdown` on the profile endpoint, and a
   Copy for AI button in the bar.

@@ -15,6 +15,10 @@
                 <slow_request_ms>1000</slow_request_ms>
                 <allowed_ips/>
                 <value_policy>full</value_policy>
+                <!-- Off until an editor is named: a link to a scheme nothing handles is worse than text. -->
+                <editor/>
+                <editor_template/>
+                <editor_path_map/>
             </siteation_debugbar>
         </dev>
     </default>

@@ -1470,6 +1470,21 @@ inspect_debug_queries       slowest first, with call sites</code></pre>
             survives it.</p>
             <p>Cost: 60 kB raw, 18 kB gzipped. The plan guessed 20 kB, which was optimistic
             about the core and about SQL's keyword list.</p>` },
+      { t: 'Open in editor links', s: 'done',
+        d: `<p>Rutger's objection was that developers use many editors. That is exactly why
+            this is a URL template rather than a set of integrations: <code>%f</code> is the
+            file, <code>%l</code> the line, and anything with a scheme works. Eight are
+            named as a convenience over typing one.</p>
+            <p>It also fixed a gap nobody had noticed: the queries panel showed SQL with no
+            hint of where it came from, although the call site had been collected since 1.0
+            and only the report ever printed it. Now every query names its frame, and the
+            frame is a link when an editor is set.</p>
+            <p>Paths are stored relative to the application root, so a container only needs
+            the root mapped: <code>/var/www/html:/Users/you/dev/shop</code>, first match
+            wins. The link is built in the browser from a template and a root, so a
+            developer's editor never ends up baked into a stored profile.</p>
+            <p>Findings link too, where their location is a file and a line rather than a
+            class name.</p>` },
       { t: 'A report an assistant can read', s: 'done',
         d: `<p>The MCP server already serves an agent that can call it. This is for the
             ones that cannot: an assistant in a browser tab, a colleague in a chat window,
@@ -1553,8 +1568,6 @@ const BACKLOG = [
     why: 'Consumers and cron run outside App\\Http, so they need their own entry hook on AppInterface. Clearly useful, entirely separate from the request path.' },
   { name: 'MCP over HTTP or SSE',
     why: 'The hand rolled stdio loop covers local agents, and the markdown report covers the ones that cannot call it at all. A debug endpoint on the network is a security question before it is a feature, so this waits for a case that needs it. Dropped along the way: Ignition integration, which restated the response header, and a browser extension, which bought little for a store listing and a second codebase to maintain forever.' },
-  { name: 'Open in editor links',
-    why: 'Turn call sites into phpstorm:// or vscode:// links, with a remote to local path map for Docker and Valet setups, as Ignition does.' },
   { name: 'Magento integration test suite', phase: '1.0, Hardening', status: 'backlog',
     why: 'Deferred until the interface stops moving. What it would assert is covered today '
       + 'by dev/smoke over HTTP, 24 assertions against a running store, without needing the '
