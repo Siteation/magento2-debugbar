@@ -1042,7 +1042,28 @@ the buffer when it boots. At 1.1 kB that is an acceptable thing to put in front 
 in developer mode, and it is still an external file, so nothing about the CSP story
 changes.
 
-### 13.13 Smaller confirmations
+### 13.13 Magento is not slow to start when it has nothing to load
+
+The plan assumed the MCP server would need a generous startup timeout because Magento
+boots slowly. It does not. The server only reads JSON files from `var/`, never opens a
+database connection, and never launches the application, so `initialize` plus a tool call
+completes in about 0.2 seconds. No special timeout is needed in any client config.
+
+The bounding is worth more than expected, because Magento profiles are much larger than
+Laravel ones. A category page profile is 817 kB. `get_debug_findings` answers from it in
+7 kB and `inspect_debug_queries` in 16 kB, together under 3% of the document. New Debug
+Bar reported a 68% saving against full dumps; here it is closer to 97%, simply because
+there is more to throw away.
+
+Two stdio rules matter and neither is obvious:
+
+* Nothing but protocol may reach stdout. Magento will happily emit a deprecation notice.
+  Buffer ordinary output with `ob_start()` and write protocol lines with `fwrite(STDOUT)`,
+  which bypasses the buffer.
+* Echo the client's `protocolVersion` back when it is one you support. Clients disconnect
+  on an unexpected version rather than negotiating down.
+
+### 13.14 Smaller confirmations
 
 * One `aroundLaunch` plugin really does cover frontend, adminhtml, GraphQL and REST.
   Verified: all four return `X-Siteation-DebugBar-Profile`.

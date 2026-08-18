@@ -947,48 +947,46 @@ if ($themeId) {
     name: 'MCP',
     goal: 'Four read only tools over stdio, so an agent reads exact data instead of guessing.',
     tasks: [
-      { t: 'Console/McpServerCommand with a hand rolled JSON-RPC loop', s: 'todo',
-        d: `<p><code>bin/magento siteation:debugbar:mcp</code>, registered through
-            <code>Magento\\Framework\\Console\\CommandListInterface</code>.</p>
-            <p>Hand roll rather than take a dependency. <code>php-mcp/server</code> 3.3.0
-            pulls ReactPHP plus <code>symfony/finder</code> into a Magento vendor tree, and
-            <code>mcp/sdk</code> is pre 1.0. We need <code>initialize</code>,
-            <code>notifications/initialized</code>, <code>tools/list</code>,
-            <code>tools/call</code> and <code>ping</code> over newline delimited JSON-RPC
-            2.0. Revisit only if we later need SSE or HTTP transport.</p>` },
-      { t: 'The four tools', s: 'todo',
-        d: `<pre><code>list-debug-profiles          filter by method, path, status, warning
-get-debug-profile-section    cursor paginated
-inspect-debug-queries        filter slow | repeated, sort by duration
-get-debug-findings           cursor paginated</code></pre>
-            <p>Server instructions tell the agent to correlate by header, not by
-            recency.</p>` },
-      { t: 'Double bound every response', s: 'todo',
-        d: `<p>By item count (50) and by byte budget (100 kB), dropping items until it
-            fits, plus a <code>response_version</code> so the contract can evolve.</p>
-            <pre><code>while ($this->byteLength($response) > $this->maxBytes && $summaries !== []) {
-    array_pop($summaries);
-    $response = $this->profileListResponse($summaries, $total, true);
-}</code></pre>` },
-      { t: 'Ship a SKILL.md for agents', s: 'todo',
-        d: `<p>Mirroring New Debug Bar's. Its best rules:</p>
-            <ul>
-              <li>Set small limits instead of accepting maximums. Start with 10 profile summaries, 10 findings, 5 section items</li>
-              <li>Read findings first, then the smallest useful section</li>
-              <li>Treat a finding as a lead, not a verdict</li>
-              <li>Compare query time with total request time. If queries are a small share, inspect lifecycle, models, events and views before blaming the database</li>
-            </ul>` },
-      { t: 'Document client setup', s: 'todo',
-        d: `<p>Generous startup timeout, because Magento boots slowly.</p>
-            <pre><code>{
-  "mcpServers": {
-    "siteation-debugbar": {
-      "command": "php",
-      "args": ["/abs/path/bin/magento", "siteation:debugbar:mcp"],
-      "startup_timeout_sec": 60
-    }
-  }
-}</code></pre>` }
+      { t: 'Hand rolled JSON-RPC 2.0 over stdio', s: 'done',
+        d: `<p><code>bin/magento siteation:debugbar:mcp</code>. Five methods:
+            <code>initialize</code>, <code>notifications/initialized</code>,
+            <code>tools/list</code>, <code>tools/call</code>, <code>ping</code>.</p>
+            <p>No dependency taken. <code>php-mcp/server</code> brings ReactPHP and a
+            Symfony Finder into a Magento vendor tree for four read only tools, and
+            <code>mcp/sdk</code> is pre 1.0.</p>
+            <p>Nothing but protocol may reach stdout or the client drops the connection, so
+            ordinary output is buffered and discarded and protocol lines go straight to the
+            stream with <code>fwrite</code>, which bypasses the buffer.</p>
+            <p>The client's protocol version is echoed back when it is one of the three we
+            know, because clients disconnect on an unexpected version rather than
+            negotiating.</p>` },
+      { t: 'The four tools', s: 'done',
+        d: `<pre><code>list_debug_profiles         filter by method, path, status, has findings
+get_debug_findings          the module's own conclusions, read this first
+get_debug_profile_section   any of seven sections, cursor paginated
+inspect_debug_queries       slowest first, with call sites</code></pre>
+            <p>All annotated read only, non destructive, closed world.</p>` },
+      { t: 'Double bounded responses', s: 'done',
+        d: `<p>By item count and by byte budget, dropping items until the encoded response
+            fits and saying <code>byte_limited</code> when it did. Every response carries a
+            <code>response_version</code> so the contract can move.</p>
+            <p>Measured on a real 817 kB category page profile:
+            <code>get_debug_findings</code> answers in 7 kB and
+            <code>inspect_debug_queries</code> in 16 kB. Together under 3% of the raw
+            document.</p>` },
+      { t: 'Error paths', s: 'done',
+        d: `<p>Verified: unknown profile and unknown tool return
+            <code>isError: true</code> with a usable message rather than a protocol error,
+            an unknown method returns <code>-32601</code>, and malformed JSON returns
+            <code>-32700</code>. A notification produces no response at all.</p>` },
+      { t: 'Agent skill and setup docs', s: 'done',
+        d: `<p><code>docs/SKILL.md</code> tells an agent to read findings before raw
+            sections, ask for small limits, read counts rather than list lengths, compare
+            query time against total request time before blaming the database, and
+            recognise a full page cache hit rather than reporting it as a fast page.</p>
+            <p>The plan expected to need a generous startup timeout for Magento's boot. It
+            does not: the server only reads files and never opens a database connection, so
+            it starts in about 0.2 seconds.</p>` }
     ]
   },
   {

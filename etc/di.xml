@@ -76,4 +76,23 @@
         </arguments>
     </type>
 
+    <type name="Siteation\DebugBar\Mcp\Server">
+        <arguments>
+            <argument name="tools" xsi:type="array">
+                <item name="list_profiles" xsi:type="object">Siteation\DebugBar\Mcp\Tool\ListProfiles</item>
+                <item name="get_findings" xsi:type="object">Siteation\DebugBar\Mcp\Tool\GetFindings</item>
+                <item name="get_section" xsi:type="object">Siteation\DebugBar\Mcp\Tool\GetSection</item>
+                <item name="inspect_queries" xsi:type="object">Siteation\DebugBar\Mcp\Tool\InspectQueries</item>
+            </argument>
+        </arguments>
+    </type>
+
+    <type name="Magento\Framework\Console\CommandListInterface">
+        <arguments>
+            <argument name="commands" xsi:type="array">
+                <item name="siteation_debugbar_mcp" xsi:type="object">Siteation\DebugBar\Console\McpServerCommand</item>
+            </argument>
+        </arguments>
+    </type>
+
 </config>

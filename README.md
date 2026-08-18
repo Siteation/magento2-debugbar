@@ -43,6 +43,41 @@ Use that header to find the exact request rather than guessing at the newest pro
 Profiles are written to `var/siteation_debugbar/`, kept at 20 files and 60 minutes,
 `0600`, and pruned on every write.
 
+## Use it from a coding agent
+
+The same profiles are readable over MCP, so an agent inspects exact data instead of
+guessing. Four read only tools: `list_debug_profiles`, `get_debug_findings`,
+`get_debug_profile_section`, `inspect_debug_queries`.
+
+Claude Code:
+
+```
+claude mcp add --scope local siteation-debugbar -- php /abs/path/to/bin/magento siteation:debugbar:mcp
+```
+
+Anything else that speaks MCP over stdio:
+
+```json
+{
+  "mcpServers": {
+    "siteation-debugbar": {
+      "command": "php",
+      "args": ["/abs/path/to/bin/magento", "siteation:debugbar:mcp"]
+    }
+  }
+}
+```
+
+The server reads stored files and never opens a database connection, so it starts in about
+0.2 seconds and needs no unusual timeout.
+
+Responses are bounded by both item count and byte budget. On an 817 kB profile from a
+category page, `get_debug_findings` answers in 7 kB and `inspect_debug_queries` in 16 kB,
+together under 3% of the raw document.
+
+`docs/SKILL.md` is an agent skill describing how to use the tools well. Point your agent at
+it, or copy it into your own skills directory.
+
 ## How it works
 
 | Concern | Hook |
@@ -50,6 +85,7 @@ Profiles are written to `var/siteation_debugbar/`, kept at 20 files and 60 minut
 | Request lifecycle | `aroundLaunch` on `Magento\Framework\App\Http` |
 | Queries | plugin on `Magento\Framework\DB\LoggerInterface` |
 | Injection | `<script type="application/json">` plus two external files |
+| Agent access | `bin/magento siteation:debugbar:mcp`, MCP over stdio |
 
 The bar renders inside a shadow root with its own bundled Alpine under a `data-ndb-`
 prefix, so it cannot collide with the theme's Alpine or its CSS, and it still works on a
