@@ -1470,6 +1470,23 @@ inspect_debug_queries       slowest first, with call sites</code></pre>
             survives it.</p>
             <p>Cost: 60 kB raw, 18 kB gzipped. The plan guessed 20 kB, which was optimistic
             about the core and about SQL's keyword list.</p>` },
+      { t: 'A profile for the request that crashed', s: 'done',
+        d: `<p>Chosen over Ignition integration, and it turned out to be more than a
+            wording fix. An uncaught exception left <code>launch()</code> before finalize
+            ran, so the one request nobody could explain was the one request with no
+            profile at all.</p>
+            <p>It is caught, recorded, stored and rethrown, and Magento renders its error
+            page exactly as it would have. The finding names the exception and points at
+            the frame it stopped at, which the editor link turns into one click into
+            Zed.</p>
+            <p>The status is recorded as null rather than 200. The response was never
+            produced and Magento's own handler decides what the client gets after this
+            runs; guessing 500 would be right most of the time and wrong in the history
+            list the rest, which is worse than saying nothing. The bar and the report say
+            "Threw" where a status would go.</p>
+            <p>Verified against a controller that throws on purpose, then removed. The
+            exception's frames are filtered by the same rules as a query's call site, so
+            "it came from Mysql.php" stays out of both.</p>` },
       { t: 'Which query repeated, and how often', s: 'done',
         d: `<p>The finding said a query ran more than once and left you scanning sixty
             statements to find it. Its "Review queries" action mapped
@@ -1621,8 +1638,6 @@ const BACKLOG = [
   { name: 'Integration tests',
     why: 'The last gap in 1.0. Assert a profile is produced for every area and that a collector which throws leaves the response untouched. Verified by hand today, not automated.' },
 
-  { name: 'Capture the exception on a 5xx',
-    why: 'A finding that says a request failed should say what threw. The exception class and message belong in the request collector. Chosen over Ignition integration, which would only have restated the profile id the response header already carries, for a third party dependency.' },
   { name: 'Message queue and cron profiling',
     why: 'Consumers and cron run outside App\\Http, so they need their own entry hook on AppInterface. Clearly useful, entirely separate from the request path.' },
   { name: 'MCP over HTTP or SSE',

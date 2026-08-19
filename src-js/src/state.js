@@ -727,6 +727,8 @@ export function debugBar() {
     get statusPhrase() {
       const status = Number(this.request.status || 0)
 
+      // A request that threw has no status at all: the response was never produced.
+      if (this.request.completed === false) return 'Threw'
       if (status >= 500) return 'Error'
       if (status >= 400) return 'Refused'
       if (status >= 300) return 'Redirect'
@@ -738,6 +740,7 @@ export function debugBar() {
     get statusTone() {
       const status = Number(this.request.status || 0)
 
+      if (this.request.completed === false) return 'bad'
       if (status >= 500) return 'bad'
       if (status >= 400) return 'warn'
 
@@ -763,6 +766,8 @@ export function debugBar() {
       const status = Number(this.request.status || 0)
       const took = `${this.number(this.metrics.duration_ms, 2)} ms`
 
+      // The status beside it already says "Threw", so this says what that cost instead.
+      if (this.request.completed === false) return `Stopped after ${took}, nothing was sent`
       if (status >= 500) return `Failed after ${took}`
       if (status >= 400) return `Refused after ${took}`
       if (status >= 300) return `Redirected after ${took}`

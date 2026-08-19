@@ -107,7 +107,7 @@ Claude Code as `siteation-debugbar`.
 bin/magento cache:flush                                        # after any plugin change
 vendor/bin/phpcs  --standard=<pkg>/phpcs.xml.dist <pkg>
 vendor/bin/phpstan analyse -c <pkg>/phpstan.neon.dist
-vendor/bin/phpunit --configuration <pkg>/phpunit.xml.dist      # 85 tests
+vendor/bin/phpunit --configuration <pkg>/phpunit.xml.dist      # 89 tests
 <pkg>/dev/smoke https://mage-debugbar.test magedebugbar_admin  # 29 assertions
 cd <pkg>/src-js && npm test                                    # 36 tests, no dependency
 cd <pkg>/src-js && npm run build                               # output is committed
@@ -139,6 +139,13 @@ engineering task, and not something to push toward.
 | E. Comfort | 6/7 | all of it: light theme, type, palette, their layouts, highlighting, history |
 
 Backlog is in `build-status.html`, which is the live tracker. Open it in a browser.
+
+## Testing a crash
+
+There is no fixture for it, on purpose: a route that 500s does not belong on a working
+instance. Four files under `app/code/Siteation/BoomTest` recreate one, a controller whose
+`execute()` throws. Give it a real return type; `never` breaks Magento's generated
+interceptor before the exception ever happens. Delete it afterwards.
 
 ## Next
 

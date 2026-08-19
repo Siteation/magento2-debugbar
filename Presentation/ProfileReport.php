@@ -68,7 +68,7 @@ class ProfileReport
             "# %s %s\n\n%s in %s ms, %s %s, %d %s.",
             $summary['method'] ?? 'GET',
             $summary['path'] ?? '/',
-            $summary['status'] ?? '?',
+            $summary['status'] ?? 'Threw, no response',
             $this->number($summary['duration_ms'] ?? 0, 2),
             $summary['area'] ?? 'unknown area',
             $summary['action'] ? "action `{$summary['action']}`" : 'no action',

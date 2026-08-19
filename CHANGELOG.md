@@ -23,6 +23,8 @@ entries for the work that led up to it.
 * A markdown report of any profile, for assistants that cannot call MCP:
   `bin/magento siteation:debugbar:report`, `format/markdown` on the profile endpoint, and a
   Copy for AI button in the bar.
+* A request that throws is profiled too, and the finding names the exception and the frame
+  it stopped at instead of sending you to the log.
 * Cross request comparison: diff two stored profiles for what changed in duration, memory,
   queries, cache and findings, with query shapes matched by fingerprint. In the bar beside
   the history, and over MCP as `compare_debug_profiles`.

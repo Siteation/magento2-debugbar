@@ -6005,12 +6005,12 @@ function Pc() {
     /** @returns {string} */
     get statusPhrase() {
       const e = Number(this.request.status || 0);
-      return e >= 500 ? "Error" : e >= 400 ? "Refused" : e >= 300 ? "Redirect" : "Success";
+      return this.request.completed === !1 ? "Threw" : e >= 500 ? "Error" : e >= 400 ? "Refused" : e >= 300 ? "Redirect" : "Success";
     },
     /** @returns {string} */
     get statusTone() {
       const e = Number(this.request.status || 0);
-      return e >= 500 ? "bad" : e >= 400 ? "warn" : "ok";
+      return this.request.completed === !1 || e >= 500 ? "bad" : e >= 400 ? "warn" : "ok";
     },
     /**
      * Developer mode is where the bar belongs. Default mode still allows it, and is close
@@ -6028,7 +6028,7 @@ function Pc() {
      */
     get outcomePhrase() {
       const e = Number(this.request.status || 0), t = `${this.number(this.metrics.duration_ms, 2)} ms`;
-      return e >= 500 ? `Failed after ${t}` : e >= 400 ? `Refused after ${t}` : e >= 300 ? `Redirected after ${t}` : `Completed successfully in ${t}`;
+      return this.request.completed === !1 ? `Stopped after ${t}, nothing was sent` : e >= 500 ? `Failed after ${t}` : e >= 400 ? `Refused after ${t}` : e >= 300 ? `Redirected after ${t}` : `Completed successfully in ${t}`;
     },
     /** @returns {string} */
     get durationTone() {
@@ -7140,8 +7140,8 @@ const Dc = `
                       data-ndb-bind:class="entry.worst_severity === 'error' ? 'is-bad' : 'is-warn'"
                       data-ndb-text="plural(entry.finding_count, 'finding', 'findings')"></span>
                 <span class="ndb-history-status"
-                      data-ndb-bind:class="entry.status >= 400 ? 'is-bad' : 'is-ok'"
-                      data-ndb-text="entry.status"></span>
+                      data-ndb-bind:class="!entry.status || entry.status >= 400 ? 'is-bad' : 'is-ok'"
+                      data-ndb-text="entry.status || 'threw'"></span>
                 <span class="ndb-history-timing">
                   <span data-ndb-text="number(entry.duration_ms, 1) + ' ms'"></span>
                   <small class="ndb-dim" data-ndb-text="ago(entry.started_at)"></small>

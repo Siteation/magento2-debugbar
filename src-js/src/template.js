@@ -616,8 +616,8 @@ export const template = `
                       data-ndb-bind:class="entry.worst_severity === 'error' ? 'is-bad' : 'is-warn'"
                       data-ndb-text="plural(entry.finding_count, 'finding', 'findings')"></span>
                 <span class="ndb-history-status"
-                      data-ndb-bind:class="entry.status >= 400 ? 'is-bad' : 'is-ok'"
-                      data-ndb-text="entry.status"></span>
+                      data-ndb-bind:class="!entry.status || entry.status >= 400 ? 'is-bad' : 'is-ok'"
+                      data-ndb-text="entry.status || 'threw'"></span>
                 <span class="ndb-history-timing">
                   <span data-ndb-text="number(entry.duration_ms, 1) + ' ms'"></span>
                   <small class="ndb-dim" data-ndb-text="ago(entry.started_at)"></small>

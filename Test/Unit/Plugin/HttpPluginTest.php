@@ -10,6 +10,7 @@ use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 use RuntimeException;
+use Siteation\DebugBar\Collector\RequestCollector;
 use Siteation\DebugBar\Model\ProfileManager;
 use Siteation\DebugBar\Model\ProfileStore;
 use Siteation\DebugBar\Model\RequestEligibility;
@@ -73,6 +74,48 @@ class HttpPluginTest extends TestCase
         $this->assertSame('page', $response->getContent());
     }
 
+    #[Test]
+    public function aRequestThatThrowsIsStillProfiled(): void
+    {
+        $collector = $this->createMock(RequestCollector::class);
+        $collector->expects($this->once())->method('captureException');
+
+        $manager = $this->createStub(ProfileManager::class);
+        $manager->method('collector')->willReturn($collector);
+        $manager->method('finalize')->willReturn(['id' => 'x']);
+
+        $store = $this->createMock(ProfileStore::class);
+        $store->expects($this->once())->method('put');
+
+        $plugin = $this->plugin(manager: $manager, store: $store);
+
+        // The crash is the request most worth keeping, and it used to be the only one with
+        // no profile at all. Magento must still see the exception it would have seen.
+        $this->expectException(RuntimeException::class);
+
+        $plugin->aroundLaunch(
+            $this->createStub(AppHttp::class),
+            static fn (): Response => throw new RuntimeException('boom')
+        );
+    }
+
+    #[Test]
+    public function aFailureWhileRecordingAFailureStillRethrows(): void
+    {
+        $manager = $this->createStub(ProfileManager::class);
+        $manager->method('collector')->willThrowException(new RuntimeException('no collector'));
+
+        $plugin = $this->plugin(manager: $manager);
+
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage('boom');
+
+        $plugin->aroundLaunch(
+            $this->createStub(AppHttp::class),
+            static fn (): Response => throw new RuntimeException('boom')
+        );
+    }
+
     private function launch(HttpPlugin $plugin): Response
     {
         $response = new Response();
@@ -101,6 +144,7 @@ class HttpPluginTest extends TestCase
             $manager ?? $this->createStub(ProfileManager::class),
             $store ?? $this->createStub(ProfileStore::class),
             $this->createStub(BarInjector::class),
+            new Response(),
             $this->createStub(LoggerInterface::class)
         );
     }

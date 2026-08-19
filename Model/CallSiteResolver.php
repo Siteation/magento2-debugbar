@@ -70,6 +70,40 @@ class CallSiteResolver
     }
 
     /**
+     * The application frames of a trace that already exists, an exception's for instance.
+     *
+     * Same exclusions as a live backtrace, because "it came from Mysql.php" helps nobody
+     * whether the trace was taken now or thrown earlier.
+     *
+     * @param list<array<string, mixed>> $trace
+     * @return list<array{file: string, line: int, call: string}>
+     */
+    public function fromTrace(array $trace): array
+    {
+        $found = [];
+
+        foreach ($trace as $index => $frame) {
+            $file = $frame['file'] ?? null;
+
+            if (!is_string($file) || $this->isExcluded($file)) {
+                continue;
+            }
+
+            $found[] = [
+                'file' => $this->relative($file),
+                'line' => (int) ($frame['line'] ?? 0),
+                'call' => $this->call($trace[$index + 1] ?? []),
+            ];
+
+            if (count($found) >= $this->keepFrames) {
+                break;
+            }
+        }
+
+        return $found;
+    }
+
+    /**
      * @param array<string, mixed> $frame
      */
     private function call(array $frame): string
@@ -96,6 +130,12 @@ class CallSiteResolver
         }
 
         return false;
+    }
+
+    /** A path as the profile stores them: relative to the application root. */
+    public function relativePath(string $file): string
+    {
+        return $this->relative($file);
     }
 
     private function relative(string $file): string

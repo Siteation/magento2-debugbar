@@ -9,6 +9,7 @@ use Magento\Framework\App\Response\HttpInterface as HttpResponse;
 use Magento\Framework\App\ResponseInterface;
 use Magento\Framework\App\State;
 use Magento\Framework\HTTP\PhpEnvironment\Response as ReadableResponse;
+use Siteation\DebugBar\Model\CallSiteResolver;
 use Siteation\DebugBar\Model\Config;
 use Siteation\DebugBar\Model\Clock;
 use Siteation\DebugBar\Model\Redactor;
@@ -27,12 +28,16 @@ class RequestCollector extends AbstractCollector
     /** @var array<string, mixed> */
     private array $response = [];
 
+    /** @var array<string, mixed>|null */
+    private ?array $exception = null;
+
     public function __construct(
         Redactor $redactor,
         Clock $clock,
         private readonly HttpRequest $httpRequest,
         private readonly State $appState,
         private readonly Config $config,
+        private readonly CallSiteResolver $callSites,
         int $maxItems = 1
     ) {
         parent::__construct($redactor, $clock, $maxItems);
@@ -51,8 +56,28 @@ class RequestCollector extends AbstractCollector
     public function reset(): void
     {
         parent::reset();
+        $this->exception = null;
         $this->request = [];
         $this->response = [];
+    }
+
+    /**
+     * What threw, when something did.
+     *
+     * A finding that says a request failed and not what failed sends the reader to the
+     * log, which is where they were before they opened this. The message is redacted like
+     * any other captured string: an exception is as likely to quote an email address as a
+     * query is.
+     */
+    public function captureException(Throwable $exception): void
+    {
+        $this->exception = [
+            'class' => $exception::class,
+            'message' => $this->redactor->cleanSql($exception->getMessage()),
+            'file' => $this->callSites->relativePath($exception->getFile()),
+            'line' => $exception->getLine(),
+            'frames' => $this->callSites->fromTrace($exception->getTrace()),
+        ];
     }
 
     public function capture(ResponseInterface $response): void
@@ -68,9 +93,13 @@ class RequestCollector extends AbstractCollector
         ];
 
         $this->response = [
-            'status' => $response instanceof HttpResponse
-                ? (int) $response->getHttpResponseCode()
-                : 200,
+            // Null, not 200, when the request threw. The response was never produced, and
+            // Magento's own handler decides what the client gets after this runs. Guessing
+            // 500 would be right most of the time and wrong in the history list the rest.
+            'completed' => $this->exception === null,
+            'status' => $this->exception !== null
+                ? null
+                : ($response instanceof HttpResponse ? (int) $response->getHttpResponseCode() : 200),
             'content_type' => $this->contentType($response),
             // Measured before the bar is injected, so it reports the application's
             // response rather than the application plus the bar.
@@ -85,6 +114,9 @@ class RequestCollector extends AbstractCollector
             ...parent::summary(),
             ...$this->request,
             ...$this->response,
+            // Only when there was one. A null on every profile would say a request threw
+            // nothing, which is not the same as a request that was never asked.
+            ...($this->exception === null ? [] : ['exception' => $this->exception]),
         ];
     }
 
