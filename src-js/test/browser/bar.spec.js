@@ -182,6 +182,29 @@ test.describe('the bar', () => {
     await state(page, (data) => { data.setTheme('system') })
   })
 
+  test('the theme flips from the header, in both states', async ({ page }) => {
+    await openBar(page)
+
+    // Removed once as header clutter, which was wrong: the palette names a theme, this
+    // flips one, and the bar renders on a light admin and a dark storefront.
+    for (const where of ['.ndb-sheet', '.ndb-dock']) {
+      await state(page, (data) => { data.setTheme('light') })
+
+      if (where === '.ndb-dock') await state(page, (data) => { data.closeInspector() })
+
+      const toggle = page.locator(`${where} .ndb-icon-button[title*="Theme"]`)
+
+      await expect(toggle).toBeVisible()
+      await toggle.click()
+      expect(await state(page, (data) => data.theme), where).toBe('dark')
+      // The root carries the theme as a class. It has no box of its own, so visibility is
+      // the wrong question to ask it.
+      await expect(page.locator('.ndb')).toHaveClass(/is-theme-dark/)
+    }
+
+    await state(page, (data) => { data.setTheme('system') })
+  })
+
   test('a comparison renders, and its empty state does not throw', async ({ page }) => {
     await openBar(page)
     await state(page, (data) => { data.section = 'history'; data.historyTab = 'compare' })

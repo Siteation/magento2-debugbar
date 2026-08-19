@@ -18,7 +18,11 @@ import { icon } from './icons.js'
  * The mode dot reports the deploy mode and nothing else. It used to take its colour from
  * the worst finding, which is what the findings icon beside it already says, with a count.
  *
- * There is no theme control here. All three themes are palette commands, as placement is.
+ * The theme is here as well as in the palette. It was taken out when the header was
+ * crowded, on the grounds that the palette already named all three, and that was a
+ * mistake: naming a theme is a different act from flipping one, and a bar that renders on
+ * a light admin and a dark storefront gets flipped often. Placement stays in the palette,
+ * which is a preference set once.
  *
  * @param {{sheet: boolean}} options
  * @returns {string}
@@ -81,6 +85,13 @@ ${sheet ? '' : `  <div class="ndb-stats">
     <button type="button" class="ndb-icon-button" data-ndb-on:click="openPalette()"
             title="Search sections and settings">
       ${icon('search')}
+    </button>
+
+    <button type="button" class="ndb-icon-button" data-ndb-on:click="cycleTheme()"
+            data-ndb-bind:title="'Theme: ' + theme + '. Click for the next one.'">
+      <span data-ndb-show="theme === 'system'">${icon('monitor')}</span>
+      <span data-ndb-show="theme === 'light'">${icon('sun')}</span>
+      <span data-ndb-show="theme === 'dark'">${icon('moon')}</span>
     </button>
 
     <button type="button" class="ndb-icon-button" data-ndb-on:click="select('findings')"

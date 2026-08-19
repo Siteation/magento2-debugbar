@@ -152,10 +152,14 @@ test('the metrics belong to the dock, not to the open sheet', () => {
   assert.ok(sheet.includes('ndb-request'), 'the sheet still says which request this is')
 })
 
-test('the header offers no control the palette owns', () => {
+test('the theme can be flipped without opening anything', () => {
+  // Naming a theme is a different act from flipping one, and this bar renders on a light
+  // admin and a dark storefront. Placement is a preference set once, so it stays away.
   const dock = header({ sheet: false })
+  const sheet = header({ sheet: true })
 
-  assert.ok(!dock.includes('cycleTheme'), 'all three themes are palette commands')
+  assert.ok(dock.includes('cycleTheme()'))
+  assert.ok(sheet.includes('cycleTheme()'))
   assert.ok(!dock.includes('movePlacement'), 'placement is a palette command')
 })
 

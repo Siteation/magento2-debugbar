@@ -903,6 +903,19 @@ export function debugBar() {
       this.stopWatchingScheme = () => query.removeEventListener('change', apply)
     },
 
+    /**
+     * System, light, dark, and round again.
+     *
+     * The palette names all three, which is what you want when you know where you are
+     * going. This is for the other case: it is dark, it should not be, and one click is
+     * the whole thought.
+     */
+    cycleTheme() {
+      const order = ['system', 'light', 'dark']
+
+      this.setTheme(order[(order.indexOf(this.theme) + 1) % order.length])
+    },
+
     /** @param {string} theme */
     setTheme(theme) {
       this.theme = ['system', 'light', 'dark'].includes(theme) ? theme : 'system'

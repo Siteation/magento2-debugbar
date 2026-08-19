@@ -1,5 +1,5 @@
 const kn = window.Alpine;
-var An = !1, On = !1, ue = [], Mn = -1, Ht = !1, Gn = !1;
+var An = !1, On = !1, ue = [], Tn = -1, Ht = !1, Gn = !1;
 function ha(e) {
   ma(e);
 }
@@ -14,7 +14,7 @@ function ma(e) {
 }
 function _a(e) {
   let t = ue.indexOf(e);
-  t !== -1 && t > Mn && ue.splice(t, 1);
+  t !== -1 && t > Tn && ue.splice(t, 1);
 }
 function is() {
   if (!On && !An) {
@@ -26,8 +26,8 @@ function is() {
 function ya() {
   An = !1, On = !0;
   for (let e = 0; e < ue.length; e++)
-    Ht && va(e), ue[e](), Mn = e;
-  ue.length = 0, Mn = -1, Ht = !1, On = !1;
+    Ht && va(e), ue[e](), Tn = e;
+  ue.length = 0, Tn = -1, Ht = !1, On = !1;
 }
 function va(e) {
   let t = /* @__PURE__ */ new Map(), n = ue.slice(e).sort((i, s) => xa(i, s, t));
@@ -49,13 +49,13 @@ function $i(e, t) {
     n++, e._x_teleportBack ? e = e._x_teleportBack : typeof ShadowRoot == "function" && e.parentNode instanceof ShadowRoot ? e = e.parentNode.host : e = e.parentElement;
   return t.set(i, n), n;
 }
-var Xe, De, Ye, ss, wa = 0, Tn = !0;
+var Xe, De, Ye, ss, wa = 0, Mn = !0;
 function Ea(e) {
-  Tn = !1, e(), Tn = !0;
+  Mn = !1, e(), Mn = !0;
 }
 function Sa(e) {
   Xe = e.reactive, Ye = e.release, De = (t) => e.effect(t, { scheduler: (n) => {
-    Tn ? ha(n) : n();
+    Mn ? ha(n) : n();
   } }), ss = e.raw;
 }
 function Pi(e) {
@@ -114,7 +114,7 @@ function us(e, t) {
     (t === void 0 || t.includes(n)) && (i.forEach((s) => s()), delete e._x_attributeCleanups[n]);
   });
 }
-function Ma(e) {
+function Ta(e) {
   for (e._x_effects?.forEach(_a); e._x_cleanups?.length; )
     e._x_cleanups.pop()();
 }
@@ -123,10 +123,10 @@ function Xn() {
   Jn.observe(document, { subtree: !0, childList: !0, attributes: !0, attributeOldValue: !0 }), Zn = !0;
 }
 function ps() {
-  Ta(), Jn.disconnect(), Zn = !1;
+  Ma(), Jn.disconnect(), Zn = !1;
 }
 var it = [];
-function Ta() {
+function Ma() {
   let e = Jn.takeRecords();
   it.push(() => e.length > 0 && Qn(e));
   let t = it.length;
@@ -333,11 +333,11 @@ function _s(e) {
   let n = e();
   return Je = t, n;
 }
-function Me(e, t, n = {}) {
+function Te(e, t, n = {}) {
   let i;
-  return J(e, t)((s) => i = s, n), i;
+  return Z(e, t)((s) => i = s, n), i;
 }
-function J(...e) {
+function Z(...e) {
   return ys(...e);
 }
 var ys = () => {
@@ -460,10 +460,10 @@ function ni(e, t, n) {
     } : o), t = t.concat(r);
   }
   let i = {};
-  return t.map(As((r, a) => i[r] = a)).filter(Ms).map(Xa(i, n)).sort(Ya).map((r) => Za(e, r));
+  return t.map(As((r, a) => i[r] = a)).filter(Ts).map(Xa(i, n)).sort(Ya).map((r) => Za(e, r));
 }
 function xs(e) {
-  return Array.from(e).map(As()).filter((t) => !Ms(t));
+  return Array.from(e).map(As()).filter((t) => !Ts(t));
 }
 var Nn = !1, ot = /* @__PURE__ */ new Map(), ws = /* @__PURE__ */ Symbol();
 function Ja(e) {
@@ -485,8 +485,8 @@ function Es(e) {
     Alpine: et,
     effect: i,
     cleanup: n,
-    evaluateLater: J.bind(J, e),
-    evaluate: Me.bind(Me, e)
+    evaluateLater: Z.bind(Z, e),
+    evaluate: Te.bind(Te, e)
   }, () => t.forEach((o) => o())];
 }
 function Za(e, t) {
@@ -510,14 +510,14 @@ var Os = [];
 function ii(e) {
   Os.push(e);
 }
-function Ms({ name: e }) {
-  return Ts().test(e);
+function Ts({ name: e }) {
+  return Ms().test(e);
 }
-var Ts = () => new RegExp(`^${ti}([^:^.]+)\\b`);
+var Ms = () => new RegExp(`^${ti}([^:^.]+)\\b`);
 function Xa(e, t) {
   return ({ name: n, value: i }) => {
     n === i && (i = "");
-    let s = n.match(Ts()), r = n.match(/:([a-zA-Z0-9\-_:]+)/), a = n.match(/\.[^.\]]+(?=[^\]]*$)/g) || [], o = t || e[n] || n;
+    let s = n.match(Ms()), r = n.match(/:([a-zA-Z0-9\-_:]+)/), a = n.match(/\.[^.\]]+(?=[^\]]*$)/g) || [], o = t || e[n] || n;
     return {
       type: s ? s[1] : null,
       value: r ? r[1] : null,
@@ -637,7 +637,7 @@ function fe(e, t = Ce, n = () => {
 }
 function qe(e, t = Ce) {
   t(e, (n) => {
-    Ma(n), us(n), delete n._x_marker;
+    Ta(n), us(n), delete n._x_marker;
   });
 }
 function io() {
@@ -751,13 +751,13 @@ function co(e, t, n) {
 function uo(e, t, n) {
   Ls(e, Xt);
   let i = !t.includes("in") && !t.includes("out") && !n, s = i || t.includes("in") || ["enter"].includes(n), r = i || t.includes("out") || ["leave"].includes(n);
-  t.includes("in") && !i && (t = t.filter((P, z) => z < t.indexOf("out"))), t.includes("out") && !i && (t = t.filter((P, z) => z > t.indexOf("out")));
-  let a = !t.includes("opacity") && !t.includes("scale"), o = a || t.includes("opacity"), c = a || t.includes("scale"), d = o ? 0 : 1, f = c ? st(t, "scale", 95) / 100 : 1, m = st(t, "delay", 0) / 1e3, A = st(t, "origin", "center"), M = "opacity, transform", K = st(t, "duration", 150) / 1e3, _ = st(t, "duration", 75) / 1e3, $ = "cubic-bezier(0.4, 0.0, 0.2, 1)";
+  t.includes("in") && !i && (t = t.filter((P, G) => G < t.indexOf("out"))), t.includes("out") && !i && (t = t.filter((P, G) => G > t.indexOf("out")));
+  let a = !t.includes("opacity") && !t.includes("scale"), o = a || t.includes("opacity"), c = a || t.includes("scale"), d = o ? 0 : 1, f = c ? st(t, "scale", 95) / 100 : 1, m = st(t, "delay", 0) / 1e3, A = st(t, "origin", "center"), T = "opacity, transform", z = st(t, "duration", 150) / 1e3, _ = st(t, "duration", 75) / 1e3, $ = "cubic-bezier(0.4, 0.0, 0.2, 1)";
   s && (e._x_transition.enter.during = {
     transformOrigin: A,
     transitionDelay: `${m}s`,
-    transitionProperty: M,
-    transitionDuration: `${K}s`,
+    transitionProperty: T,
+    transitionDuration: `${z}s`,
     transitionTimingFunction: $
   }, e._x_transition.enter.start = {
     opacity: d,
@@ -768,7 +768,7 @@ function uo(e, t, n) {
   }), r && (e._x_transition.leave.during = {
     transformOrigin: A,
     transitionDelay: `${m}s`,
-    transitionProperty: M,
+    transitionProperty: T,
     transitionDuration: `${_}s`,
     transitionTimingFunction: $
   }, e._x_transition.leave.start = {
@@ -994,7 +994,7 @@ function vo(e, t, n) {
   li(e, t, n), wo(e, t, n);
 }
 function li(e, t, n) {
-  [null, void 0, !1].includes(n) && Oo(t) ? e.removeAttribute(t) : (Fs(t) && (n = t), Mo(n) && (n = JSON.stringify(n)), xo(e, t, n));
+  [null, void 0, !1].includes(n) && Oo(t) ? e.removeAttribute(t) : (Fs(t) && (n = t), To(n) && (n = JSON.stringify(n)), xo(e, t, n));
 }
 function xo(e, t, n) {
   e.getAttribute(t) != n && e.setAttribute(t, n);
@@ -1052,10 +1052,10 @@ function Fs(e) {
 function Oo(e) {
   return !["aria-pressed", "aria-checked", "aria-expanded", "aria-selected"].includes(e);
 }
-function Mo(e) {
+function To(e) {
   return typeof e == "object" && e !== null;
 }
-function To(e, t, n) {
+function Mo(e, t, n) {
   return e._x_bindings && e._x_bindings[t] !== void 0 ? e._x_bindings[t] : Hs(e, t, n);
 }
 function Ro(e, t, n, i = !0) {
@@ -1063,7 +1063,7 @@ function Ro(e, t, n, i = !0) {
     return e._x_bindings[t];
   if (e._x_inlineBindings && e._x_inlineBindings[t] !== void 0) {
     let s = e._x_inlineBindings[t];
-    return s.extract = i, _s(() => Me(e, s.expression));
+    return s.extract = i, _s(() => Te(e, s.expression));
   }
   return Hs(e, t, n);
 }
@@ -1203,7 +1203,7 @@ var qo = {
   addScopeToNode: xt,
   deferMutations: Ra,
   mapAttributes: ii,
-  evaluateLater: J,
+  evaluateLater: Z,
   interceptInit: to,
   initInterceptors: ei,
   injectMagics: ft,
@@ -1226,7 +1226,7 @@ var qo = {
   entangle: Ks,
   throttle: Ws,
   debounce: Us,
-  evaluate: Me,
+  evaluate: Te,
   evaluateRaw: Ka,
   initTree: fe,
   nextTick: ai,
@@ -1240,7 +1240,7 @@ var qo = {
   // INTERNAL
   cloneNode: ho,
   // INTERNAL
-  bound: To,
+  bound: Mo,
   $data: fs,
   watch: rs,
   walk: Ce,
@@ -1491,7 +1491,7 @@ function tr(e) {
     n !== e && (e.prevSub = n, n && (n.nextSub = e)), e.dep.subsHead === void 0 && (e.dep.subsHead = e), e.dep.subs = e;
   }
 }
-var Fn = /* @__PURE__ */ new WeakMap(), Te = /* @__PURE__ */ Symbol(
+var Fn = /* @__PURE__ */ new WeakMap(), Me = /* @__PURE__ */ Symbol(
   "Object iterate"
 ), Hn = /* @__PURE__ */ Symbol(
   "Map keys iterate"
@@ -1538,13 +1538,13 @@ function _e(e, t, n, i, s, r) {
     } else
       switch ((n !== void 0 || a.has(void 0)) && o(a.get(n)), d && o(a.get(yt)), t) {
         case "add":
-          c ? d && o(a.get("length")) : (o(a.get(Te)), ct(e) && o(a.get(Hn)));
+          c ? d && o(a.get("length")) : (o(a.get(Me)), ct(e) && o(a.get(Hn)));
           break;
         case "delete":
-          c || (o(a.get(Te)), ct(e) && o(a.get(Hn)));
+          c || (o(a.get(Me)), ct(e) && o(a.get(Hn)));
           break;
         case "set":
-          ct(e) && o(a.get(Te));
+          ct(e) && o(a.get(Me));
           break;
       }
   }
@@ -1800,7 +1800,7 @@ var ir = class {
     return X(
       e,
       "iterate",
-      mt(e) ? "length" : Te
+      mt(e) ? "length" : Me
     ), Reflect.ownKeys(e);
   }
 }, rl = class extends ir {
@@ -1826,7 +1826,7 @@ function ll(e, t, n) {
     return !t && X(
       r,
       "iterate",
-      c ? Hn : Te
+      c ? Hn : Me
     ), gt(
       // inheriting all iterator properties
       Object.create(d),
@@ -1869,7 +1869,7 @@ function cl(e, t) {
     },
     get size() {
       const s = this.__v_raw;
-      return !e && X(N(s), "iterate", Te), s.size;
+      return !e && X(N(s), "iterate", Me), s.size;
     },
     has(s) {
       const r = this.__v_raw, a = N(r), o = N(s);
@@ -1877,7 +1877,7 @@ function cl(e, t) {
     },
     forEach(s, r) {
       const a = this, o = a.__v_raw, c = N(o), d = e ? vt : Le;
-      return !e && X(c, "iterate", Te), o.forEach((f, m) => s.call(r, d(f), d(m), a));
+      return !e && X(c, "iterate", Me), o.forEach((f, m) => s.call(r, d(f), d(m), a));
     }
   };
   return gt(
@@ -2094,16 +2094,16 @@ j("modelable", (e, { expression: t }, { effect: n, evaluateLater: i, cleanup: s 
         get() {
           return f();
         },
-        set(M) {
-          m(M);
+        set(T) {
+          m(T);
         }
       },
       {
         get() {
           return a();
         },
-        set(M) {
-          c(M);
+        set(T) {
+          c(T);
         }
       }
     );
@@ -2150,7 +2150,7 @@ ur.inline = (e, { modifiers: t }, { cleanup: n }) => {
 };
 j("ignore", ur);
 j("effect", ve((e, { expression: t }, { effect: n }) => {
-  n(J(e, t));
+  n(Z(e, t));
 }));
 function Ve(e, t, n, i) {
   let s = e, r = (c) => i(c), a = {}, o = (c, d) => (f) => d(c, f);
@@ -2247,8 +2247,8 @@ function Wi(e) {
 j("model", (e, { modifiers: t, expression: n }, { effect: i, cleanup: s }) => {
   let r = e;
   t.includes("parent") && (r = pe(e, (_) => _ !== e));
-  let a = J(r, n), o;
-  typeof n == "string" ? o = J(r, `${n} = __placeholder`) : typeof n == "function" && typeof n() == "string" ? o = J(r, `${n()} = __placeholder`) : o = () => {
+  let a = Z(r, n), o;
+  typeof n == "string" ? o = Z(r, `${n} = __placeholder`) : typeof n == "function" && typeof n() == "string" ? o = Z(r, `${n()} = __placeholder`) : o = () => {
   };
   let c = () => {
     let _;
@@ -2263,30 +2263,30 @@ j("model", (e, { modifiers: t, expression: n }, { effect: i, cleanup: s }) => {
   typeof n == "string" && e.type === "radio" && q(() => {
     e.hasAttribute("name") || e.setAttribute("name", n);
   });
-  let f = t.includes("change") || t.includes("lazy"), m = t.includes("blur"), A = t.includes("enter"), M = f || m || A, K;
+  let f = t.includes("change") || t.includes("lazy"), m = t.includes("blur"), A = t.includes("enter"), T = f || m || A, z;
   if (ye)
-    K = () => {
+    z = () => {
     };
-  else if (M) {
+  else if (T) {
     let _ = [], $ = (P) => d(Lt(e, t, P, c()));
     if (f && _.push(Ve(e, "change", t, $)), m && (_.push(Ve(e, "blur", t, $)), e.form)) {
-      let P = e.form, z = () => $({ target: e });
-      P._x_pendingModelUpdates || (P._x_pendingModelUpdates = []), P._x_pendingModelUpdates.push(z), s(() => {
-        P._x_pendingModelUpdates && P._x_pendingModelUpdates.splice(P._x_pendingModelUpdates.indexOf(z), 1);
+      let P = e.form, G = () => $({ target: e });
+      P._x_pendingModelUpdates || (P._x_pendingModelUpdates = []), P._x_pendingModelUpdates.push(G), s(() => {
+        P._x_pendingModelUpdates && P._x_pendingModelUpdates.splice(P._x_pendingModelUpdates.indexOf(G), 1);
       });
     }
     A && _.push(Ve(e, "keydown", t, (P) => {
       P.key === "Enter" && $(P);
-    })), K = () => _.forEach((P) => P());
+    })), z = () => _.forEach((P) => P());
   } else {
     let _ = e.tagName.toLowerCase() === "select" || ["checkbox", "radio"].includes(e.type) ? "change" : "input";
-    K = Ve(e, _, t, ($) => {
+    z = Ve(e, _, t, ($) => {
       d(Lt(e, t, $, c()));
     });
   }
   if (t.includes("fill") && ([void 0, null, ""].includes(c()) || Kt(e) && Array.isArray(c()) || e.tagName.toLowerCase() === "select" && e.multiple) && d(
     Lt(e, t, { target: e }, c())
-  ), e._x_removeModelListeners || (e._x_removeModelListeners = {}), e._x_removeModelListeners.default = K, s(() => e._x_removeModelListeners.default()), e.form) {
+  ), e._x_removeModelListeners || (e._x_removeModelListeners = {}), e._x_removeModelListeners.default = z, s(() => e._x_removeModelListeners.default()), e.form) {
     let _ = Ve(e.form, "reset", [], ($) => {
       ai(() => e._x_model && e._x_model.set(Lt(e, t, { target: e }, c())));
     });
@@ -2381,16 +2381,16 @@ ii(Ss(":", ks(Qe("bind:"))));
 var hr = (e, { value: t, modifiers: n, expression: i, original: s }, { effect: r, cleanup: a }) => {
   if (!t) {
     let c = {};
-    Po(c), J(e, i)((f) => {
+    Po(c), Z(e, i)((f) => {
       Gs(e, f, s);
     }, { scope: c });
     return;
   }
   if (t === "key")
-    return Ml(e, i);
+    return Tl(e, i);
   if (e._x_inlineBindings && e._x_inlineBindings[t] && e._x_inlineBindings[t].extract)
     return;
-  let o = J(e, i);
+  let o = Z(e, i);
   r(() => o((c) => {
     c === void 0 && typeof i == "string" && i.match(/\./) && (c = ""), q(() => js(e, t, c, n));
   })), a(() => {
@@ -2401,7 +2401,7 @@ hr.inline = (e, { value: t, modifiers: n, expression: i }) => {
   t && (e._x_inlineBindings || (e._x_inlineBindings = {}), e._x_inlineBindings[t] = { expression: i, extract: !1 });
 };
 j("bind", hr);
-function Ml(e, t) {
+function Tl(e, t) {
   e._x_keyExpression = t;
 }
 Is(() => `[${Qe("data")}]`);
@@ -2417,11 +2417,11 @@ j("data", (e, { expression: t }, { cleanup: n }) => {
   ft(s, e);
   let r = {};
   Do(r, s);
-  let a = Me(e, t, { scope: r });
+  let a = Te(e, t, { scope: r });
   (a === void 0 || a === !0) && (a = {}), ft(a, e);
   let o;
   if (i?.reactiveData) {
-    o = i.reactiveData, Tl(o, a);
+    o = i.reactiveData, Ml(o, a);
     let d = { expression: t };
     e[ke] = d, queueMicrotask(() => {
       e[ke] === d && delete e[ke];
@@ -2430,15 +2430,15 @@ j("data", (e, { expression: t }, { cleanup: n }) => {
     o = Xe(a);
   ei(o, n);
   let c = xt(e, o);
-  o.init && Me(e, o.init), n(() => {
-    o.destroy && Me(e, o.destroy), c();
+  o.init && Te(e, o.init), n(() => {
+    o.destroy && Te(e, o.destroy), c();
     let d = { reactiveData: o };
     e[ke] = d, queueMicrotask(() => {
       e[ke] === d && delete e[ke];
     });
   });
 });
-function Tl(e, t) {
+function Ml(e, t) {
   Object.keys(t).forEach((n) => {
     let i = Object.getOwnPropertyDescriptor(t, n), s = Object.getOwnPropertyDescriptor(e, n);
     i.get || i.set || s?.get || s?.set ? (s && delete e[n], s || (e[n] = void 0), i.get || i.set ? Object.defineProperty(e, n, i) : e[n] = t[n]) : e[n] = t[n];
@@ -2451,7 +2451,7 @@ function Rl(e) {
   return ye ? qn ? !0 : e.hasAttribute("data-has-alpine-state") : !1;
 }
 j("show", (e, { modifiers: t, expression: n }, { effect: i }) => {
-  let s = J(e, n);
+  let s = Z(e, n);
   e._x_doHide || (e._x_doHide = () => {
     q(() => {
       e.style.setProperty("display", "none", t.includes("important") ? "important" : void 0);
@@ -2476,7 +2476,7 @@ j("show", (e, { modifiers: t, expression: n }, { effect: i }) => {
   }));
 });
 j("for", ve((e, { expression: t }, { effect: n, cleanup: i }) => {
-  let s = Il(t), r = J(e, s.items), a = J(
+  let s = Il(t), r = Z(e, s.items), a = Z(
     e,
     // the x-bind:key expression is stored for our use instead of evaluated.
     e._x_keyExpression || "index"
@@ -2504,8 +2504,8 @@ function Cl(e, t, n, i) {
     let o = Ll(s), c = Object.entries(s).map(([d, f]) => {
       o || (d = parseInt(d));
       let m = $l(t, f, d, s), A;
-      return i((M) => {
-        typeof M == "object" && oe("x-for key cannot be an object, it must be a string or an integer", e), r.has(M) && (a.set(M, r.get(M)), r.delete(M)), A = M;
+      return i((T) => {
+        typeof T == "object" && oe("x-for key cannot be an object, it must be a string or an integer", e), r.has(T) && (a.set(T, r.get(T)), r.delete(T)), A = T;
       }, { scope: { index: d, ...m } }), [A, m];
     });
     q(() => {
@@ -2520,8 +2520,8 @@ function Cl(e, t, n, i) {
           return;
         }
         e.content.children.length > 1 && oe("x-for templates require a single root element, additional elements will be ignored.", e);
-        let M = document.importNode(e.content, !0).firstElementChild, K = Xe(A);
-        xt(M, K, e), M._x_refreshXForScope = Nl(K), a.set(m, M), d.add(M), f.after(M), f = M;
+        let T = document.importNode(e.content, !0).firstElementChild, z = Xe(A);
+        xt(T, z, e), T._x_refreshXForScope = Nl(z), a.set(m, T), d.add(T), f.after(T), f = T;
       }), d.forEach((m) => fe(m)), f !== e ? e._x_lastRenderedEl = f : delete e._x_lastRenderedEl;
     });
   });
@@ -2558,7 +2558,7 @@ br.inline = (e, { expression: t }, { cleanup: n }) => {
 j("ref", br);
 j("if", ve((e, { expression: t }, { effect: n, cleanup: i }) => {
   e.tagName.toLowerCase() !== "template" && oe("x-if can only be used on a <template> tag", e);
-  let s = J(e, t), r = () => {
+  let s = Z(e, t), r = () => {
     if (e._x_currentIfEl)
       return e._x_currentIfEl;
     let o = e.content.cloneNode(!0).firstElementChild;
@@ -2584,7 +2584,7 @@ Yt((e, t) => {
 });
 ii(Ss("@", ks(Qe("on:"))));
 j("on", ve((e, { value: t, modifiers: n, expression: i }, { cleanup: s }) => {
-  let r = i ? J(e, i) : () => {
+  let r = i ? Z(e, i) : () => {
   };
   e.tagName.toLowerCase() === "template" && (e._x_forwardEvents || (e._x_forwardEvents = []), e._x_forwardEvents.includes(t) || e._x_forwardEvents.push(t));
   let a = Ve(e, t, n, (o) => {
@@ -2759,7 +2759,7 @@ const Fl = {
   menu: '<path d="M4 7h16M4 12h16M4 17h16"/>',
   caret: '<path d="m6 9 6 6 6-6"/>'
 };
-function Z(e, t = "") {
+function K(e, t = "") {
   return `<svg class="ndb-icon ${t}" viewBox="0 0 24 24" fill="none" stroke="currentColor"
     stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"
     aria-hidden="true">${Fl[e] || ""}</svg>`;
@@ -2873,7 +2873,7 @@ function Gl() {
   <div class="ndb-palette-box" data-ndb-ref="palette"
        role="dialog" aria-modal="true" aria-label="Commands">
     <div class="ndb-palette-field">
-      ${Z("search")}
+      ${K("search")}
       <input class="ndb-palette-input" type="text" data-ndb-ref="paletteInput"
              data-ndb-model="paletteSearch" autocomplete="off" spellcheck="false"
              placeholder="Search sections and settings" aria-label="Search commands">
@@ -3171,10 +3171,10 @@ function oc() {
   function A(l) {
     return _("(?=", l, ")");
   }
-  function M(l) {
+  function T(l) {
     return _("(?:", l, ")*");
   }
-  function K(l) {
+  function z(l) {
     return _("(?:", l, ")?");
   }
   function _(...l) {
@@ -3187,7 +3187,7 @@ function oc() {
   function P(...l) {
     return "(" + ($(l).capture ? "" : "?:") + l.map((E) => m(E)).join("|") + ")";
   }
-  function z(l) {
+  function G(l) {
     return new RegExp(l.toString() + "|").exec("").length - 1;
   }
   function je(l, u) {
@@ -3208,7 +3208,7 @@ function oc() {
     /\\./
     // any other escape sequence
   ));
-  function V(l, { joinWith: u }) {
+  function J(l, { joinWith: u }) {
     let h = 0;
     return l.map((E) => {
       h += 1;
@@ -3354,11 +3354,11 @@ function oc() {
     scope: "title",
     begin: He,
     relevance: 0
-  }, Mr = {
+  }, Tr = {
     scope: "title",
     begin: he,
     relevance: 0
-  }, Tr = {
+  }, Mr = {
     // excludes method names from keyword processing
     begin: "\\.\\s*" + he,
     relevance: 0
@@ -3392,7 +3392,7 @@ function oc() {
     HASH_COMMENT_MODE: Ue,
     IDENT_RE: He,
     MATCH_NOTHING_RE: Y,
-    METHOD_GUARD: Tr,
+    METHOD_GUARD: Mr,
     NUMBER_MODE: tt,
     NUMBER_RE: ee,
     PHRASAL_WORDS_MODE: an,
@@ -3402,7 +3402,7 @@ function oc() {
     SHEBANG: sn,
     TITLE_MODE: Or,
     UNDERSCORE_IDENT_RE: he,
-    UNDERSCORE_TITLE_MODE: Mr
+    UNDERSCORE_TITLE_MODE: Tr
   });
   function Rr(l, u) {
     l.input[l.index - 1] === "." && u.ignoreMatch();
@@ -3480,30 +3480,30 @@ function oc() {
     console.log(`WARN: ${l}`, ...u);
   }, We = (l, u) => {
     yi[`${l}/${u}`] || (console.log(`Deprecated as of ${l}. ${u}`), yi[`${l}/${u}`] = !0);
-  }, Mt = new Error();
+  }, Tt = new Error();
   function xi(l, u, { key: h }) {
     let E = 0;
     const L = l[h], D = {}, y = {};
     for (let g = 1; g <= u.length; g++)
-      y[g + E] = L[g], D[g + E] = !0, E += z(u[g - 1]);
+      y[g + E] = L[g], D[g + E] = !0, E += G(u[g - 1]);
     l[h] = y, l[h]._emit = D, l[h]._multi = !0;
   }
   function Fr(l) {
     if (Array.isArray(l.begin)) {
       if (l.skip || l.excludeBegin || l.returnBegin)
-        throw Ee("skip, excludeBegin, returnBegin not compatible with beginScope: {}"), Mt;
+        throw Ee("skip, excludeBegin, returnBegin not compatible with beginScope: {}"), Tt;
       if (typeof l.beginScope != "object" || l.beginScope === null)
-        throw Ee("beginScope must be object"), Mt;
-      xi(l, l.begin, { key: "beginScope" }), l.begin = V(l.begin, { joinWith: "" });
+        throw Ee("beginScope must be object"), Tt;
+      xi(l, l.begin, { key: "beginScope" }), l.begin = J(l.begin, { joinWith: "" });
     }
   }
   function Hr(l) {
     if (Array.isArray(l.end)) {
       if (l.skip || l.excludeEnd || l.returnEnd)
-        throw Ee("skip, excludeEnd, returnEnd not compatible with endScope: {}"), Mt;
+        throw Ee("skip, excludeEnd, returnEnd not compatible with endScope: {}"), Tt;
       if (typeof l.endScope != "object" || l.endScope === null)
-        throw Ee("endScope must be object"), Mt;
-      xi(l, l.end, { key: "endScope" }), l.end = V(l.end, { joinWith: "" });
+        throw Ee("endScope must be object"), Tt;
+      xi(l, l.end, { key: "endScope" }), l.end = J(l.end, { joinWith: "" });
     }
   }
   function Ur(l) {
@@ -3525,12 +3525,12 @@ function oc() {
       }
       // @ts-ignore
       addRule(g, w) {
-        w.position = this.position++, this.matchIndexes[this.matchAt] = w, this.regexes.push([w, g]), this.matchAt += z(g) + 1;
+        w.position = this.position++, this.matchIndexes[this.matchAt] = w, this.regexes.push([w, g]), this.matchAt += G(g) + 1;
       }
       compile() {
         this.regexes.length === 0 && (this.exec = () => null);
         const g = this.regexes.map((w) => w[1]);
-        this.matcherRe = u(V(g, { joinWith: "|" }), !0), this.lastIndex = 0;
+        this.matcherRe = u(J(g, { joinWith: "|" }), !0), this.lastIndex = 0;
       }
       /** @param {string} s */
       exec(g) {
@@ -3690,10 +3690,10 @@ https://github.com/highlightjs/highlight.js/issues/2277`), F = p, C = x), O === 
         let v = S.keywordPatternRe.exec(I), k = "";
         for (; v; ) {
           k += I.substring(b, v.index);
-          const T = re.case_insensitive ? v[0].toLowerCase() : v[0], G = te(S, T);
-          if (G) {
-            const [le, pa] = G;
-            if (W.addText(k), k = "", F[T] = (F[T] || 0) + 1, F[T] <= Jr && (It += pa), le.startsWith("_"))
+          const M = re.case_insensitive ? v[0].toLowerCase() : v[0], V = te(S, M);
+          if (V) {
+            const [le, pa] = V;
+            if (W.addText(k), k = "", F[M] = (F[M] || 0) + 1, F[M] <= Jr && (It += pa), le.startsWith("_"))
               k += v[0];
             else {
               const fa = re.classNameAliases[le] || le;
@@ -3725,29 +3725,29 @@ https://github.com/highlightjs/highlight.js/issues/2277`), F = p, C = x), O === 
       function se(b, v) {
         b !== "" && (W.startScope(v), W.addText(b), W.endScope());
       }
-      function Ti(b, v) {
+      function Mi(b, v) {
         let k = 1;
-        const T = v.length - 1;
-        for (; k <= T; ) {
+        const M = v.length - 1;
+        for (; k <= M; ) {
           if (!b._emit[k]) {
             k++;
             continue;
           }
-          const G = re.classNameAliases[b[k]] || b[k], le = v[k];
-          G ? se(le, G) : (I = le, me(), I = ""), k++;
+          const V = re.classNameAliases[b[k]] || b[k], le = v[k];
+          V ? se(le, V) : (I = le, me(), I = ""), k++;
         }
       }
       function Ri(b, v) {
-        return b.scope && typeof b.scope == "string" && W.openNode(re.classNameAliases[b.scope] || b.scope), b.beginScope && (b.beginScope._wrap ? (se(I, re.classNameAliases[b.beginScope._wrap] || b.beginScope._wrap), I = "") : b.beginScope._multi && (Ti(b.beginScope, v), I = "")), S = Object.create(b, { parent: { value: S } }), S;
+        return b.scope && typeof b.scope == "string" && W.openNode(re.classNameAliases[b.scope] || b.scope), b.beginScope && (b.beginScope._wrap ? (se(I, re.classNameAliases[b.beginScope._wrap] || b.beginScope._wrap), I = "") : b.beginScope._multi && (Mi(b.beginScope, v), I = "")), S = Object.create(b, { parent: { value: S } }), S;
       }
       function Ni(b, v, k) {
-        let T = je(b.endRe, k);
-        if (T) {
+        let M = je(b.endRe, k);
+        if (M) {
           if (b["on:end"]) {
-            const G = new t(b);
-            b["on:end"](v, G), G.isMatchIgnored && (T = !1);
+            const V = new t(b);
+            b["on:end"](v, V), V.isMatchIgnored && (M = !1);
           }
-          if (T) {
+          if (M) {
             for (; b.endsParent && b.parent; )
               b = b.parent;
             return b;
@@ -3760,22 +3760,22 @@ https://github.com/highlightjs/highlight.js/issues/2277`), F = p, C = x), O === 
         return S.matcher.regexIndex === 0 ? (I += b[0], 1) : (fn = !0, 0);
       }
       function la(b) {
-        const v = b[0], k = b.rule, T = new t(k), G = [k.__beforeBegin, k["on:begin"]];
-        for (const le of G)
-          if (le && (le(b, T), T.isMatchIgnored))
+        const v = b[0], k = b.rule, M = new t(k), V = [k.__beforeBegin, k["on:begin"]];
+        for (const le of V)
+          if (le && (le(b, M), M.isMatchIgnored))
             return oa(v);
         return k.skip ? I += v : (k.excludeBegin && (I += v), Q(), !k.returnBegin && !k.excludeBegin && (I = v)), Ri(k, b), k.returnBegin ? 0 : v.length;
       }
       function ca(b) {
-        const v = b[0], k = x.substring(b.index), T = Ni(S, b, k);
-        if (!T)
+        const v = b[0], k = x.substring(b.index), M = Ni(S, b, k);
+        if (!M)
           return Si;
-        const G = S;
-        S.endScope && S.endScope._wrap ? (Q(), se(v, S.endScope._wrap)) : S.endScope && S.endScope._multi ? (Q(), Ti(S.endScope, b)) : G.skip ? I += v : (G.returnEnd || G.excludeEnd || (I += v), Q(), G.excludeEnd && (I = v));
+        const V = S;
+        S.endScope && S.endScope._wrap ? (Q(), se(v, S.endScope._wrap)) : S.endScope && S.endScope._multi ? (Q(), Mi(S.endScope, b)) : V.skip ? I += v : (V.returnEnd || V.excludeEnd || (I += v), Q(), V.excludeEnd && (I = v));
         do
           S.scope && W.closeNode(), !S.skip && !S.subLanguage && (It += S.relevance), S = S.parent;
-        while (S !== T.parent);
-        return T.starts && Ri(T.starts, b), G.returnEnd ? 0 : v.length;
+        while (S !== M.parent);
+        return M.starts && Ri(M.starts, b), V.returnEnd ? 0 : v.length;
       }
       function da() {
         const b = [];
@@ -3790,20 +3790,20 @@ https://github.com/highlightjs/highlight.js/issues/2277`), F = p, C = x), O === 
           return Q(), 0;
         if (Ct.type === "begin" && v.type === "end" && Ct.index === v.index && k === "") {
           if (I += x.slice(v.index, v.index + 1), !L) {
-            const T = new Error(`0 width match regex (${p})`);
-            throw T.languageName = p, T.badRule = Ct.rule, T;
+            const M = new Error(`0 width match regex (${p})`);
+            throw M.languageName = p, M.badRule = Ct.rule, M;
           }
           return 1;
         }
         if (Ct = v, v.type === "begin")
           return la(v);
         if (v.type === "illegal" && !O) {
-          const T = new Error('Illegal lexeme "' + k + '" for mode "' + (S.scope || "<unnamed>") + '"');
-          throw T.mode = S, T;
+          const M = new Error('Illegal lexeme "' + k + '" for mode "' + (S.scope || "<unnamed>") + '"');
+          throw M.mode = S, M;
         } else if (v.type === "end") {
-          const T = ca(v);
-          if (T !== Si)
-            return T;
+          const M = ca(v);
+          if (M !== Si)
+            return M;
         }
         if (v.type === "illegal" && k === "")
           return v.index === x.length || (I += `
@@ -3882,7 +3882,7 @@ https://github.com/highlightjs/highlight.js/issues/2277`), F = p, C = x), O === 
     }
     function cn(p, x) {
       x = x || g.languages || Object.keys(u);
-      const O = ln(p), C = x.filter(ge).filter(Mi).map(
+      const O = ln(p), C = x.filter(ge).filter(Ti).map(
         (Q) => nt(Q, p, !1)
       );
       C.unshift(O);
@@ -3934,15 +3934,15 @@ https://github.com/highlightjs/highlight.js/issues/2277`), F = p, C = x), O === 
       g = Ei(g, p);
     }
     const Yr = () => {
-      Tt(), We("10.6.0", "initHighlighting() deprecated.  Use highlightAll() now.");
+      Mt(), We("10.6.0", "initHighlighting() deprecated.  Use highlightAll() now.");
     };
     function Qr() {
-      Tt(), We("10.6.0", "initHighlightingOnLoad() deprecated.  Use highlightAll() now.");
+      Mt(), We("10.6.0", "initHighlightingOnLoad() deprecated.  Use highlightAll() now.");
     }
     let Ai = !1;
-    function Tt() {
+    function Mt() {
       function p() {
-        Tt();
+        Mt();
       }
       if (document.readyState === "loading") {
         Ai || window.addEventListener("DOMContentLoaded", p, !1), Ai = !0;
@@ -3979,7 +3979,7 @@ https://github.com/highlightjs/highlight.js/issues/2277`), F = p, C = x), O === 
         h[O.toLowerCase()] = x;
       });
     }
-    function Mi(p) {
+    function Ti(p) {
       const x = ge(p);
       return x && !x.disableAutodetect;
     }
@@ -4013,7 +4013,7 @@ https://github.com/highlightjs/highlight.js/issues/2277`), F = p, C = x), O === 
     Object.assign(l, {
       highlight: B,
       highlightAuto: cn,
-      highlightAll: Tt,
+      highlightAll: Mt,
       highlightElement: dn,
       // TODO: Remove with v12 API
       highlightBlock: aa,
@@ -4025,7 +4025,7 @@ https://github.com/highlightjs/highlight.js/issues/2277`), F = p, C = x), O === 
       listLanguages: na,
       getLanguage: ge,
       registerAliases: Oi,
-      autoDetection: Mi,
+      autoDetection: Ti,
       inherit: Ei,
       addPlugin: sa,
       removePlugin: ra
@@ -4037,8 +4037,8 @@ https://github.com/highlightjs/highlight.js/issues/2277`), F = p, C = x), O === 
       concat: _,
       lookahead: A,
       either: P,
-      optional: K,
-      anyNumberOfTimes: M
+      optional: z,
+      anyNumberOfTimes: T
     };
     for (const p in Ot)
       typeof Ot[p] == "object" && e(Ot[p]);
@@ -4263,7 +4263,7 @@ function fc(e) {
     keywords: o,
     contains: []
     // defined later
-  }, M = {
+  }, T = {
     begin: ".?html`",
     end: "",
     starts: {
@@ -4275,7 +4275,7 @@ function fc(e) {
       ],
       subLanguage: "xml"
     }
-  }, K = {
+  }, z = {
     begin: ".?css`",
     end: "",
     starts: {
@@ -4307,7 +4307,7 @@ function fc(e) {
       e.BACKSLASH_ESCAPE,
       A
     ]
-  }, z = {
+  }, G = {
     className: "comment",
     variants: [
       e.COMMENT(
@@ -4355,8 +4355,8 @@ function fc(e) {
   }, je = [
     e.APOS_STRING_MODE,
     e.QUOTE_STRING_MODE,
-    M,
-    K,
+    T,
+    z,
     _,
     $,
     // Skip numbers when they are part of a variable name
@@ -4376,7 +4376,7 @@ function fc(e) {
       "self"
     ].concat(je)
   });
-  const Fe = [].concat(z, A.contains), V = Fe.concat([
+  const Fe = [].concat(G, A.contains), J = Fe.concat([
     // eat recursive parens in sub expressions
     {
       begin: /(\s*)\(/,
@@ -4393,7 +4393,7 @@ function fc(e) {
     excludeBegin: !0,
     excludeEnd: !0,
     keywords: o,
-    contains: V
+    contains: J
   }, He = {
     variants: [
       // class Car extends vehicle
@@ -4555,7 +4555,7 @@ function fc(e) {
     aliases: ["js", "jsx", "mjs", "cjs"],
     keywords: o,
     // this will be extended by TypeScript
-    exports: { PARAMS_CONTAINS: V, CLASS_REFERENCE: he },
+    exports: { PARAMS_CONTAINS: J, CLASS_REFERENCE: he },
     illegal: /#(?![$_A-Za-z])/,
     contains: [
       e.SHEBANG({
@@ -4566,11 +4566,11 @@ function fc(e) {
       ee,
       e.APOS_STRING_MODE,
       e.QUOTE_STRING_MODE,
-      M,
-      K,
+      T,
+      z,
       _,
       $,
-      z,
+      G,
       // Skip numbers when they are part of a variable name
       { match: /\$\d+/ },
       m,
@@ -4587,7 +4587,7 @@ function fc(e) {
         keywords: "return throw case",
         relevance: 0,
         contains: [
-          z,
+          G,
           e.REGEXP_MODE,
           {
             className: "function",
@@ -4616,7 +4616,7 @@ function fc(e) {
                     excludeBegin: !0,
                     excludeEnd: !0,
                     keywords: o,
-                    contains: V
+                    contains: J
                   }
                 ]
               }
@@ -5294,10 +5294,10 @@ function mc(e) {
     "nulls last",
     "depth first",
     "breadth first"
-  ], M = f, K = [
+  ], T = f, z = [
     ...d,
     ...c
-  ].filter((V) => !f.includes(V)), _ = {
+  ].filter((J) => !f.includes(J)), _ = {
     scope: "variable",
     match: /@[a-z0-9][a-z0-9_]*/
   }, $ = {
@@ -5305,28 +5305,28 @@ function mc(e) {
     match: /[-+*/=%^~]|&&?|\|\|?|!=?|<(?:=>?|<|>)?|>[>=]?/,
     relevance: 0
   }, P = {
-    match: t.concat(/\b/, t.either(...M), /\s*\(/),
+    match: t.concat(/\b/, t.either(...T), /\s*\(/),
     relevance: 0,
-    keywords: { built_in: M }
+    keywords: { built_in: T }
   };
-  function z(V) {
+  function G(J) {
     return t.concat(
       /\b/,
-      t.either(...V.map((Y) => Y.replace(/\s+/, "\\s+"))),
+      t.either(...J.map((Y) => Y.replace(/\s+/, "\\s+"))),
       /\b/
     );
   }
   const je = {
     scope: "keyword",
-    match: z(A),
+    match: G(A),
     relevance: 0
   };
-  function Fe(V, {
+  function Fe(J, {
     exceptions: Y,
     when: He
   } = {}) {
     const he = He;
-    return Y = Y || [], V.map((ee) => ee.match(/\|\d+$/) || Y.includes(ee) ? ee : he(ee) ? `${ee}|0` : ee);
+    return Y = Y || [], J.map((ee) => ee.match(/\|\d+$/) || Y.includes(ee) ? ee : he(ee) ? `${ee}|0` : ee);
   }
   return {
     name: "SQL",
@@ -5335,7 +5335,7 @@ function mc(e) {
     illegal: /[{}]|<\//,
     keywords: {
       $pattern: /\b[\w\.]+/,
-      keyword: Fe(K, { when: (V) => V.length < 3 }),
+      keyword: Fe(z, { when: (J) => J.length < 3 }),
       literal: r,
       type: o,
       built_in: m
@@ -5343,7 +5343,7 @@ function mc(e) {
     contains: [
       {
         scope: "type",
-        match: z(a)
+        match: G(a)
       },
       je,
       P,
@@ -5508,7 +5508,7 @@ function Oc(e) {
     return { name: i, keys: r, value: s };
   }) : [];
 }
-function Mc() {
+function Tc() {
   const e = window.__siteationDebugBar;
   return !e || !Array.isArray(e.alpineErrors) ? [] : e.alpineErrors.map((t) => {
     const n = String(t.message || ""), i = n.match(/Expression: "([\s\S]*?)"/);
@@ -5521,7 +5521,7 @@ function Mc() {
     };
   });
 }
-function Tc() {
+function Mc() {
   const e = tn();
   return e ? {
     present: !0,
@@ -6116,6 +6116,17 @@ function Pc() {
       };
       t(), this.stopWatchingScheme?.(), e.addEventListener("change", t), this.stopWatchingScheme = () => e.removeEventListener("change", t);
     },
+    /**
+     * System, light, dark, and round again.
+     *
+     * The palette names all three, which is what you want when you know where you are
+     * going. This is for the other case: it is dark, it should not be, and one click is
+     * the whole thought.
+     */
+    cycleTheme() {
+      const e = ["system", "light", "dark"];
+      this.setTheme(e[(e.indexOf(this.theme) + 1) % e.length]);
+    },
     /** @param {string} theme */
     setTheme(e) {
       this.theme = ["system", "light", "dark"].includes(e) ? e : "system", this.watchColorScheme(), this.persist();
@@ -6167,7 +6178,7 @@ function Pc() {
      * waited for.
      */
     refreshAlpine() {
-      this.alpineHealth = Tc(), this.alpineComponents = Ac(this.valuePolicy), this.alpineStores = Oc(this.valuePolicy), this.alpineErrors = Mc(), this.alpineExpanded.forEach((e) => {
+      this.alpineHealth = Mc(), this.alpineComponents = Ac(this.valuePolicy), this.alpineStores = Oc(this.valuePolicy), this.alpineErrors = Tc(), this.alpineExpanded.forEach((e) => {
         this.alpineStates[e] = Qi(e, this.valuePolicy);
       });
     },
@@ -6426,7 +6437,7 @@ ${e ? "" : `  <div class="ndb-stats">
     </div>
 
     <div class="ndb-stat">
-      ${Z("database", "is-accent")}
+      ${K("database", "is-accent")}
       <span>
         <span class="ndb-stat-key">Queries</span>
         <span class="ndb-stat-value">
@@ -6437,7 +6448,7 @@ ${e ? "" : `  <div class="ndb-stats">
     </div>
 
     <div class="ndb-stat">
-      ${Z("clock", "is-accent")}
+      ${K("clock", "is-accent")}
       <span>
         <span class="ndb-stat-key">Duration</span>
         <span class="ndb-stat-value" data-ndb-bind:class="'is-' + durationTone"
@@ -6446,7 +6457,7 @@ ${e ? "" : `  <div class="ndb-stats">
     </div>
 
     <div class="ndb-stat is-secondary">
-      ${Z("chip", "is-accent")}
+      ${K("chip", "is-accent")}
       <span>
         <span class="ndb-stat-key">Peak</span>
         <span class="ndb-stat-value" data-ndb-text="number(metrics.memory_peak_mb, 1) + ' MB'"></span>
@@ -6457,13 +6468,20 @@ ${e ? "" : `  <div class="ndb-stats">
   <div class="ndb-controls-group">
     <button type="button" class="ndb-icon-button" data-ndb-on:click="openPalette()"
             title="Search sections and settings">
-      ${Z("search")}
+      ${K("search")}
+    </button>
+
+    <button type="button" class="ndb-icon-button" data-ndb-on:click="cycleTheme()"
+            data-ndb-bind:title="'Theme: ' + theme + '. Click for the next one.'">
+      <span data-ndb-show="theme === 'system'">${K("monitor")}</span>
+      <span data-ndb-show="theme === 'light'">${K("sun")}</span>
+      <span data-ndb-show="theme === 'dark'">${K("moon")}</span>
     </button>
 
     <button type="button" class="ndb-icon-button" data-ndb-on:click="select('findings')"
             data-ndb-bind:class="findings.length > 0 && 'is-' + findingsTone"
             title="Findings">
-      ${Z("alert")}
+      ${K("alert")}
       <span class="ndb-badge" data-ndb-show="findings.length > 0"
             data-ndb-text="findings.length"></span>
     </button>
@@ -6473,23 +6491,23 @@ ${e ? "" : `  <div class="ndb-stats">
     ${e ? `
     <button type="button" class="ndb-icon-button" data-ndb-on:click="toggleMaximised()"
             data-ndb-bind:title="maximised ? 'Restore' : 'Maximise'">
-      <span data-ndb-show="!maximised">${Z("expand")}</span>
-      <span data-ndb-show="maximised">${Z("collapse")}</span>
+      <span data-ndb-show="!maximised">${K("expand")}</span>
+      <span data-ndb-show="maximised">${K("collapse")}</span>
     </button>
     <button type="button" class="ndb-icon-button" data-ndb-on:click="closeInspector()"
             title="Minimise">
-      ${Z("minimise")}
+      ${K("minimise")}
     </button>
     ` : `
     <button type="button" class="ndb-icon-button" data-ndb-on:click="openInspector()"
             title="Open the inspector">
-      ${Z("expand")}
+      ${K("expand")}
     </button>
     `}
 
     <button type="button" class="ndb-icon-button" data-ndb-on:click="dismiss()"
             title="Hide until the next page load">
-      ${Z("close")}
+      ${K("close")}
     </button>
   </div>
 </div>`;
@@ -6516,7 +6534,7 @@ function ts(e, t) {
             data-ndb-bind:class="isFavourite(item.id) && 'is-on'"
             data-ndb-on:click="toggleFavourite(item.id)"
             data-ndb-bind:title="isFavourite(item.id) ? 'Unpin' : 'Pin to favourites'">
-      ${Z("star")}
+      ${K("star")}
     </button>
   </div>
 </template>`;
@@ -6566,7 +6584,7 @@ const Dc = `
       <div class="ndb-body">
         <button type="button" class="ndb-nav-toggle" data-ndb-on:click="navOpen = !navOpen"
                 title="Sections">
-          ${Z("menu")}
+          ${K("menu")}
           <span data-ndb-text="currentSection.label"></span>
         </button>
 
@@ -7383,7 +7401,7 @@ const Dc = `
                           data-ndb-on:mouseleave="highlightAlpine(component.id, false)"
                           data-ndb-on:focus="highlightAlpine(component.id, true)"
                           data-ndb-on:blur="highlightAlpine(component.id, false)">
-                    ${Z("caret", "ndb-alpine-caret")}
+                    ${K("caret", "ndb-alpine-caret")}
                     <span class="ndb-alpine-name" data-ndb-text="component.name"></span>
                     <span class="ndb-tag is-warn" data-ndb-show="!component.initialised">
                       not started

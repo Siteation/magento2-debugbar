@@ -1470,6 +1470,17 @@ inspect_debug_queries       slowest first, with call sites</code></pre>
             survives it.</p>
             <p>Cost: 60 kB raw, 18 kB gzipped. The plan guessed 20 kB, which was optimistic
             about the core and about SQL's keyword list.</p>` },
+      { t: 'Reverted: the theme toggle should not have left the header', s: 'done',
+        d: `<p>It was taken out with the placement toggle when the header was crowded, on
+            the grounds that the palette already names all three themes. That reasoning was
+            wrong about one of them: naming a theme and flipping one are different acts, and
+            a bar that renders on a light admin and a dark storefront gets flipped often
+            enough that two keystrokes and a search is the wrong price.</p>
+            <p>Placement stays in the palette. It is a preference set once, which is exactly
+            the case the palette is for.</p>
+            <p>The header has room for it now that the metrics belong to the dock, which was
+            the actual crowding. A browser test asserts the control exists in both the dock
+            and the sheet, since this went missing quietly once already.</p>` },
       { t: 'A browser suite, because the unit tests could not have caught any of it', s: 'done',
         d: `<p>Every interface bug so far has been the same kind: a binding that throws, an
             element that renders empty, a control that does nothing. None of them is a

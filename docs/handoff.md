@@ -110,7 +110,7 @@ vendor/bin/phpstan analyse -c <pkg>/phpstan.neon.dist
 vendor/bin/phpunit --configuration <pkg>/phpunit.xml.dist      # 89 tests
 <pkg>/dev/smoke https://mage-debugbar.test magedebugbar_admin  # 29 assertions
 cd <pkg>/src-js && npm test                                    # 38 tests, no dependency
-cd <pkg>/src-js && npm run test:browser                        # 8 tests, needs the store up
+cd <pkg>/src-js && npm run test:browser                        # 9 tests, needs the store up
 cd <pkg>/src-js && npm run build                               # output is committed
 ```
 
@@ -197,8 +197,9 @@ Beyond the three stale artifact traps, the ones most likely to bite again:
 * A shadow root isolates the bar from the page, not from itself. Generic class names
   collide; `.ndb-facts` was defined twice and the header broke.
 * The header is built once and used twice, and the difference is the `sheet` flag. Metrics
-  belong to the collapsed dock: open, the overview already says all of it. Preferences
-  belong to the palette, not to a header icon.
+  belong to the collapsed dock: open, the overview already says all of it. A preference set
+  once belongs to the palette, placement for instance. The theme does not: it is flipped,
+  not chosen, and taking it out of the header was a mistake that had to be undone.
 * An editor URL template writes `://file%f`, never `://file/%f`: `%f` is absolute, so the
   second form carries two slashes. Zed ignores that silently. To test one, open both forms
   against a file whose language server has not started yet and watch `~/Library/Logs/Zed/`
