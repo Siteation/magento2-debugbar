@@ -216,9 +216,14 @@ installing the module needs no build step.
 ```
 cd src-js
 npm install
-npm run build     # or: npm run dev, to rebuild on change
-npm test          # node's own runner, no test dependency
+npm run build         # or: npm run dev, to rebuild on change
+npm test              # node's own runner, no test dependency
+npm run test:browser  # drives the bar in Chrome against a running store
 ```
+
+The browser suite needs the store up and the bar enabled. It uses your installed Chrome
+rather than downloading one; point it elsewhere with `NDB_BASE_URL` or
+`NDB_BROWSER_CHANNEL`.
 
 From the instance root, where `PKG` is this package's directory:
 

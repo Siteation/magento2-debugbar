@@ -109,7 +109,8 @@ vendor/bin/phpcs  --standard=<pkg>/phpcs.xml.dist <pkg>
 vendor/bin/phpstan analyse -c <pkg>/phpstan.neon.dist
 vendor/bin/phpunit --configuration <pkg>/phpunit.xml.dist      # 89 tests
 <pkg>/dev/smoke https://mage-debugbar.test magedebugbar_admin  # 29 assertions
-cd <pkg>/src-js && npm test                                    # 36 tests, no dependency
+cd <pkg>/src-js && npm test                                    # 38 tests, no dependency
+cd <pkg>/src-js && npm run test:browser                        # 8 tests, needs the store up
 cd <pkg>/src-js && npm run build                               # output is committed
 ```
 
@@ -117,10 +118,15 @@ Browser work: measure geometry with `javascript_tool` before diagnosing layout f
 screenshot. Screenshots are scaled and have misled me twice.
 
 The bar records its own Alpine errors, because `early.js` watches `console.warn` for every
-instance on the page. After touching the template, walk every section and sub-tab and read
-`window.__siteationDebugBar.alpineErrors`: empty is the only acceptable answer, and the
-Alpine section's Health tab shows the same list. Nothing else catches a binding that throws,
-because a throwing binding renders as an empty element and says nothing.
+instance on the page. `npm run test:browser` walks every section and sub-tab and asserts
+that buffer is empty, which is the only automated thing that catches a binding that throws:
+a throwing binding renders as an empty element and says nothing. The Alpine section's Health
+tab shows the same list when you are looking by hand.
+
+Two habits that suite enforces. The header is built once and used twice, so a header
+selector without `.ndb-sheet` matches both, and `.ndb-callsite-link` is used by findings as
+well as queries. And selecting a section starts work, so wait for the state rather than for
+a length of time.
 
 ## State
 

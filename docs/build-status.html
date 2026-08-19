@@ -1470,6 +1470,30 @@ inspect_debug_queries       slowest first, with call sites</code></pre>
             survives it.</p>
             <p>Cost: 60 kB raw, 18 kB gzipped. The plan guessed 20 kB, which was optimistic
             about the core and about SQL's keyword list.</p>` },
+      { t: 'A browser suite, because the unit tests could not have caught any of it', s: 'done',
+        d: `<p>Every interface bug so far has been the same kind: a binding that throws, an
+            element that renders empty, a control that does nothing. None of them is a
+            wrong answer, so none of them was catchable by a unit test, and all of them
+            were silent unless somebody had the console open. Five of them were found by
+            Rutger looking at the screen.</p>
+            <p>Eight Playwright tests, five seconds, driving the bar in a real browser. The
+            walk asserts the bar's own error buffer is empty after visiting every section
+            and every sub-tab, which works because early.js watches console.warn for every
+            Alpine on the page, the bar's own included. The rest assert the things that
+            were silently broken: call sites render, the palette opens and filters, the
+            comparison survives its empty state, the report reaches the clipboard, and an
+            editor link is a scheme with a line and no doubled slash.</p>
+            <p>Proved by reintroducing two of the fixed bugs. The null panel failed the
+            walk with all fifteen throwing expressions named and attributed to their
+            elements. The doubled slash failed the editor test with the URL printed.</p>
+            <p>It uses the installed Chrome rather than downloading one: 150 MB of browser
+            is a poor trade for testing a bar that is 60 kB. Kept apart from
+            <code>npm test</code>, which stays a second long and needs nothing running.</p>
+            <p>Writing it found two habits worth keeping. The header is built once and used
+            twice, so a header selector without a side matches both, and
+            <code>.ndb-callsite-link</code> belongs to findings as well as queries. And
+            selecting a section starts work, so a test waits for the state, never for a
+            length of time: the first version raced the history fetch and skipped itself.</p>` },
       { t: 'A profile for the request that crashed', s: 'done',
         d: `<p>Chosen over Ignition integration, and it turned out to be more than a
             wording fix. An uncaught exception left <code>launch()</code> before finalize

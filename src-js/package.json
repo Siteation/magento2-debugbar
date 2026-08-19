@@ -7,13 +7,15 @@
   "scripts": {
     "build": "vite build && vite build --config vite.early.config.js",
     "dev": "vite build --watch",
-    "test": "node --test 'test/*.test.js'"
+    "test": "node --test 'test/*.test.js'",
+    "test:browser": "playwright test"
   },
   "dependencies": {
     "alpinejs": "^3.14.9",
     "highlight.js": "^11.12.0"
   },
   "devDependencies": {
+    "@playwright/test": "^1.62.1",
     "vite": "^7.1.5"
   }
 }

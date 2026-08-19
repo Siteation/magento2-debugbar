@@ -2,6 +2,8 @@
 composer.lock
 node_modules/
 .phpunit.cache/
+src-js/test-results/
+src-js/playwright-report/
 .DS_Store
 .idea/
 .vscode/
