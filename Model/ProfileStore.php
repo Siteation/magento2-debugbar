@@ -119,6 +119,15 @@ class ProfileStore
         $limit = max(1, min($limit ?? $this->config->maxProfiles(), $this->config->maxProfiles()));
         $profiles = [];
 
+        // Also on the way in, not only on the way out. Pruning on write alone means the age
+        // bound holds exactly until you stop browsing, which is the moment it starts to
+        // matter: profiles are not meant to outlive the debugging that produced them.
+        try {
+            $this->prune($this->directory());
+        } catch (Throwable) {
+            // Reading is still worth doing when tidying failed.
+        }
+
         foreach ($this->sortedFiles($this->directory()) as $file) {
             $id = basename($file['path'], '.json');
 

@@ -175,12 +175,14 @@ class ProfileReport
         $lines = ['## Slowest queries', ''];
 
         foreach (array_slice($items, 0, self::MAX_QUERIES) as $index => $query) {
-            $lines[] = sprintf(
-                "%d. %s ms — `%s`",
-                $index + 1,
-                $this->number($query['duration_ms'] ?? 0, 2),
-                $this->trim((string) ($query['sql'] ?? ''))
-            );
+            // A fenced block, not a code span: Magento quotes every identifier in
+            // backticks, so a single backtick span would end at the first one and the rest
+            // of the statement would be rendered as prose.
+            $lines[] = sprintf('%d. %s ms', $index + 1, $this->number($query['duration_ms'] ?? 0, 2));
+            $lines[] = '';
+            $lines[] = '   ```sql';
+            $lines[] = '   ' . $this->trim((string) ($query['sql'] ?? ''));
+            $lines[] = '   ```';
 
             $frame = $query['callsite'][0] ?? null;
 
@@ -287,7 +289,11 @@ class ProfileReport
         );
 
         foreach (array_slice($queries['added'], 0, 5) as $row) {
-            $lines[] = sprintf('- +%d — `%s`', $row['count'], $this->trim((string) $row['sql']));
+            $lines[] = sprintf('- +%d', $row['count']);
+            $lines[] = '';
+            $lines[] = '  ```sql';
+            $lines[] = '  ' . $this->trim((string) $row['sql']);
+            $lines[] = '  ```';
         }
 
         return implode("\n", $lines);

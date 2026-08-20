@@ -154,7 +154,9 @@ function walkArray(value, policy, depth, seen) {
  */
 function walkObject(value, policy, depth, seen) {
   const keys = keysOf(value)
-  const clean = {}
+  // No prototype, so a component property named __proto__ is a key like any other rather
+  // than an assignment that silently goes nowhere.
+  const clean = Object.create(null)
   let kept = 0
 
   for (const key of keys) {

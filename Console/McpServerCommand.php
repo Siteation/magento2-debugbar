@@ -21,6 +21,9 @@ use Throwable;
  */
 class McpServerCommand extends Command
 {
+    /** Generous for a JSON-RPC request, and finite, which is the point. */
+    private const MAX_LINE_BYTES = 1048576;
+
     public function __construct(
         private readonly Server $server,
         private readonly State $appState,
@@ -56,12 +59,19 @@ class McpServerCommand extends Command
             return Command::FAILURE;
         }
 
-        while (($line = fgets($stdin)) !== false) {
+        // Bounded, so one enormous line cannot be read into memory in full, and cleared
+        // each time round, so anything the request printed does not accumulate for the
+        // length of the session.
+        while (($line = fgets($stdin, self::MAX_LINE_BYTES)) !== false) {
             $response = $this->server->handleLine($line);
 
             if ($response !== null) {
                 fwrite(STDOUT, $response . "\n");
                 fflush(STDOUT);
+            }
+
+            if (ob_get_length() !== false) {
+                ob_clean();
             }
         }
 

@@ -78,12 +78,22 @@ class Server
             return $this->encode($this->error(null, self::PARSE_ERROR, 'Invalid JSON.'));
         }
 
-        if (!is_array($message)) {
+        if (!is_array($message) || array_is_list($message)) {
+            // A list is a batch, which this server does not implement. Refusing it is the
+            // difference between a client that fails and a client that waits forever.
             return $this->encode($this->error(null, self::INVALID_REQUEST, 'Expected a JSON-RPC object.'));
         }
 
         $id = $message['id'] ?? null;
-        $method = (string) ($message['method'] ?? '');
+
+        // Casting would turn an array into "Array" and a fatal into a dead session. The
+        // method is the one field that decides everything after it, so it is checked before
+        // anything is done with it.
+        if (!is_string($message['method'] ?? null)) {
+            return $this->encode($this->error($id, self::INVALID_REQUEST, 'Method must be a string.'));
+        }
+
+        $method = $message['method'];
         $params = is_array($message['params'] ?? null) ? $message['params'] : [];
 
         // Notifications carry no id and must never be answered.

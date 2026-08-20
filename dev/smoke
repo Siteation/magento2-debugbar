@@ -131,6 +131,10 @@ SELF=$(curl -sk -o /dev/null -w '%{http_code}' \
     "$BASE/siteation_debugbar/profile/compare/baseline/$ID/subject/$ID/")
 [ "$SELF" = "400" ] && pass "refuses to compare a profile with itself" \
     || fail "refuses to compare a profile with itself" "got $SELF"
+ARRAY=$(curl -sk -o /dev/null -w '%{http_code}' "$BASE/siteation_debugbar/profile/view/?id%5B%5D=x")
+[ "$ARRAY" = "400" ] && pass "refuses an array where an id belongs" \
+    || fail "refuses an array where an id belongs" "got $ARRAY"
+
 BAD=$(curl -sk -o /dev/null -w '%{http_code}' "$BASE/siteation_debugbar/profile/view/id/..%2F..%2Fetc%2Fpasswd/")
 [ "$BAD" = "400" ] && pass "rejects a malformed id with 400" || fail "rejects a malformed id" "got $BAD"
 

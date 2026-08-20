@@ -118,9 +118,9 @@ Claude Code as `siteation-debugbar`.
 bin/magento cache:flush                                        # after any plugin change
 vendor/bin/phpcs  --standard=<pkg>/phpcs.xml.dist <pkg>
 vendor/bin/phpstan analyse -c <pkg>/phpstan.neon.dist
-vendor/bin/phpunit --configuration <pkg>/phpunit.xml.dist      # 106 tests
-<pkg>/dev/smoke https://mage-debugbar.test magedebugbar_admin  # 29 assertions
-cd <pkg>/src-js && npm test                                    # 38 tests, no dependency
+vendor/bin/phpunit --configuration <pkg>/phpunit.xml.dist      # 107 tests
+<pkg>/dev/smoke https://mage-debugbar.test magedebugbar_admin  # 30 assertions
+cd <pkg>/src-js && npm test                                    # 39 tests, no dependency
 cd <pkg>/src-js && npm run test:browser                        # 9 tests, needs the store up
 cd <pkg>/src-js && npm run build                               # output is committed
 ```
@@ -194,6 +194,9 @@ extension.
 * Magento's full integration test suite, deferred until the interface stops moving.
 
 ## Things learned the hard way
+
+* Writing to a key named `__proto__` on a plain object sets the prototype instead of the key,
+  so the value disappears. `Object.create(null)` for anything built from page data.
 
 * The cookie manager resolves its domain through the store, so it cannot be used at the top
   of `launch()`: there is no store yet. Issue cookies after `proceed()`.

@@ -73,18 +73,62 @@ class RequestCollector extends AbstractCollector
     {
         $this->exception = [
             'class' => $exception::class,
-            'message' => $this->redactor->cleanSql($exception->getMessage()),
+            'message' => $this->message($exception->getMessage()),
             'file' => $this->callSites->relativePath($exception->getFile()),
             'line' => $exception->getLine(),
             'frames' => $this->callSites->fromTrace($exception->getTrace()),
         ];
     }
 
+    /**
+     * The path, with the admin URL secret removed and a length it cannot exceed.
+     *
+     * Magento carries a per route CSRF token as a path segment, /key/<hash>/, so an
+     * adminhtml profile would otherwise store it verbatim: the one part of a URL that is a
+     * credential rather than a location. The path itself is kept whatever the value policy
+     * says, because a profile you cannot identify is a profile you cannot use, and it is
+     * bounded because nothing a visitor controls should reach a stored file unbounded.
+     */
+    private function path(): string
+    {
+        $path = '/' . ltrim((string) $this->httpRequest->getPathInfo(), '/');
+        $path = (string) preg_replace_callback(
+            '#/key/[^/]+#i',
+            static fn (): string => '/key/' . Redactor::REDACTED,
+            $path
+        );
+
+        return (string) $this->redactor->clean($path);
+    }
+
+    /**
+     * An exception message follows the value policy like anything else captured.
+     *
+     * Magento interpolates without quoting, so "No such entity with email = jane@example.com"
+     * survives cleanSql untouched: stripping quoted literals is the wrong tool here. Under
+     * masked and none the class name is what is left, which still says what went wrong
+     * without saying who it happened to.
+     */
+    private function message(string $message): string
+    {
+        $policy = $this->config->valuePolicy();
+
+        if ($policy === Redactor::POLICY_NONE) {
+            return '';
+        }
+
+        if ($policy === Redactor::POLICY_MASKED) {
+            return Redactor::MASKED;
+        }
+
+        return $this->redactor->cleanSql($message);
+    }
+
     public function capture(ResponseInterface $response): void
     {
         $this->request = [
             'method' => (string) $this->httpRequest->getMethod(),
-            'path' => '/' . ltrim((string) $this->httpRequest->getPathInfo(), '/'),
+            'path' => $this->path(),
             'route' => (string) $this->httpRequest->getRouteName(),
             'action' => (string) $this->httpRequest->getFullActionName(),
             'area' => $this->areaCode(),

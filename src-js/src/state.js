@@ -1013,7 +1013,7 @@ export function debugBar() {
       this.alpineHealth = alpineHealth()
       this.alpineComponents = scanComponents(this.valuePolicy)
       this.alpineStores = scanStores(this.valuePolicy)
-      this.alpineErrors = alpineErrors()
+      this.alpineErrors = alpineErrors(this.valuePolicy)
 
       this.alpineExpanded.forEach((id) => {
         this.alpineStates[id] = stateJson(id, this.valuePolicy)
@@ -1105,6 +1105,7 @@ export function debugBar() {
     /** @param {KeyboardEvent} event */
     paletteShortcut(event) {
       // KeyP rather than the key itself, so a layout that puts P elsewhere still works.
+      if (this.dismissed) return
       if (event.code !== 'KeyP' || !event.shiftKey || !(event.metaKey || event.ctrlKey)) return
 
       event.preventDefault()
@@ -1247,11 +1248,20 @@ export function debugBar() {
     editorUrl(file, line) {
       if (!this.editorTemplate || !file) return ''
 
+      // Only a scheme that opens an editor. The template comes from configuration, and a
+      // javascript: or data: one would turn every call site into a link worth not clicking.
+      if (!/^[a-z][a-z0-9+.-]*:\/\//i.test(this.editorTemplate)
+        || /^(javascript|data|vbscript):/i.test(this.editorTemplate)) {
+        return ''
+      }
+
       const absolute = file.startsWith('/') ? file : `${this.editorRoot}/${file}`
 
+      // Function replacements, because $& and $1 in a path are replacement patterns to
+      // String.replace and would eat part of the very path they appear in.
       return this.editorTemplate
-        .replace('%f', encodeURI(absolute))
-        .replace('%l', String(line || 1))
+        .replace('%f', () => encodeURI(absolute))
+        .replace('%l', () => String(line || 1))
     },
 
     /**

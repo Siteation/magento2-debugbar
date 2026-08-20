@@ -140,4 +140,22 @@ class RedactorTest extends TestCase
     {
         $this->assertSame(self::class, $this->redactor->clean($this));
     }
+    #[Test]
+    public function itStripsALiteralWhicheverQuotesItWore(): void
+    {
+        // Magento's adapter only emits single quotes. The second is for hand written SQL
+        // from a module that chose the other one, which would otherwise keep its values.
+        // Default bounds: the shared instance truncates at twenty characters.
+        $redactor = new Redactor();
+
+        $this->assertSame(
+            "SELECT * FROM t WHERE email = '?'",
+            $redactor->cleanSql("SELECT * FROM t WHERE email = 'jane@example.com'")
+        );
+        $this->assertSame(
+            'SELECT * FROM t WHERE email = "?"',
+            $redactor->cleanSql('SELECT * FROM t WHERE email = "jane@example.com"')
+        );
+    }
+
 }

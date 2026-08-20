@@ -31,7 +31,9 @@
     const entry = {
       id: id,
       method: String(method || 'GET').toUpperCase(),
-      url: String(url),
+      // Without the query string. A section load carries ids and a search carries what was
+      // typed, and this list only ever needs to say which request it was.
+      url: String(url).split('?')[0],
       status: status,
     }
 

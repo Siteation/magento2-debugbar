@@ -44,8 +44,9 @@ class Compare implements HttpGetActionInterface
             return $this->fail($result, 404, 'Debug bar is disabled.');
         }
 
-        $baselineId = (string) $this->request->getParam('baseline', '');
-        $subjectId = (string) $this->request->getParam('subject', '');
+        // ?baseline[]= would be an array, and casting one is a fatal where a 400 was meant.
+        $baselineId = $this->stringParam('baseline');
+        $subjectId = $this->stringParam('subject');
 
         if (!ProfileStore::validId($baselineId) || !ProfileStore::validId($subjectId)) {
             return $this->fail($result, 400, 'Invalid profile id.');
@@ -63,6 +64,13 @@ class Compare implements HttpGetActionInterface
         }
 
         return $result->setData($this->comparer->compare($baseline, $subject));
+    }
+
+    private function stringParam(string $name): string
+    {
+        $value = $this->request->getParam($name, '');
+
+        return is_string($value) ? $value : '';
     }
 
     private function fail(Json $result, int $status, string $message): ResultInterface

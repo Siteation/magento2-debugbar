@@ -74,8 +74,8 @@ test('a sensitive key is redacted at every depth, not only at the top', () => {
 test('full keeps values, masked keeps only their shape, none keeps nothing', () => {
   const state = { label: 'Add to cart', qty: 2, open: true, empty: '' }
 
-  assert.deepEqual(clean(state, POLICY_FULL), state)
-  assert.deepEqual(clean(state, POLICY_MASKED), {
+  assert.deepEqual(JSON.parse(JSON.stringify(clean(state, POLICY_FULL))), state)
+  assert.deepEqual(JSON.parse(JSON.stringify(clean(state, POLICY_MASKED))), {
     label: MASKED, qty: 2, open: true, empty: '',
   })
   assert.equal(clean(state, POLICY_NONE), undefined)
@@ -168,7 +168,12 @@ test("Alpine's merged scope proxy enumerates through Reflect, not Object.keys", 
 
   assert.deepEqual(Object.keys(merged), [], 'the premise: this is why keysOf exists')
   assert.deepEqual(keysOf(merged), ['searchOpen', 'cart'])
-  assert.deepEqual(clean(merged, POLICY_FULL), { searchOpen: false, cart: { qty: 2 } })
+  // Through JSON, which is how the panel renders it: the walked objects have no prototype
+  // on purpose, and deepEqual compares those.
+  assert.deepEqual(
+    JSON.parse(JSON.stringify(clean(merged, POLICY_FULL))),
+    { searchOpen: false, cart: { qty: 2 } }
+  )
 })
 
 test('an ordinary object still enumerates the ordinary way', () => {
@@ -179,4 +184,15 @@ test('an ordinary object still enumerates the ordinary way', () => {
 test('a node with nothing to describe still describes itself', () => {
   assert.equal(describeNode(new FakeElement('SPAN')), '<span>')
   assert.equal(describeNode(new FakeNode('#text')), '<#text>')
+})
+
+test('a property named __proto__ is a property, not an assignment', () => {
+  // On a plain object it would vanish: writing __proto__ sets the prototype instead of a
+  // key, so the panel would quietly show a component with one fewer property than it has.
+  const state = JSON.parse('{"__proto__": {"polluted": true}, "ok": 1}')
+  const cleaned = clean(state, POLICY_FULL)
+
+  assert.equal(Object.getPrototypeOf(cleaned), null)
+  assert.deepEqual(Object.keys(cleaned), ['__proto__', 'ok'])
+  assert.equal({}.polluted, undefined, 'and nothing was polluted on the way through')
 })

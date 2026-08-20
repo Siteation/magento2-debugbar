@@ -15,7 +15,7 @@
  */
 import ourAlpine from 'alpinejs'
 import { hostAlpine } from './host-alpine.js'
-import { POLICY_NONE, clean, cleanExpression, describeNode, keysOf } from './redact.js'
+import { POLICY_NONE, clean, cleanExpression, cleanString, describeNode, keysOf } from './redact.js'
 
 /**
  * Ids are stable across scans, so a component stays expanded while the list refreshes.
@@ -27,7 +27,7 @@ const ids = new WeakMap()
 /** @type {Map<number, Element>} */
 const elements = new Map()
 
-/** @type {Map<number, string>} */
+/** @type {Map<number, {outline: string, offset: string}>} */
 const outlines = new Map()
 
 let nextId = 0
@@ -361,7 +361,7 @@ export function scanStores(policy) {
  *
  * @returns {Array<AlpineError>}
  */
-export function alpineErrors() {
+export function alpineErrors(policy) {
   const buffer = window.__siteationDebugBar
 
   if (!buffer || !Array.isArray(buffer.alpineErrors)) return []
@@ -371,8 +371,11 @@ export function alpineErrors() {
     const expression = message.match(/Expression: "([\s\S]*?)"/)
 
     return {
-      message: message.split('\n')[0].replace(/^Alpine (Expression )?Error:\s*/, ''),
-      expression: expression ? expression[1] : '',
+      // An expression that threw is still a server rendered expression, and a message that
+      // names the value it choked on is still that value. The rest of this section applies
+      // the policy to exactly these two things; this was the one reader that did not.
+      message: cleanString(message.split('\n')[0].replace(/^Alpine (Expression )?Error:\s*/, ''), policy),
+      expression: expression ? cleanExpression(expression[1], policy) : '',
       element: String(entry.element || ''),
       during_init: Boolean(entry.during_init),
     }
@@ -422,7 +425,14 @@ export function outline(id, on) {
   if (!element || !element.style) return
 
   if (on) {
-    if (!outlines.has(id)) outlines.set(id, element.style.outline || '')
+    if (!outlines.has(id)) {
+      // Both properties, because both are about to be written. Removing the offset on the
+      // way out would leave a page that set one of its own without it.
+      outlines.set(id, {
+        outline: element.style.outline || '',
+        offset: element.style.outlineOffset || '',
+      })
+    }
 
     element.style.outline = '2px solid #7f9cf5'
     element.style.outlineOffset = '-2px'
@@ -432,8 +442,10 @@ export function outline(id, on) {
 
   if (!outlines.has(id)) return
 
-  element.style.outline = outlines.get(id)
-  element.style.removeProperty('outline-offset')
+  const previous = outlines.get(id)
+
+  element.style.outline = previous.outline
+  element.style.outlineOffset = previous.offset
   outlines.delete(id)
 }
 

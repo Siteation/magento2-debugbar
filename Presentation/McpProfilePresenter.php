@@ -100,7 +100,12 @@ class McpProfilePresenter
                 'summary' => $data['summary'] ?? [],
                 'items' => $shown,
                 'cursor' => $cursor,
-                'next_cursor' => $cursor + count($shown) < $total ? $cursor + count($shown) : null,
+                // Always past the cursor it was given. A page that the byte budget emptied
+                // would otherwise hand back the cursor it came with, and an agent paging on
+                // it would ask the same question until something gave out.
+                'next_cursor' => $cursor + max(1, count($shown)) < $total
+                    ? $cursor + max(1, count($shown))
+                    : null,
                 'total_items' => $total,
             ]),
             $page

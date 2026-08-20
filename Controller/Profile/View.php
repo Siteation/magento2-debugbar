@@ -50,7 +50,9 @@ class View implements HttpGetActionInterface
             return $this->fail($result, 404, 'Debug bar is disabled.');
         }
 
-        $id = (string) $this->request->getParam('id', '');
+        // getParam returns whatever the query string held, and ?id[]= makes that an array.
+        // Casting one would be a fatal where a 400 was intended.
+        $id = $this->stringParam('id');
 
         if (!ProfileStore::validId($id)) {
             return $this->fail($result, 400, 'Invalid profile id.');
@@ -69,6 +71,13 @@ class View implements HttpGetActionInterface
         }
 
         return $result->setData($profile);
+    }
+
+    private function stringParam(string $name): string
+    {
+        $value = $this->request->getParam($name, '');
+
+        return is_string($value) ? $value : '';
     }
 
     private function fail(Json $result, int $status, string $message): ResultInterface

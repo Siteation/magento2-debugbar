@@ -1470,6 +1470,36 @@ inspect_debug_queries       slowest first, with call sites</code></pre>
             survives it.</p>
             <p>Cost: 60 kB raw, 18 kB gzipped. The plan guessed 20 kB, which was optimistic
             about the core and about SQL's keyword list.</p>` },
+      { t: 'The rest of the audit, and what was left alone', s: 'done',
+        d: `<p><strong>Redaction.</strong> The admin URL secret is a path segment, so an
+            adminhtml profile stored it verbatim at every policy: <code>/key/&lt;hash&gt;/</code>
+            is redacted at record time and the path is bounded like any other captured
+            string. An exception message now follows the policy rather than cleanSql, which
+            strips quoted literals and so did nothing to Magento's own unquoted
+            interpolation. cleanSql strips both quoting styles.</p>
+            <p><strong>MCP.</strong> A non-string <code>method</code> killed the process, so
+            one malformed line ended the session; it answers INVALID_REQUEST now, and a
+            batch array is refused loudly instead of being dropped into silence. The read
+            loop is length bounded and its output buffer cleared each pass. A page emptied
+            by the byte budget used to return the cursor it was given, which an agent would
+            page on forever.</p>
+            <p><strong>Endpoints.</strong> <code>?id[]=</code> was a 500 where a 400 was
+            meant. Pruning ran only on write, so the hour long retention held exactly until
+            you stopped browsing; it runs on read as well.</p>
+            <p><strong>The bar.</strong> Alpine expression errors were the one reader of page
+            data that ignored the value policy. A property named <code>__proto__</code>
+            vanished from the panel, because writing it to a plain object sets a prototype
+            rather than a key. Outlining a component put the outline back and left the
+            offset. An editor template is checked for a scheme, and <code>%f</code> is
+            replaced through a function so a path containing <code>$&amp;</code> survives.
+            The request list drops query strings. The palette shortcut respects a dismissed
+            bar.</p>
+            <p><strong>Left alone, deliberately.</strong> Narrowing the default areas to
+            frontend would remove a documented feature to solve what the access key now
+            solves. The MCP envelope's unbounded fields and its argument validation are
+            hardening the verifier itself called remarks. Decoding every profile to build the
+            history list is a performance question, not a security one, and belongs in the
+            backlog with the sidecar index that would fix it.</p>` },
       { t: 'A live site can be debugged by one person, and by nobody else', s: 'done',
         d: `<p>Both halves of what the audit found, because they are one problem: only one
             person should be able to make a response carrying debug data, and that response

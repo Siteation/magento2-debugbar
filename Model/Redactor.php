@@ -65,10 +65,18 @@ class Redactor
     /**
      * SQL is kept readable but string literals are dropped, because a WHERE clause can
      * carry an email address or a token just as easily as bound parameters can.
+     *
+     * Both quoting styles, matching QueryAnalyzer::normalize(). Magento's adapter only ever
+     * emits single quotes, so the second is for hand written SQL from a third party module
+     * that chose the other one and would otherwise keep its values at every policy.
      */
     public function cleanSql(string $sql): string
     {
-        $sql = preg_replace("/'(?:[^'\\\\]|\\\\.)*'/", "'?'", $sql) ?? $sql;
+        $sql = preg_replace(
+            ['/\'(?:[^\'\\\\]|\\\\.)*\'/', '/"(?:[^"\\\\]|\\\\.)*"/'],
+            ["'?'", '"?"'],
+            $sql
+        ) ?? $sql;
 
         return $this->cleanString($sql);
     }

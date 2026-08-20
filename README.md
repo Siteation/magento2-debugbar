@@ -41,6 +41,8 @@ bin/magento config:set dev/siteation_debugbar/enabled 1
 ```
 
 Settings live under **Stores > Configuration > Advanced > Developer > Siteation Debug Bar**.
+They apply to the whole installation: the collector decides before the store is known, so a
+per website or per store value is ignored rather than half honoured.
 
 Every profiled response carries the profile id:
 
