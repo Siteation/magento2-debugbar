@@ -60,11 +60,26 @@ async function waitForState(page, until) {
 }
 
 /**
+ * What the bar's own error capture collected.
+ *
+ * The buffer's absence is asserted, not tolerated. `?? []` would turn every "nothing threw"
+ * assertion in this file into one that passes when early.js failed to load, when the global
+ * is renamed, or when the bar is not on the page at all: the suite would be green precisely
+ * when it should be loudest.
+ *
  * @param {import('@playwright/test').Page} page
- * @returns {Promise<Array<object>>} what the bar's own error capture collected
+ * @returns {Promise<Array<object>>}
  */
-function alpineErrors(page) {
-  return page.evaluate(() => window.__siteationDebugBar?.alpineErrors ?? [])
+async function alpineErrors(page) {
+  const collected = await page.evaluate(() => {
+    const buffer = window.__siteationDebugBar
+
+    return buffer && Array.isArray(buffer.alpineErrors) ? buffer.alpineErrors : null
+  })
+
+  expect(collected, 'the error buffer is gone, so an empty one proves nothing').not.toBeNull()
+
+  return collected
 }
 
 /**
