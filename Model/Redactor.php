@@ -187,7 +187,11 @@ class Redactor
             return $value;
         }
 
-        return substr($value, 0, $this->maxStringLength) . '...';
+        // mb_strcut, not substr: the bound stays a byte bound, because it exists to cap the
+        // file, but a byte offset splits a multi-byte character whenever it lands
+        // mid-sequence. Half a character is not valid UTF-8, and the store encodes the whole
+        // profile in one call, so one split character used to cost every section.
+        return mb_strcut($value, 0, $this->maxStringLength, 'UTF-8') . '...';
     }
 
     private function isSensitiveKey(string $key): bool

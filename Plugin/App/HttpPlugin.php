@@ -52,7 +52,18 @@ class HttpPlugin
 
     public function aroundLaunch(AppHttp $subject, Closure $proceed): ResponseInterface
     {
-        if (!$this->eligibility->allows()) {
+        // The gate is the one call that runs before anything is guarded, and it reads config,
+        // the area code and the client address. Nothing this module does may cost the page,
+        // and that has to include deciding whether to do anything at all.
+        try {
+            $allowed = $this->eligibility->allows();
+        } catch (Throwable $exception) {
+            $this->log('could not decide whether to collect', $exception);
+
+            return $proceed();
+        }
+
+        if (!$allowed) {
             return $proceed();
         }
 
@@ -78,8 +89,12 @@ class HttpPlugin
         // resolves its domain through the store, and at the top of launch() there is none.
         // The response it rides on is never shared, because the injector marks everything
         // it touches no-store.
-        if ($this->accessKey->wasPresentedInUrl() && !$this->accessKey->issueCookie()) {
-            $this->logger->warning('Siteation_DebugBar could not set the access key cookie.');
+        try {
+            if ($this->accessKey->wasPresentedInUrl() && !$this->accessKey->issueCookie()) {
+                $this->logger->warning('Siteation_DebugBar could not set the access key cookie.');
+            }
+        } catch (Throwable $exception) {
+            $this->log('could not trade the access key for a cookie', $exception);
         }
 
         try {

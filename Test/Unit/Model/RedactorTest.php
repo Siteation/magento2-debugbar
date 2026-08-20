@@ -19,6 +19,30 @@ class RedactorTest extends TestCase
     }
 
     #[Test]
+    public function itTruncatesOnACharacterBoundary(): void
+    {
+        // The bound is a byte bound, so it lands mid-character whenever a multi-byte
+        // character straddles it. A half character is not valid UTF-8, and the store encodes
+        // the whole profile in one call: one split character used to cost every section.
+        // 19 bytes, then a three byte character that straddles the 20 byte bound.
+        $split = $this->redactor->clean([str_repeat('a', 19) . "\u{20AC}" . str_repeat('b', 20)]);
+
+        $this->assertSame(str_repeat('a', 19) . '...', $split[0]);
+
+        // 17 bytes, then a three byte character that ends exactly on the bound and must
+        // survive it.
+        $whole = $this->redactor->clean([str_repeat('a', 17) . "\u{20AC}" . str_repeat('b', 20)]);
+
+        $this->assertSame(str_repeat('a', 17) . "\u{20AC}" . '...', $whole[0]);
+
+        foreach ([$split[0], $whole[0]] as $clean) {
+            $this->assertTrue(mb_check_encoding((string) $clean, 'UTF-8'));
+        }
+
+        $this->assertIsString(json_encode([$split, $whole], JSON_THROW_ON_ERROR));
+    }
+
+    #[Test]
     #[DataProvider('sensitiveKeys')]
     public function itRedactsSensitiveKeys(string $key): void
     {

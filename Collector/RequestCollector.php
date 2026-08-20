@@ -93,11 +93,14 @@ class RequestCollector extends AbstractCollector
     private function path(): string
     {
         $path = '/' . ltrim((string) $this->httpRequest->getPathInfo(), '/');
-        $path = (string) preg_replace_callback(
+        // Not `?? $path`: the segment being replaced is a credential, so a PCRE failure
+        // must not fall back to the raw path. An unidentifiable request is a smaller loss
+        // than a stored admin key, and the cast this replaces stored an empty path anyway.
+        $path = preg_replace_callback(
             '#/key/[^/]+#i',
             static fn (): string => '/key/' . Redactor::REDACTED,
             $path
-        );
+        ) ?? Redactor::REDACTED;
 
         return (string) $this->redactor->clean($path);
     }

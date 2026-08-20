@@ -14,10 +14,12 @@ use Siteation\DebugBar\Model\RequestEligibility;
 /**
  * Adds the bar to HTML responses, and the profile id to every profiled response.
  *
- * Only three tags reach the page, and none of them are inline script or inline style: the
- * profile travels as <script type="application/json">, which browsers treat as data, and
- * the stylesheet URL travels as a data attribute for the bar to load inside its shadow
- * root. Magento_Csp therefore needs no nonce and no unsafe-inline.
+ * Four tags reach the page and none of them is inline script or inline style: two script
+ * elements for the bundles, the host element, and the profile as
+ * <script type="application/json">, which browsers treat as data. The stylesheet is the
+ * third external file and needs no tag of its own, because its URL travels as a data
+ * attribute for the bar to load inside its shadow root. Magento_Csp therefore needs no
+ * nonce and no unsafe-inline.
  *
  * The value policy rides along as an attribute too. The Alpine section reads live objects
  * out of the page rather than a redacted profile, so the bar has to know the policy at
@@ -117,9 +119,6 @@ class BarInjector
     }
 
     /**
-     * @param array<string, mixed> $profile
-     */
-    /**
      * The request watcher has to block in the head. By the time a deferred module at the
      * end of the body runs, the theme has already fetched its private content, and those
      * requests would never be seen.
@@ -135,12 +134,15 @@ class BarInjector
             return $html;
         }
 
-        return (string) preg_replace_callback(
+        // ?? and not a cast: on a PCRE failure the return is null, and casting it hands
+        // back an empty string as the whole document. Every other failure in this module
+        // costs the bar; this one would cost the page.
+        return preg_replace_callback(
             '#</head\s*>#i',
             static fn (array $matches): string => $script . $matches[0],
             $html,
             1
-        );
+        ) ?? $html;
     }
 
     /**
@@ -176,12 +178,12 @@ class BarInjector
         // preg_replace would read the backslashes in the payload, PHP class names above
         // all, as escape sequences in the replacement and corrupt the JSON. A callback
         // hands the replacement back untouched.
-        return (string) preg_replace_callback(
+        return preg_replace_callback(
             '#</body\s*>#i',
             static fn (array $matches): string => $markup . $matches[0],
             $html,
             1
-        );
+        ) ?? $html;
     }
 
     /**

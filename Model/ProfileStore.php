@@ -57,9 +57,15 @@ class ProfileStore
         $this->assertValidId($id);
 
         try {
+            // A profile holds whatever the request held, and nothing on the record path can
+            // promise valid UTF-8: a query string of raw bytes, a binary column in a bind,
+            // a latin-1 statement from a third party module. Without the substitute flag one
+            // such byte throws and costs the whole profile, which is to say the bar, on
+            // exactly the request being investigated.
             $json = json_encode(
                 $profile,
-                JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR
+                JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_INVALID_UTF8_SUBSTITUTE
+                    | JSON_THROW_ON_ERROR
             );
         } catch (JsonException $exception) {
             throw new RuntimeException('The debug profile could not be encoded.', 0, $exception);
@@ -72,13 +78,35 @@ class ProfileStore
         $destination = $this->filename($id);
         $temporary = $destination . '.' . bin2hex(random_bytes(6)) . '.tmp';
 
-        $directory->writeFile($temporary, $json);
-        $directory->renameFile($temporary, $destination);
+        try {
+            $directory->writeFile($temporary, $json);
+            $directory->renameFile($temporary, $destination);
+        } catch (Throwable $exception) {
+            // The temporary name ends in .tmp, so the bounds below would never reach it. A
+            // half written profile holds the same request data a finished one does, and a
+            // disk that is full is exactly where it would sit forever.
+            $this->discardTemporary($directory, $temporary);
+
+            throw $exception;
+        }
+
         $this->restrictPermissions($directory, $destination, 0600);
 
-        $this->prune($directory);
+        // The profile is stored and its id is about to be handed back for injection.
+        // Tidying that throws here would cost the bar on a request whose profile is already
+        // on disk and readable.
+        $this->tidy();
 
         return $id;
+    }
+
+    private function discardTemporary(WriteInterface $directory, string $temporary): void
+    {
+        try {
+            $directory->delete($temporary);
+        } catch (Throwable) {
+            // Nothing more to do about it here than there was about the write.
+        }
     }
 
     /**
@@ -119,7 +147,6 @@ class ProfileStore
         $limit = max(1, min($limit ?? $this->config->maxProfiles(), $this->config->maxProfiles()));
         $profiles = [];
 
-
         foreach ($this->sortedFiles($this->directory()) as $file) {
             $id = basename($file['path'], '.json');
 
@@ -159,9 +186,16 @@ class ProfileStore
     }
 
     /**
+     * Newest first, and only the files that still existed by the time they were stat'd.
+     *
+     * A page fires several requests at once and each of them prunes, so a path that came
+     * back from the search is routinely gone a moment later. Magento's driver throws on a
+     * stat that fails, and this list is read on the way to injecting a bar and on the way
+     * to answering the history XHR, neither of which may fail over housekeeping.
+     *
      * @return list<array{path: string, mtime: int}>
      */
-    private function sortedFiles(WriteInterface $directory): array
+    private function sortedFiles(WriteInterface $directory, string $pattern = '*.json'): array
     {
         if (!$directory->isExist(self::DIRECTORY)) {
             return [];
@@ -169,8 +203,19 @@ class ProfileStore
 
         $files = [];
 
-        foreach ($directory->search('*.json', self::DIRECTORY) as $path) {
-            $stat = $directory->stat($path);
+        try {
+            $paths = $directory->search($pattern, self::DIRECTORY);
+        } catch (Throwable) {
+            return [];
+        }
+
+        foreach ($paths as $path) {
+            try {
+                $stat = $directory->stat($path);
+            } catch (Throwable) {
+                continue;
+            }
+
             $files[] = ['path' => $path, 'mtime' => (int) ($stat['mtime'] ?? 0)];
         }
 
@@ -186,6 +231,14 @@ class ProfileStore
 
         foreach ($this->sortedFiles($directory) as $index => $file) {
             if ($index >= $maxProfiles || $file['mtime'] < $expiresAt) {
+                $directory->delete($file['path']);
+            }
+        }
+
+        // Leftovers from a write that failed. They are bounded by age alone: the count bound
+        // exists to keep the profiles you might still want, and nobody wants these.
+        foreach ($this->sortedFiles($directory, '*.tmp') as $file) {
+            if ($file['mtime'] < $expiresAt) {
                 $directory->delete($file['path']);
             }
         }

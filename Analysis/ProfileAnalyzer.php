@@ -33,14 +33,17 @@ class ProfileAnalyzer
     public function analyze(array $profile): array
     {
         $findings = [];
-        $seen = [];
 
         foreach ($this->rules as $name => $rule) {
             try {
                 $produced = $rule->apply($profile);
             } catch (Throwable $exception) {
+                // With the exception, as HttpPlugin logs it: a rule that starts throwing
+                // leaves nothing else behind, and "Undefined array key" with no file or
+                // line is the hunt this module exists to spare someone.
                 $this->logger->warning(
-                    sprintf('Siteation_DebugBar rule %s failed: %s', $name, $exception->getMessage())
+                    sprintf('Siteation_DebugBar rule %s failed: %s', $name, $exception->getMessage()),
+                    ['exception' => $exception]
                 );
 
                 continue;
@@ -62,7 +65,6 @@ class ProfileAnalyzer
             }
 
             $result[] = $finding->toArray();
-            $seen[] = $finding->id();
         }
 
         return $result;

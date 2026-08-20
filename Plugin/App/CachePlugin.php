@@ -32,13 +32,13 @@ class CachePlugin
         $startedAt = microtime(true);
         $result = $proceed($identifier);
 
-        $this->cache->recordOperation(
+        $this->manager->quietly(fn () => $this->cache->recordOperation(
             'load',
             $identifier,
             (microtime(true) - $startedAt) * 1000,
             is_string($result) ? strlen($result) : 0,
             $result !== false && $result !== null && $result !== ''
-        );
+        ));
 
         return $result;
     }
@@ -62,12 +62,12 @@ class CachePlugin
         $startedAt = microtime(true);
         $result = $proceed($data, $identifier, $tags, $lifeTime);
 
-        $this->cache->recordOperation(
+        $this->manager->quietly(fn () => $this->cache->recordOperation(
             'save',
             $identifier,
             (microtime(true) - $startedAt) * 1000,
             strlen($data)
-        );
+        ));
 
         return $result;
     }
