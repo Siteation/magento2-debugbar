@@ -1470,6 +1470,34 @@ inspect_debug_queries       slowest first, with call sites</code></pre>
             survives it.</p>
             <p>Cost: 60 kB raw, 18 kB gzipped. The plan guessed 20 kB, which was optimistic
             about the core and about SQL's keyword list.</p>` },
+      { t: 'The second audit, which found what the first round of fixes broke', s: 'done',
+        d: `<p>Re-running the audit against the fixed code was worth more than the first run.
+            Five of its findings were about the fixes themselves.</p>
+            <p><strong>The access key was written into the profile it unlocks.</strong> The
+            bootstrap request carries it in the URL, that request is the first thing
+            profiled, and <code>query_params</code> stores the query verbatim under the
+            default policy. The credential gating the whole module, in cleartext, in the
+            file it protects. It is stripped before the redactor sees it, because the key
+            pattern could never have caught a name only this module knows.</p>
+            <p><strong>"private" cost a live site a day of cache per URL.</strong> Magento's
+            own Varnish configuration answers that directive with a 24 hour hit-for-pass,
+            and the ban that invalidation sends cannot clear an object whose tags were
+            removed. The directives now match Magento's own setNoCacheHeaders exactly: still
+            unstorable, two minutes instead of a day.</p>
+            <p><strong>The key was required in production, not on live sites.</strong>
+            Default mode is the third mode, is where MAGE_MODE falls back to, and is what
+            plenty of live sites run: it fell straight through the rule. Keyless is developer
+            mode and nothing else now.</p>
+            <p><strong>Pruning on read made an MCP tool that promises not to change anything
+            delete files.</strong> Housekeeping moved to the history endpoint, which is a
+            person looking rather than an agent reading.</p>
+            <p><strong>Two &lt;comment&gt; elements on one field cancel each other out.</strong>
+            Magento collapses repeats into an array and renders neither, so the setting
+            shipped with no help text at all, and the one I added had made the other stale
+            anyway.</p>
+            <p>The lesson is the cheap one: a fix is a change, and a change deserves the same
+            scrutiny as the code it replaced. The reports in docs/ are regenerated from the
+            second pass.</p>` },
       { t: 'The rest of the audit, and what was left alone', s: 'done',
         d: `<p><strong>Redaction.</strong> The admin URL secret is a path segment, so an
             adminhtml profile stored it verbatim at every policy: <code>/key/&lt;hash&gt;/</code>

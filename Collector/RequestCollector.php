@@ -9,6 +9,7 @@ use Magento\Framework\App\Response\HttpInterface as HttpResponse;
 use Magento\Framework\App\ResponseInterface;
 use Magento\Framework\App\State;
 use Magento\Framework\HTTP\PhpEnvironment\Response as ReadableResponse;
+use Siteation\DebugBar\Model\AccessKey;
 use Siteation\DebugBar\Model\CallSiteResolver;
 use Siteation\DebugBar\Model\Config;
 use Siteation\DebugBar\Model\Clock;
@@ -166,12 +167,17 @@ class RequestCollector extends AbstractCollector
 
     public function payload(): array
     {
+        $query = (array) ($this->httpRequest->getQueryValue() ?? []);
+
+        // The bootstrap request carries the access key in its URL, and that request is the
+        // first thing profiled. Left here it would write the credential that gates the whole
+        // module into the file it unlocks, in cleartext, under the default policy. The key
+        // pattern would not catch it: this is a name only this module knows.
+        unset($query[AccessKey::PARAM]);
+
         return [
             'items' => [],
-            'query_params' => $this->redactor->cleanValues(
-                (array) ($this->httpRequest->getQueryValue() ?? []),
-                $this->config->valuePolicy()
-            ),
+            'query_params' => $this->redactor->cleanValues($query, $this->config->valuePolicy()),
         ];
     }
 

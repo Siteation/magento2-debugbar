@@ -119,14 +119,6 @@ class ProfileStore
         $limit = max(1, min($limit ?? $this->config->maxProfiles(), $this->config->maxProfiles()));
         $profiles = [];
 
-        // Also on the way in, not only on the way out. Pruning on write alone means the age
-        // bound holds exactly until you stop browsing, which is the moment it starts to
-        // matter: profiles are not meant to outlive the debugging that produced them.
-        try {
-            $this->prune($this->directory());
-        } catch (Throwable) {
-            // Reading is still worth doing when tidying failed.
-        }
 
         foreach ($this->sortedFiles($this->directory()) as $file) {
             $id = basename($file['path'], '.json');
@@ -147,6 +139,23 @@ class ProfileStore
         }
 
         return $profiles;
+    }
+
+    /**
+     * Enforces the age and count bounds without reading anything.
+     *
+     * Pruning on write alone means the bound holds exactly until you stop browsing, which is
+     * the moment it starts to matter. It is not done inside recent(): the MCP list tool
+     * reads through there and is advertised as read only, and a tool that deletes while
+     * promising not to is worse than a profile that lingers.
+     */
+    public function tidy(): void
+    {
+        try {
+            $this->prune($this->directory());
+        } catch (Throwable) {
+            // Housekeeping that fails is not worth a failed request.
+        }
     }
 
     /**

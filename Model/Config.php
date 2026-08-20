@@ -223,11 +223,15 @@ class Config
 
         $this->accessKey = trim((string) $this->scopeConfig->getValue(self::XML_PATH_ACCESS_KEY));
 
-        // Production used to be refused outright, which was safe and also meant a live site
-        // could not be debugged at all. It is allowed now on one condition: a key exists, so
-        // the bar is reachable by whoever holds it and by nobody else. A global switch is
-        // still not enough, because on a live site "on" would mean on for every customer.
-        if ($this->appState->getMode() === State::MODE_PRODUCTION && $this->accessKey === '') {
+        // Keyless is a developer machine and nothing else. Production used to be refused
+        // outright, which was safe and also meant a live site could not be debugged at all;
+        // it is allowed now on one condition, that a key exists, so the bar is reachable by
+        // whoever holds it and by nobody else.
+        //
+        // The rule is "not developer" rather than "is production" because default mode is
+        // the third one, is what MAGE_MODE falling back lands on, and is what plenty of live
+        // sites actually run. Keying off production alone left those wide open.
+        if ($this->appState->getMode() !== State::MODE_DEVELOPER && $this->accessKey === '') {
             return false;
         }
 

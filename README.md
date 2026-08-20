@@ -14,7 +14,8 @@ running store. There is no tagged release yet, so install it from source. See
 
 * PHP 8.3 or 8.4
 * Magento 2.4.8 or 2.4.9
-* Developer or default mode. Production mode disables the bar unconditionally.
+* Any deploy mode. Outside developer mode it needs an access key, and without one it stays
+  off: see "Debugging a live site" below.
 
 ## Install
 
@@ -33,7 +34,7 @@ composer require --dev siteation/magento2-debugbar:@dev
 
 ## Use
 
-The bar collects nothing until it is switched on. In production mode it also refuses
+The bar collects nothing until it is switched on. Outside developer mode it also refuses
 unless an access key is set, so a store switch can never mean "on for every customer":
 
 ```
@@ -111,8 +112,8 @@ HTTP. Findings first, then cost, then the slowest queries with their call sites.
 
 ## What it captures, and what it does not
 
-The bar is off until you turn it on. In production mode it stays off unless an access key
-is set, and then it only ever collects for a request that presents that key. Profiles are written `0600` in a `0700` directory, kept for 20 requests or 60
+The bar is off until you turn it on. Outside developer mode it stays off unless an access
+key is set, and then it only ever collects for a request that presents that key. Profiles are written `0600` in a `0700` directory, kept for 20 requests or 60
 minutes, whichever comes first.
 
 Redacted at record time, never stored:
@@ -173,8 +174,9 @@ REST client, since a browser is only one of the four areas this profiles.
 
 Two things follow from a key being set, both deliberate:
 
-* **Production mode is allowed, but only behind a key.** Without one it refuses as it always
-  has. There is no way to switch the bar on for everybody in production.
+* **Production and default mode are allowed, but only behind a key.** Developer mode is the
+  only one that runs keyless, because it is the only one that is not somebody's live site.
+  Default mode is what `MAGE_MODE` falls back to, so it is treated as live.
 * **Any response carrying a bar or a profile id is marked `no-store` and stripped of its
   `X-Magento-Tags`.** Varnish and any CDN in front will refuse to keep it, because a page
   with your bar in it is one developer's view of one request and must never be served to a

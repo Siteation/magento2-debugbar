@@ -9,9 +9,8 @@
                 <field id="enabled" translate="label comment" type="select" sortOrder="10"
                        showInDefault="1" showInWebsite="0" showInStore="0" canRestore="1">
                     <label>Enabled</label>
-                    <comment><![CDATA[Applies to the whole installation. This setting is read at default scope, so a per website or per store value is ignored: the collector runs before the store is known, and reading it later would mean reading configuration while a request is being profiled, which is what the recursion guard in Model/Config exists to prevent.]]></comment>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
-                    <comment>Production mode disables the bar regardless of this setting.</comment>
+                    <comment><![CDATA[Off by default, and global to the installation: this is read at default scope, so a per website or per store value is ignored. Outside developer mode it does nothing on its own, and the bar only collects for requests carrying the Developer Access Key below.]]></comment>
                 </field>
                 <field id="areas" translate="label comment" type="multiselect" sortOrder="15"
                        showInDefault="1" showInWebsite="0" showInStore="0" canRestore="1">

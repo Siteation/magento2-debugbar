@@ -42,6 +42,10 @@ class History implements HttpGetActionInterface
             return $this->fail($result, 404, 'Debug bar is disabled.');
         }
 
+        // A person opening the history is the natural moment to enforce the age bound: the
+        // store prunes on write, and writes stop exactly when the profiles start to age.
+        $this->store->tidy();
+
         $profiles = [];
 
         foreach ($this->store->recent() as $profile) {

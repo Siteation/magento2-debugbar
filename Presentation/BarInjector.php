@@ -85,7 +85,12 @@ class BarInjector
      */
     private function refuseSharing(HttpResponse $response): void
     {
-        $response->setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private', true);
+        // The same directives Magento's own setNoCacheHeaders() sends, and deliberately not
+        // "private": Magento's Varnish configuration answers that one with a 24 hour
+        // hit-for-pass, so a single debugged page would bypass the cache for every visitor
+        // for a day, and the ban that invalidation sends could not clear it. Without it the
+        // object is unstorable just the same, for two minutes instead.
+        $response->setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0', true);
         $response->setHeader('Pragma', 'no-cache', true);
         $response->clearHeader('X-Magento-Tags');
     }

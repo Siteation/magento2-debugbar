@@ -20,6 +20,9 @@ Modelled on [newdebugbar/newdebugbar](https://github.com/newdebugbar/newdebugbar
   in a plan.
 * **No GitHub Actions.** The org's Actions budget is spent. This project needs none: tests
   run locally, the JS build output is committed, and Packagist uses a webhook.
+* **Keyless is developer mode and nothing else.** Production and default both require an
+  access key, because default is where `MAGE_MODE` falls back to and is what many live sites
+  run.
 * **A response that carries debug data is never shared.** `BarInjector` sets `no-store` and
   clears `X-Magento-Tags` on anything it touches, so Varnish and any CDN refuse to keep a page
   with one developer's bar in it. Magento's built in cache saves the body before this plugin
@@ -118,7 +121,7 @@ Claude Code as `siteation-debugbar`.
 bin/magento cache:flush                                        # after any plugin change
 vendor/bin/phpcs  --standard=<pkg>/phpcs.xml.dist <pkg>
 vendor/bin/phpstan analyse -c <pkg>/phpstan.neon.dist
-vendor/bin/phpunit --configuration <pkg>/phpunit.xml.dist      # 107 tests
+vendor/bin/phpunit --configuration <pkg>/phpunit.xml.dist      # 109 tests
 <pkg>/dev/smoke https://mage-debugbar.test magedebugbar_admin  # 30 assertions
 cd <pkg>/src-js && npm test                                    # 39 tests, no dependency
 cd <pkg>/src-js && npm run test:browser                        # 9 tests, needs the store up
@@ -211,6 +214,10 @@ Beyond the three stale artifact traps, the ones most likely to bite again:
   another implementer, so every query was counted twice for months.
 * `preg_replace` reads backslashes in the **replacement** as escapes. Injecting a payload
   containing PHP class names corrupts it silently. Use `preg_replace_callback`.
+* Two `<comment>` elements on one `system.xml` field cancel each other out: Magento collapses
+  the repeat into an array and renders neither.
+* `Cache-Control: private` is not a milder `no-store` to Magento's Varnish: it means a 24 hour
+  hit-for-pass that tag invalidation cannot clear.
 * Inside a shadow root, `rem` resolves against the **document** root. Size in `px`. Three
   `rem` lengths survived until 2026-08-19, one of them a `max-width` that was a third larger
   than intended and therefore capped nothing.

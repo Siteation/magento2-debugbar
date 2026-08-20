@@ -7,7 +7,8 @@
                 <!--
                     Off until asked for. The bar stores SQL, bindings, cache keys and
                     request data, so installing the module must not start collecting it.
-                    Production mode refuses regardless of this flag.
+                    Outside developer mode this flag is not enough on its own: an access
+                    key is required as well, so "on" can never mean on for every customer.
                 -->
                 <enabled>0</enabled>
                 <areas>frontend,adminhtml,graphql,webapi_rest</areas>

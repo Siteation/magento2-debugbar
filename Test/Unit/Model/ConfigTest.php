@@ -32,6 +32,37 @@ class ConfigTest extends TestCase
     }
 
     #[Test]
+    public function everyModeButDeveloperNeedsAKey(): void
+    {
+        // Default is the third mode, is what MAGE_MODE falls back to, and is what plenty of
+        // live sites actually run. Keying the rule off production alone left those open.
+        foreach ([State::MODE_PRODUCTION, State::MODE_DEFAULT] as $mode) {
+            $this->assertFalse(
+                $this->config($mode, ['dev/siteation_debugbar/enabled' => true])->isEnabled(),
+                $mode . ' must not run keyless'
+            );
+
+            $this->assertTrue(
+                $this->config($mode, [
+                    'dev/siteation_debugbar/enabled' => true,
+                    'dev/siteation_debugbar/access_key' => 'a-secret',
+                ])->isEnabled(),
+                $mode . ' runs behind a key'
+            );
+        }
+    }
+
+    #[Test]
+    public function developerModeIsTheOneThatRunsKeyless(): void
+    {
+        // It is the only mode that is not somebody's live site.
+        $config = $this->config(State::MODE_DEVELOPER, ['dev/siteation_debugbar/enabled' => true]);
+
+        $this->assertTrue($config->isEnabled());
+        $this->assertSame('', $config->accessKey());
+    }
+
+    #[Test]
     public function anEmptyAreaListMeansEveryArea(): void
     {
         $config = $this->enabled([]);
