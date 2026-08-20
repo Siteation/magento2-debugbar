@@ -113,6 +113,68 @@ class HttpPluginTest extends TestCase
         );
     }
 
+    #[Test]
+    public function aKeyPresentedInTheUrlIsTradedForACookieAfterTheApplicationHasRun(): void
+    {
+        // After proceed(), never before: the cookie manager resolves its domain through the
+        // store, and at the top of launch() there is none. Present it once, and let the
+        // address bar go back to being an address bar.
+        $order = [];
+
+        $accessKey = $this->createStub(AccessKey::class);
+        $accessKey->method('wasPresentedInUrl')->willReturn(true);
+        $accessKey->method('issueCookie')->willReturnCallback(
+            static function () use (&$order): bool {
+                $order[] = 'cookie';
+
+                return true;
+            }
+        );
+
+        $plugin = $this->plugin(accessKey: $accessKey);
+        $response = new Response();
+
+        $plugin->aroundLaunch(
+            $this->createStub(AppHttp::class),
+            static function () use (&$order, $response): Response {
+                $order[] = 'proceed';
+
+                return $response;
+            }
+        );
+
+        $this->assertSame(['proceed', 'cookie'], $order);
+    }
+
+    #[Test]
+    public function aCookieThatCouldNotBeSetIsSaidOutLoud(): void
+    {
+        // Otherwise the developer keeps pasting the key into every URL and never learns why.
+        $accessKey = $this->createStub(AccessKey::class);
+        $accessKey->method('wasPresentedInUrl')->willReturn(true);
+        $accessKey->method('issueCookie')->willReturn(false);
+
+        $logger = $this->createMock(LoggerInterface::class);
+        $logger->expects($this->once())
+            ->method('warning')
+            ->with($this->stringContains('access key cookie'));
+
+        $this->launch($this->plugin(accessKey: $accessKey, logger: $logger));
+    }
+
+    #[Test]
+    public function noKeyInTheUrlMeansNoCookieAndNoWarning(): void
+    {
+        $accessKey = $this->createMock(AccessKey::class);
+        $accessKey->method('wasPresentedInUrl')->willReturn(false);
+        $accessKey->expects($this->never())->method('issueCookie');
+
+        $logger = $this->createMock(LoggerInterface::class);
+        $logger->expects($this->never())->method('warning');
+
+        $this->launch($this->plugin(accessKey: $accessKey, logger: $logger));
+    }
+
     private function launch(HttpPlugin $plugin): Response
     {
         $response = new Response();

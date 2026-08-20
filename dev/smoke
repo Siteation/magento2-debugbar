@@ -22,9 +22,14 @@ BASE="${BASE%/}"
 HEADER='x-siteation-debugbar-profile'
 PASS=0
 FAIL=0
+SKIP=0
 
 pass() { printf '  \033[32m✓\033[0m %s\n' "$1"; PASS=$((PASS + 1)); }
 fail() { printf '  \033[31m✗\033[0m %s\n' "$1"; printf '      %s\n' "${2:-}"; FAIL=$((FAIL + 1)); }
+# Counted apart from PASS. A skip folded into the total trains the reader to trust a number
+# that is sometimes describing less than it claims, and the run most likely to skip is the
+# first one against a fresh instance.
+skip() { printf '  \033[33m-\033[0m %s\n' "$1"; printf '      %s\n' "${2:-}"; SKIP=$((SKIP + 1)); }
 group() { printf '\n\033[1m%s\033[0m\n' "$1"; }
 
 # Echoes the profile id, or nothing.
@@ -124,7 +129,7 @@ d=json.load(open('$BODY'))
 sys.exit(0 if d.get('metrics') and 'queries' in d else 1)
 " && pass "compares two profiles" || fail "compares two profiles" "got $CMP"
 else
-    pass "compares two profiles (skipped, one profile stored)"
+    skip "compares two profiles" "only one profile is stored"
 fi
 
 SELF=$(curl -sk -o /dev/null -w '%{http_code}' \
@@ -163,5 +168,10 @@ curl -sk -o "$BODY" -D "$HEAD" "$BASE/siteation_debugbar/profile/view/id/0000000
     && pass "does not profile its own endpoint" \
     || fail "does not profile its own endpoint" "fetching a profile would evict real ones"
 
-printf '\n\033[1m%d passed, %d failed\033[0m\n' "$PASS" "$FAIL"
+if [ "$SKIP" -gt 0 ]; then
+    printf '\n\033[1m%d passed, %d failed, %d skipped\033[0m\n' "$PASS" "$FAIL" "$SKIP"
+else
+    printf '\n\033[1m%d passed, %d failed\033[0m\n' "$PASS" "$FAIL"
+fi
+
 [ "$FAIL" -eq 0 ]

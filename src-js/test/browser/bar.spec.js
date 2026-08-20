@@ -102,6 +102,33 @@ async function openBar(page) {
 }
 
 test.describe('the bar', () => {
+  // First in the file on purpose. Every correctness assertion below reduces to
+  // "alpineErrors is empty", and that buffer is filled by one string match on console.warn
+  // inside early.js. An Alpine that reports through console.error, or prefixes its warning
+  // with anything other than "Alpine", turns all of them into expect([]).toEqual([]) without
+  // a single test going red. This proves the capture still captures.
+  test('the error buffer these tests read can still be filled', async ({ page }) => {
+    await openBar(page)
+
+    expect(await alpineErrors(page)).toEqual([])
+
+    await page.evaluate(() => {
+      // eslint-disable-next-line no-console
+      console.warn('Alpine Expression Error: deliberate, from the browser suite')
+    })
+
+    const captured = await alpineErrors(page)
+
+    expect(captured, 'console.warn is no longer the channel the bar watches').toHaveLength(1)
+    expect(captured[0].message).toContain('deliberate, from the browser suite')
+
+    await page.evaluate(() => {
+      window.__siteationDebugBar.alpineErrors.length = 0
+    })
+
+    expect(await alpineErrors(page)).toEqual([])
+  })
+
   test('injects itself and reports the request', async ({ page }) => {
     await openBar(page)
 

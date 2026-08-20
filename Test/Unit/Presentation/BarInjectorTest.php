@@ -54,6 +54,30 @@ class BarInjectorTest extends TestCase
     }
 
     #[Test]
+    public function aResponseCarryingDebugDataIsNeverShared(): void
+    {
+        // The promise the module treats as non-negotiable, and the one whose failure is
+        // invisible on a developer machine: with no cache in front, dropping these headers
+        // changes nothing you can see and every other test stays green. It only shows up on
+        // the one installation that matters, a live site behind a CDN serving one
+        // developer's profile id to everybody.
+        foreach ([$this->response('<html><body></body></html>'), $this->response('{}', 'application/json')] as $response) {
+            $response->setHeader('X-Magento-Tags', 'cat_p_1');
+
+            $this->injector->inject($response, $this->profile());
+
+            $cacheControl = $response->getHeader('Cache-Control');
+
+            $this->assertNotFalse($cacheControl);
+            $this->assertStringContainsString('no-store', $cacheControl->getFieldValue());
+            $this->assertFalse(
+                $response->getHeader('X-Magento-Tags'),
+                'A tagged response is one Varnish would store and serve to someone else.'
+            );
+        }
+    }
+
+    #[Test]
     public function itAlwaysSetsTheProfileHeader(): void
     {
         $response = $this->response('{"data":1}', 'application/json');

@@ -76,18 +76,19 @@ class AccessKeyTest extends TestCase
         $cookies->expects($this->once())->method('setPublicCookie')
             ->with(AccessKey::COOKIE, 'secret', $metadata);
 
-        $this->key('secret', ['param' => 'secret'], $cookies, $factory)->issueCookie();
+        $this->assertTrue($this->key('secret', ['param' => 'secret'], $cookies, $factory)->issueCookie());
     }
 
     #[Test]
-    public function aCookieThatCannotBeSetDoesNotCostThePage(): void
+    public function aCookieThatCannotBeSetDoesNotCostThePageAndSaysSo(): void
     {
+        // The return value is the contract, not the absence of a throw: HttpPlugin branches
+        // on it to decide whether to warn, and a catch that returned true would leave the
+        // silent no-op the warning exists to prevent.
         $cookies = $this->createStub(CookieManagerInterface::class);
         $cookies->method('setPublicCookie')->willThrowException(new \RuntimeException('headers sent'));
 
-        $this->expectNotToPerformAssertions();
-
-        $this->key('secret', ['param' => 'secret'], $cookies)->issueCookie();
+        $this->assertFalse($this->key('secret', ['param' => 'secret'], $cookies)->issueCookie());
     }
 
     /**
