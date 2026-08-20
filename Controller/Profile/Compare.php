@@ -10,7 +10,6 @@ use Magento\Framework\Controller\Result\Json;
 use Magento\Framework\Controller\Result\JsonFactory;
 use Magento\Framework\Controller\ResultInterface;
 use Siteation\DebugBar\Analysis\ProfileComparer;
-use Siteation\DebugBar\Model\Config;
 use Siteation\DebugBar\Model\ProfileStore;
 use Siteation\DebugBar\Model\RequestEligibility;
 
@@ -31,7 +30,6 @@ class Compare implements HttpGetActionInterface
         private readonly JsonFactory $resultFactory,
         private readonly ProfileStore $store,
         private readonly ProfileComparer $comparer,
-        private readonly Config $config,
         private readonly RequestEligibility $eligibility
     ) {
     }
@@ -40,7 +38,9 @@ class Compare implements HttpGetActionInterface
     {
         $result = $this->resultFactory->create();
 
-        if (!$this->config->isEnabled() || !$this->config->allowsIp($this->eligibility->clientIp())) {
+        // One gate, shared with the collector. An endpoint that answers someone the bar
+        // would not have collected for is a way around it rather than a thing behind it.
+        if (!$this->eligibility->allowsRead()) {
             return $this->fail($result, 404, 'Debug bar is disabled.');
         }
 

@@ -11,6 +11,7 @@ use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 use RuntimeException;
 use Siteation\DebugBar\Collector\RequestCollector;
+use Siteation\DebugBar\Model\AccessKey;
 use Siteation\DebugBar\Model\ProfileManager;
 use Siteation\DebugBar\Model\ProfileStore;
 use Siteation\DebugBar\Model\RequestEligibility;
@@ -141,6 +142,7 @@ class HttpPluginTest extends TestCase
 
         return new HttpPlugin(
             $eligibility,
+            $this->createStub(AccessKey::class),
             $manager ?? $this->createStub(ProfileManager::class),
             $store ?? $this->createStub(ProfileStore::class),
             $this->createStub(BarInjector::class),

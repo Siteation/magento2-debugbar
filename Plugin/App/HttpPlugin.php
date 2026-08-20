@@ -8,6 +8,7 @@ use Closure;
 use Magento\Framework\App\Http as AppHttp;
 use Magento\Framework\App\ResponseInterface;
 use Siteation\DebugBar\Collector\RequestCollector;
+use Siteation\DebugBar\Model\AccessKey;
 use Psr\Log\LoggerInterface;
 use Siteation\DebugBar\Model\ProfileManager;
 use Siteation\DebugBar\Model\ProfileStore;
@@ -40,6 +41,7 @@ class HttpPlugin
 {
     public function __construct(
         private readonly RequestEligibility $eligibility,
+        private readonly AccessKey $accessKey,
         private readonly ProfileManager $manager,
         private readonly ProfileStore $store,
         private readonly BarInjector $injector,
@@ -69,6 +71,15 @@ class HttpPlugin
             $this->keepFailure($thrown);
 
             throw $thrown;
+        }
+
+        // The key arrived in the URL, so trade it for a cookie and let the address bar go
+        // back to being an address bar. After proceed(), never before: the cookie manager
+        // resolves its domain through the store, and at the top of launch() there is none.
+        // The response it rides on is never shared, because the injector marks everything
+        // it touches no-store.
+        if ($this->accessKey->wasPresentedInUrl() && !$this->accessKey->issueCookie()) {
+            $this->logger->warning('Siteation_DebugBar could not set the access key cookie.');
         }
 
         try {

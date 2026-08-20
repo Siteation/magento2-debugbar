@@ -8,10 +8,15 @@ use Magento\Framework\App\AreaList;
 use Magento\Framework\App\Request\Http as HttpRequest;
 
 /**
- * Decides whether a request should produce a profile at all.
+ * Decides whether a request should produce a profile at all, and whether one may be read.
  *
- * The bar's own endpoints are excluded, otherwise fetching a profile would store another
- * one and a handful of clicks would push the real profiles out of the ring buffer.
+ * Both questions in one place because they have to give the same answer. An endpoint that
+ * hands out a profile to someone the bar would not have collected for is a way around the
+ * gate rather than a thing behind it, and while the check was written out three times in
+ * three controllers it was one edit away from becoming exactly that.
+ *
+ * The bar's own endpoints are excluded from collection, otherwise fetching a profile would
+ * store another one and a handful of clicks would push the real profiles out of the ring.
  */
 class RequestEligibility
 {
@@ -20,17 +25,15 @@ class RequestEligibility
     public function __construct(
         private readonly Config $config,
         private readonly HttpRequest $request,
-        private readonly AreaList $areaList
+        private readonly AreaList $areaList,
+        private readonly AccessKey $accessKey
     ) {
     }
 
+    /** Whether this request should be profiled. */
     public function allows(): bool
     {
-        if (!$this->config->isEnabled()) {
-            return false;
-        }
-
-        if (!$this->config->allowsIp($this->clientIp())) {
+        if (!$this->allowsRead()) {
             return false;
         }
 
@@ -39,6 +42,20 @@ class RequestEligibility
         }
 
         return !$this->isOwnRequest();
+    }
+
+    /**
+     * Whether this request may read what was collected.
+     *
+     * The area list is deliberately not consulted: it says which areas are worth profiling,
+     * not who may look, and a profile of an area no longer being collected is still a
+     * profile that was collected for this developer.
+     */
+    public function allowsRead(): bool
+    {
+        return $this->config->isEnabled()
+            && $this->config->allowsIp($this->clientIp())
+            && $this->accessKey->allows();
     }
 
     /**

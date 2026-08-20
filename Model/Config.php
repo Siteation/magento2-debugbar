@@ -31,6 +31,7 @@ class Config
     private const XML_PATH_ALLOWED_IPS = 'dev/siteation_debugbar/allowed_ips';
     private const XML_PATH_VALUE_POLICY = 'dev/siteation_debugbar/value_policy';
     private const XML_PATH_AREAS = 'dev/siteation_debugbar/areas';
+    private const XML_PATH_ACCESS_KEY = 'dev/siteation_debugbar/access_key';
     private const XML_PATH_EDITOR = 'dev/siteation_debugbar/editor';
     private const XML_PATH_EDITOR_TEMPLATE = 'dev/siteation_debugbar/editor_template';
     private const XML_PATH_EDITOR_PATH_MAP = 'dev/siteation_debugbar/editor_path_map';
@@ -53,6 +54,8 @@ class Config
 
     /** @var list<string> */
     private array $areas = [];
+
+    private string $accessKey = '';
 
     private string $editor = '';
 
@@ -156,6 +159,19 @@ class Config
     }
 
     /**
+     * The secret a request proves itself with, or an empty string when none is set.
+     *
+     * Empty is the developer machine: there is nobody to keep out. It cannot be empty in
+     * production, because resolve() refuses to enable there without one.
+     */
+    public function accessKey(): string
+    {
+        $this->isEnabled();
+
+        return $this->accessKey;
+    }
+
+    /**
      * The URL template a call site becomes a link with, or an empty string when no editor
      * is configured. `%f` is the absolute file, `%l` the line.
      */
@@ -201,11 +217,17 @@ class Config
      */
     private function resolve(): bool
     {
-        if ($this->appState->getMode() === State::MODE_PRODUCTION) {
+        if (!$this->scopeConfig->isSetFlag(self::XML_PATH_ENABLED)) {
             return false;
         }
 
-        if (!$this->scopeConfig->isSetFlag(self::XML_PATH_ENABLED)) {
+        $this->accessKey = trim((string) $this->scopeConfig->getValue(self::XML_PATH_ACCESS_KEY));
+
+        // Production used to be refused outright, which was safe and also meant a live site
+        // could not be debugged at all. It is allowed now on one condition: a key exists, so
+        // the bar is reachable by whoever holds it and by nobody else. A global switch is
+        // still not enough, because on a live site "on" would mean on for every customer.
+        if ($this->appState->getMode() === State::MODE_PRODUCTION && $this->accessKey === '') {
             return false;
         }
 

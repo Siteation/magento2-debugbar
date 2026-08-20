@@ -33,8 +33,8 @@ composer require --dev siteation/magento2-debugbar:@dev
 
 ## Use
 
-The bar collects nothing until it is switched on, and production mode refuses regardless
-of the setting:
+The bar collects nothing until it is switched on. In production mode it also refuses
+unless an access key is set, so a store switch can never mean "on for every customer":
 
 ```
 bin/magento config:set dev/siteation_debugbar/enabled 1
@@ -109,8 +109,8 @@ HTTP. Findings first, then cost, then the slowest queries with their call sites.
 
 ## What it captures, and what it does not
 
-The bar is off until you turn it on, and production mode refuses regardless of the
-setting. Profiles are written `0600` in a `0700` directory, kept for 20 requests or 60
+The bar is off until you turn it on. In production mode it stays off unless an access key
+is set, and then it only ever collects for a request that presents that key. Profiles are written `0600` in a `0700` directory, kept for 20 requests or 60
 minutes, whichever comes first.
 
 Redacted at record time, never stored:
@@ -145,6 +145,44 @@ An IP allowlist covers both the bar and the profile endpoint:
 ```
 bin/magento config:set dev/siteation_debugbar/allowed_ips 127.0.0.1
 ```
+
+## Debugging a live site
+
+The switch in configuration is per store, which on a live site is the wrong shape: it would
+turn the bar on for every visitor. The access key is the per request half.
+
+```
+bin/magento config:set dev/siteation_debugbar/access_key "$(openssl rand -hex 32)"
+bin/magento config:set dev/siteation_debugbar/enabled 1
+```
+
+With a key set, a request that does not present it is an ordinary visitor's: no profile is
+written, no bar is injected, and the three endpoints answer 404 as though the module were
+not installed. Present it in one of three ways:
+
+```
+curl -H "X-Siteation-DebugBar-Key: <key>" https://your-store.test/
+open "https://your-store.test/?siteation_debugbar_key=<key>"
+```
+
+The second swaps the key for a cookie that lasts an hour, which is how long a profile lives,
+so the key leaves the address bar after one request. The header suits curl, an agent and the
+REST client, since a browser is only one of the four areas this profiles.
+
+Two things follow from a key being set, both deliberate:
+
+* **Production mode is allowed, but only behind a key.** Without one it refuses as it always
+  has. There is no way to switch the bar on for everybody in production.
+* **Any response carrying a bar or a profile id is marked `no-store` and stripped of its
+  `X-Magento-Tags`.** Varnish and any CDN in front will refuse to keep it, because a page
+  with your bar in it is one developer's view of one request and must never be served to a
+  second person.
+
+An IP allowlist can be combined with the key, but on its own it is not enough behind a proxy
+or load balancer: the address the module trusts is `REMOTE_ADDR`, never a forwarded header,
+because an allowlist that trusts a client supplied header is not an allowlist.
+
+Rotate the key with the same command when you are done, or empty it to lock production again.
 
 ## Open in your editor
 

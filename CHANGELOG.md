@@ -51,7 +51,12 @@ entries for the work that led up to it.
 
 ### Safety
 
-* Off by default. Production mode refuses regardless of the setting.
+* Off by default. Production mode refuses unless a developer access key is set, and then
+  the bar collects and answers only for requests presenting it: a store switch can never
+  mean on for every customer. Present it as a header, or once as a query parameter to swap
+  it for an hour long HttpOnly cookie.
+* Any response carrying a bar or a profile id is marked no-store and stripped of its
+  X-Magento-Tags, so no shared cache can serve one developer's bar to a visitor.
 * Optional IP allowlist, applied to the bar and to the profile endpoint.
 * Per area control: storefront, admin, GraphQL and REST can each be switched off.
 * Sensitive keys are redacted at record time and string literals are stripped from SQL.

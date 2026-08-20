@@ -1470,6 +1470,29 @@ inspect_debug_queries       slowest first, with call sites</code></pre>
             survives it.</p>
             <p>Cost: 60 kB raw, 18 kB gzipped. The plan guessed 20 kB, which was optimistic
             about the core and about SQL's keyword list.</p>` },
+      { t: 'A live site can be debugged by one person, and by nobody else', s: 'done',
+        d: `<p>Both halves of what the audit found, because they are one problem: only one
+            person should be able to make a response carrying debug data, and that response
+            must never reach a second person.</p>
+            <p><strong>The gate.</strong> The switch in configuration is per store, so on a
+            live site it means on for every visitor. <code>Model\AccessKey</code> is the per
+            request half: a request that cannot present the key is an ordinary visitor's, so
+            no profile is written, no bar is injected and the endpoints answer 404. Header,
+            cookie or one query parameter that is traded for an hour long HttpOnly cookie,
+            because a browser is only one of the four areas this profiles. Compared with
+            hash_equals.</p>
+            <p>Production is allowed now, but only behind a key. Without one it refuses
+            exactly as it always did, so nothing got less safe by default.</p>
+            <p><strong>The cache.</strong> Anything the injector touches is marked no-store
+            and stripped of X-Magento-Tags, which is the header Magento's own Varnish
+            configuration decides cacheability by. Verified: with a key, the home page comes
+            back with no tags at all, where without one it carries seven and a max-age.</p>
+            <p>The endpoint check was written out three times in three controllers, which
+            the quality audit flagged separately. It is <code>allowsRead()</code> now, one
+            method shared with the collector, which is the only way the two answers cannot
+            drift apart.</p>
+            <p>Verified end to end with curl: no key gives no profile header, no bar and a
+            404; the key in a header, or in a cookie, gives all three.</p>` },
       { t: 'Query shapes see through an interpolated number', s: 'done',
         d: `<p>The redactor strips quoted values, and Magento interpolates ids unquoted, so
             <code>entity_id = 1</code> and <code>entity_id = 2</code> were two different

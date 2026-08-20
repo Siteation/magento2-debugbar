@@ -15,6 +15,12 @@
                 <slow_request_ms>1000</slow_request_ms>
                 <allowed_ips/>
                 <value_policy>full</value_policy>
+                <!--
+                    Empty is the developer machine, where there is nobody to keep out.
+                    Production refuses to enable without one, because a store switch would
+                    mean on for every customer rather than on for you.
+                -->
+                <access_key/>
                 <!-- Off until an editor is named: a link to a scheme nothing handles is worse than text. -->
                 <editor/>
                 <editor_template/>

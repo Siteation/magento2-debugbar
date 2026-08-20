@@ -20,6 +20,10 @@ Modelled on [newdebugbar/newdebugbar](https://github.com/newdebugbar/newdebugbar
   in a plan.
 * **No GitHub Actions.** The org's Actions budget is spent. This project needs none: tests
   run locally, the JS build output is committed, and Packagist uses a webhook.
+* **A response that carries debug data is never shared.** `BarInjector` sets `no-store` and
+  clears `X-Magento-Tags` on anything it touches, so Varnish and any CDN refuse to keep a page
+  with one developer's bar in it. Magento's built in cache saves the body before this plugin
+  runs, so it is the caches in front that this is for.
 * **Never break the page being debugged.** Every collector call and the whole finalize step
   is wrapped; a throw discards the profile and returns the untouched response.
 * **No inline script or style.** The profile travels as
@@ -84,6 +88,13 @@ bind every handler twice. See `research.md` 13.3.
 **Only summaries are embedded** in the page, about 1.5 kB. Section payloads are fetched from
 `siteation_debugbar/profile/view` on first open.
 
+**One gate, two questions.** `RequestEligibility::allows()` decides whether a request is
+profiled; `allowsRead()` decides whether one may be read, and the three controllers call it
+rather than repeating the check. Both consult `Model\AccessKey`, which is what makes a live
+site possible: with a key configured, a request that cannot present it produces nothing and
+reads nothing. Production mode refuses unless a key is set, so the global switch can never
+mean "on for every customer".
+
 **Three endpoints**, all behind the same gate as the bar: `profile/view` for one profile,
 `profile/history` for the list the history section reads, `profile/compare` for the diff
 between two. Anything that hands out profile ids sits behind the same address check as the
@@ -107,7 +118,7 @@ Claude Code as `siteation-debugbar`.
 bin/magento cache:flush                                        # after any plugin change
 vendor/bin/phpcs  --standard=<pkg>/phpcs.xml.dist <pkg>
 vendor/bin/phpstan analyse -c <pkg>/phpstan.neon.dist
-vendor/bin/phpunit --configuration <pkg>/phpunit.xml.dist      # 93 tests
+vendor/bin/phpunit --configuration <pkg>/phpunit.xml.dist      # 106 tests
 <pkg>/dev/smoke https://mage-debugbar.test magedebugbar_admin  # 29 assertions
 cd <pkg>/src-js && npm test                                    # 38 tests, no dependency
 cd <pkg>/src-js && npm run test:browser                        # 9 tests, needs the store up
@@ -183,6 +194,9 @@ extension.
 * Magento's full integration test suite, deferred until the interface stops moving.
 
 ## Things learned the hard way
+
+* The cookie manager resolves its domain through the store, so it cannot be used at the top
+  of `launch()`: there is no store yet. Issue cookies after `proceed()`.
 
 Beyond the three stale artifact traps, the ones most likely to bite again:
 

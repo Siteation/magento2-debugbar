@@ -26,6 +26,12 @@ use Siteation\DebugBar\Model\RequestEligibility;
  * Responses that cannot carry a bar still get the header, which is how AJAX, GraphQL and
  * REST requests reach the bar's request list and how an agent correlates a request to its
  * stored profile.
+ *
+ * Anything touched here is marked unshareable. A response carrying a bar is one developer's
+ * view of one request, and a response carrying the profile header names a profile that only
+ * they may read; either one sitting in Varnish or a CDN would be served to every visitor
+ * after it. Magento's built in cache saves the body before this plugin ever sees it, so it
+ * is the shared caches in front that this is for.
  */
 class BarInjector
 {
@@ -57,6 +63,7 @@ class BarInjector
         }
 
         $response->setHeader(self::PROFILE_HEADER, (string) $profile['id'], true);
+        $this->refuseSharing($response);
 
         // The header rides on anything. Reading and rewriting a body needs the concrete
         // response, because App\Response\HttpInterface declares no getter for it.
@@ -69,6 +76,18 @@ class BarInjector
 
         $response->setBody($html);
         $response->clearHeader('Content-Length');
+    }
+
+    /**
+     * X-Magento-Tags goes with it: Magento's own Varnish configuration decides a response is
+     * cacheable by the presence of that header, so leaving it would leave the decision to a
+     * rule that never heard of this module.
+     */
+    private function refuseSharing(HttpResponse $response): void
+    {
+        $response->setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private', true);
+        $response->setHeader('Pragma', 'no-cache', true);
+        $response->clearHeader('X-Magento-Tags');
     }
 
     private function supports(ReadableResponse $response): bool

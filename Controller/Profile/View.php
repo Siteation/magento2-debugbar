@@ -10,7 +10,6 @@ use Magento\Framework\Controller\Result\Json;
 use Magento\Framework\Controller\Result\JsonFactory;
 use Magento\Framework\Controller\Result\RawFactory;
 use Magento\Framework\Controller\ResultInterface;
-use Siteation\DebugBar\Model\Config;
 use Siteation\DebugBar\Model\ProfileStore;
 use Siteation\DebugBar\Model\RequestEligibility;
 use Siteation\DebugBar\Presentation\ProfileReport;
@@ -34,7 +33,6 @@ class View implements HttpGetActionInterface
         private readonly JsonFactory $resultFactory,
         private readonly RawFactory $rawFactory,
         private readonly ProfileStore $store,
-        private readonly Config $config,
         private readonly RequestEligibility $eligibility,
         private readonly ProfileReport $report
     ) {
@@ -46,7 +44,9 @@ class View implements HttpGetActionInterface
 
         // The same gate as the bar. Without the address check this endpoint would be a
         // way around the allowlist rather than covered by it.
-        if (!$this->config->isEnabled() || !$this->config->allowsIp($this->eligibility->clientIp())) {
+        // One gate, shared with the collector. An endpoint that answers someone the bar
+        // would not have collected for is a way around it rather than a thing behind it.
+        if (!$this->eligibility->allowsRead()) {
             return $this->fail($result, 404, 'Debug bar is disabled.');
         }
 
