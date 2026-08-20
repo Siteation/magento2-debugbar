@@ -2,6 +2,10 @@
 composer.lock
 node_modules/
 .phpunit.cache/
+# Audit reports. A list of this project's own weaknesses is not something to ship with it,
+# and build-status.html already sets the precedent that a local HTML file is how a report
+# in this project gets read.
+docs/audit-*.html
 src-js/test-results/
 src-js/playwright-report/
 .DS_Store
