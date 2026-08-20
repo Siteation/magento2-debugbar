@@ -115,7 +115,7 @@ ${sheet ? '' : `  <div class="ndb-stats">
       ${icon('minimise')}
     </button>
     ` : `
-    <button type="button" class="ndb-icon-button" data-ndb-on:click="openInspector()"
+    <button type="button" class="ndb-icon-button is-open" data-ndb-on:click="openInspector()"
             title="Open the inspector">
       ${icon('expand')}
     </button>

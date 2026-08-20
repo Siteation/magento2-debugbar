@@ -21,7 +21,8 @@ export const template = `
 <div class="ndb" data-ndb-data="debugBar" data-ndb-cloak
      data-ndb-bind:class="'is-' + placement + ' is-theme-' + resolvedTheme">
 
-  <div class="ndb-dock" data-ndb-show="!open && !dismissed" data-ndb-cloak>
+  <div class="ndb-dock" data-ndb-show="!open && !dismissed" data-ndb-cloak
+       title="Open the inspector" data-ndb-on:click="openFromBar($event)">
     ${header({ sheet: false })}
   </div>
 

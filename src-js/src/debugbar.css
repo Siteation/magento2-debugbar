@@ -117,6 +117,16 @@
   box-shadow: var(--ndb-shadow);
   backdrop-filter: blur(20px) saturate(140%);
   overflow: hidden;
+  cursor: pointer;
+  transition: border-color 120ms ease;
+}
+
+/* The whole dock opens the inspector, so the whole dock reacts and its open button says so. */
+.ndb-dock:hover { border-color: var(--ndb-border); }
+
+.ndb-dock:hover .ndb-icon-button.is-open {
+  background: var(--ndb-hover);
+  color: var(--ndb-text);
 }
 
 .ndb.is-bottom .ndb-dock { bottom: 12px; }
@@ -362,12 +372,27 @@
   min-width: 16px;
   padding: 0 4px;
   border-radius: 999px;
-  background: currentColor;
   font-size: 12px;
   font-weight: 700;
   line-height: 16px;
   text-align: center;
+  background: var(--ndb-accent);
   color: var(--ndb-on-accent);
+}
+
+/*
+ * The badge takes the tone from the button it sits on, spelled out rather than read from
+ * currentColor: a background reads currentColor from the element's own colour, which here
+ * is the badge's text colour, so the count was painted onto itself in both themes.
+ */
+.ndb-icon-button.is-warn .ndb-badge {
+  background: var(--ndb-warn);
+  color: var(--ndb-on-warn);
+}
+
+.ndb-icon-button.is-bad .ndb-badge {
+  background: var(--ndb-bad);
+  color: var(--ndb-on-bad);
 }
 
 @media (max-width: 900px) {

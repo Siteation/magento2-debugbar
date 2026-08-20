@@ -163,6 +163,15 @@ test('the theme can be flipped without opening anything', () => {
   assert.ok(!dock.includes('movePlacement'), 'placement is a palette command')
 })
 
+test('the whole collapsed bar opens the inspector, and a real button still does too', () => {
+  const dock = template.slice(template.indexOf('class="ndb-dock"'), template.indexOf('ndb-overlay'))
+
+  assert.ok(dock.includes('data-ndb-on:click="openFromBar($event)"'))
+
+  // A div that reacts to a click is not reachable by keyboard, so the icon cannot go.
+  assert.ok(header({ sheet: false }).includes('openInspector()'))
+})
+
 test('a panel with no data yet is not rendered at all', () => {
   // x-show hides an element and evaluates every expression inside it anyway, so a panel
   // bound to a null object throws once per binding on every page load, in silence unless

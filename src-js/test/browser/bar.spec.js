@@ -220,6 +220,27 @@ test.describe('the bar', () => {
     await state(page, (data) => { data.setTheme('system') })
   })
 
+  test('the collapsed bar opens the inspector wherever it is clicked, except on a control',
+    async ({ page }) => {
+      await openBar(page)
+      await state(page, (data) => { data.closeInspector() })
+
+      // The metrics are not a button and never will be, so this is the click that used to
+      // do nothing at all.
+      await page.locator('.ndb-dock .ndb-stat').first().click()
+      expect(await state(page, (data) => data.open)).toBe(true)
+
+      await state(page, (data) => { data.closeInspector() })
+
+      // A control the bar carries still means what it says, and only that.
+      await page.locator('.ndb-dock .ndb-icon-button[title*="Theme"]').click()
+      expect(await state(page, (data) => data.open)).toBe(false)
+
+      expect(await alpineErrors(page)).toEqual([])
+
+      await state(page, (data) => { data.setTheme('system') })
+    })
+
   test('a comparison renders, and its empty state does not throw', async ({ page }) => {
     await openBar(page)
     await state(page, (data) => { data.section = 'history'; data.historyTab = 'compare' })

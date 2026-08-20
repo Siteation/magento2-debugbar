@@ -923,6 +923,32 @@ export function debugBar() {
       this.persist()
     },
 
+    /**
+     * The whole collapsed bar is the button. Aiming for the expand icon to see a request
+     * you are already looking at is a target the size of a thumbnail on a surface the
+     * width of the page.
+     *
+     * Its own controls keep their meaning: a click that landed on one has already done
+     * something, and so has a click that ended a text selection.
+     *
+     * The expand icon stays, because a div that reacts to a click is not reachable by
+     * keyboard and does not announce itself.
+     *
+     * @param {MouseEvent} event
+     */
+    openFromBar(event) {
+      if (event.target.closest('button')) return
+
+      const root = this.$root.getRootNode()
+      const selection = typeof root.getSelection === 'function'
+        ? root.getSelection()
+        : document.getSelection()
+
+      if (selection && !selection.isCollapsed) return
+
+      this.openInspector()
+    },
+
     openInspector() {
       if (this.open) return
 

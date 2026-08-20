@@ -6138,6 +6138,24 @@ function Pc() {
     setTheme(e) {
       this.theme = ["system", "light", "dark"].includes(e) ? e : "system", this.watchColorScheme(), this.persist();
     },
+    /**
+     * The whole collapsed bar is the button. Aiming for the expand icon to see a request
+     * you are already looking at is a target the size of a thumbnail on a surface the
+     * width of the page.
+     *
+     * Its own controls keep their meaning: a click that landed on one has already done
+     * something, and so has a click that ended a text selection.
+     *
+     * The expand icon stays, because a div that reacts to a click is not reachable by
+     * keyboard and does not announce itself.
+     *
+     * @param {MouseEvent} event
+     */
+    openFromBar(e) {
+      if (e.target.closest("button")) return;
+      const t = this.$root.getRootNode(), n = typeof t.getSelection == "function" ? t.getSelection() : document.getSelection();
+      n && !n.isCollapsed || this.openInspector();
+    },
     openInspector() {
       this.open || (this.returnFocusTo = this.$root.getRootNode().activeElement, this.open = !0, this.persist(), this.loadPayloads(), this.$nextTick(() => this.lock()));
     },
@@ -6507,7 +6525,7 @@ ${e ? "" : `  <div class="ndb-stats">
       ${z("minimise")}
     </button>
     ` : `
-    <button type="button" class="ndb-icon-button" data-ndb-on:click="openInspector()"
+    <button type="button" class="ndb-icon-button is-open" data-ndb-on:click="openInspector()"
             title="Open the inspector">
       ${z("expand")}
     </button>
@@ -6574,7 +6592,8 @@ const Dc = `
 <div class="ndb" data-ndb-data="debugBar" data-ndb-cloak
      data-ndb-bind:class="'is-' + placement + ' is-theme-' + resolvedTheme">
 
-  <div class="ndb-dock" data-ndb-show="!open && !dismissed" data-ndb-cloak>
+  <div class="ndb-dock" data-ndb-show="!open && !dismissed" data-ndb-cloak
+       title="Open the inspector" data-ndb-on:click="openFromBar($event)">
     ${es({ sheet: !1 })}
   </div>
 
