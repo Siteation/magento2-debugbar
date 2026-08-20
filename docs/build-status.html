@@ -525,7 +525,10 @@
 
   <h2 class="section" style="margin-top:2.25rem">What is left</h2>
   <p class="lede">
-    One item is to do, and one is parked. Anything marked
+    Four items are to do and two are parked. The ones that begin <strong>Audit</strong> came
+    out of the two reports in <code>docs/</code> rather than out of the plan, and each one
+    stands for a group of findings rather than a single line. The code quality report is
+    closed; what is left of the audits is security. Anything marked
     <span class="tag closed">Closed</span> is a decision that was taken rather than work
     that was dropped: moved into another phase, superseded, or deliberately not built.
     Those are listed underneath so the reasoning stays findable. The
@@ -1496,8 +1499,11 @@ inspect_debug_queries       slowest first, with call sites</code></pre>
             shipped with no help text at all, and the one I added had made the other stale
             anyway.</p>
             <p>The lesson is the cheap one: a fix is a change, and a change deserves the same
-            scrutiny as the code it replaced. The reports in docs/ are regenerated from the
-            second pass.</p>` },
+            scrutiny as the code it replaced.</p>
+            <p>The reports in <code>docs/</code> carry the second pass, which ran against the
+            code before these five fixes landed. Each finding they closed is marked
+            <strong>Fixed</strong> there rather than removed, so the report still reads as a
+            record of what was found. What the second pass left open is in "What is left".</p>` },
       { t: 'The rest of the audit, and what was left alone', s: 'done',
         d: `<p><strong>Redaction.</strong> The admin URL secret is a path segment, so an
             adminhtml profile stored it verbatim at every policy: <code>/key/&lt;hash&gt;/</code>
@@ -1765,6 +1771,91 @@ inspect_debug_queries       slowest first, with call sites</code></pre>
 ];
 
 /**
+ * The open items, and the ones that look open but are not. Kept beside the phases rather
+ * than derived from them, because the reason a thing is still open is the useful part and
+ * a status word cannot carry it.
+ *
+ * Everything tagged Audit comes from the two reports in this directory. They are gitignored
+ * and regenerated rather than edited, so what is worth acting on is restated here.
+ *
+ * @type {Array<{name: string, phase: string, status: string, why: string}>}
+ */
+const REMAINING = [
+  { name: 'Tag 1.0.0 and publish', phase: '1.0, Hardening', status: 'todo',
+    why: 'Not an engineering task. Packagist can only read a public repository, and making '
+      + 'this one public is Rutger\'s decision. Everything it would ship is built, tested '
+      + 'and verified against a running store.' },
+
+  { name: 'Collectors that bypass AbstractCollector', phase: 'Audit, php-design', status: 'done',
+    why: 'The contract has one home again. AbstractCollector holds counts() and '
+      + 'atCapacity(), and the four aggregating collectors call them instead of retyping the '
+      + 'four summary keys and the cap check. finalize() and captureFailure() are on the '
+      + 'interface, so ProfileManager ends the request in one loop rather than by instanceof, '
+      + 'and key() and retainedCount(), called and overridden by nothing, are gone. The five '
+      + 'collectors still aggregate rather than list, which is what they are for.' },
+
+  { name: 'Findings tagged request reach no panel', phase: 'Audit, js-design', status: 'done',
+    why: 'RequestErrorRule tags both of its findings overview, and RuleSectionTest reads the '
+      + 'section list out of sections.js from PHP so the two sides cannot drift again. It '
+      + 'also pins the other half: no panel claims a verdict no rule can give, which is what '
+      + 'graded:false on timeline, events and plugins is for.' },
+
+  { name: 'The MCP loop, ProfileStore and the endpoint gate are untested', phase: 'Audit, tests', status: 'done',
+    why: 'ServerTest drives handleLine() with literal strings for every framing decision, '
+      + 'McpProfilePresenterTest pins the cursor that must always advance, GateTest proves '
+      + 'each controller refuses and reads nothing, and BarInjectorTest now asserts no-store '
+      + 'and the cleared tags. ProfileStore, the collectors, the analyzer, the two untested '
+      + 'rules, the report\'s comparison table and the browser suite\'s own error capture '
+      + 'are covered too. 176 unit tests, and dev/smoke counts skips apart from passes.' },
+
+  { name: 'One invalid UTF-8 byte discards the whole profile', phase: 'Audit, failure-modes', status: 'done',
+    why: 'JSON_INVALID_UTF8_SUBSTITUTE on the encode, and mb_strcut in the redactor so the '
+      + 'bound stops manufacturing the problem by cutting a character in half.' },
+
+  { name: 'Collector calls are unwrapped, and finalize is all or nothing', phase: 'Audit, failure-modes', status: 'done',
+    why: 'Every plugin records through ProfileManager::quietly(), and finalize() guards each '
+      + 'collector and the timeline, recording a section that says it failed rather than '
+      + 'losing the profile. The gate and the cookie trade are inside guards too, prune '
+      + 'cannot cost an injection, a stat on a file another request just deleted is skipped, '
+      + 'a failed write cleans up its temporary file, and a PCRE failure in the injector '
+      + 'falls back to the untouched markup instead of an empty page.' },
+
+  { name: 'MCP output carries request data with nothing marking it untrusted', phase: 'Audit, security', status: 'todo',
+    why: 'The one medium the second pass left open. A profile holds whatever the request '
+      + 'held, headers and query included, and it reaches an agent as tool output that reads '
+      + 'like the module talking. Labelling the payload as recorded data is cheap; the '
+      + 'alternative is an agent acting on a header someone wrote for it.' },
+
+  { name: 'The access key has no strength floor and no rate limit', phase: 'Audit, security', status: 'todo',
+    why: 'A key of one character is accepted, and the endpoints answer an unlimited number '
+      + 'of guesses at whatever length it is. The hour long cookie it can be traded for also '
+      + 'turns any storefront XSS into a full profile dump. A minimum length and a short '
+      + 'lockout are the two halves.' },
+
+  { name: 'Retention is activity triggered, and read by id never checks age', phase: 'Audit, security', status: 'todo',
+    why: 'Half fixed. ProfileStore::tidy() runs when the history endpoint is opened, so '
+      + 'looking enforces the bound, and prune now sweeps orphaned .tmp files by age too. '
+      + 'Still open: get() returns a profile of any age.' },
+
+  { name: 'The production rule is still stated four ways', phase: 'Audit, docs-drift', status: 'done',
+    why: 'Every statement of it now says "outside developer mode", which is what Config '
+      + 'checks. The rest of the drift went with it: the rule and tool counts, the two '
+      + 'MCP tools SKILL.md never named, the timeline section its own enum accepts, the '
+      + 'handoff\'s numbers, and the asset inventory the CSP note depends on.' },
+
+  { name: 'The rest of the two audits', phase: 'Audit', status: 'backlog',
+    why: '26 security findings and 47 code quality findings are open in total, and the cards '
+      + 'above are the ones worth naming. The remainder is low or informational: dead code, '
+      + 'duplicated methods, JSDoc gaps, CHANGELOG counts, and hardening that only matters on '
+      + 'a live site. Read them in docs/audit-security.html and docs/audit-code-quality.html.' },
+
+  { name: 'Magento integration test suite', phase: '1.0, Hardening', status: 'backlog',
+    why: 'Deferred until the interface stops moving. What it would assert is covered today '
+      + 'by dev/smoke over HTTP, against a running store, without needing the '
+      + 'integration framework or a second database.' }
+];
+
+/**
  * Explicitly deferred. Everything the 1.1 plan absorbed has been removed rather than left
  * to rot here.
  *
@@ -1777,11 +1868,7 @@ const BACKLOG = [
   { name: 'Message queue and cron profiling',
     why: 'Consumers and cron run outside App\\Http, so they need their own entry hook on AppInterface. Clearly useful, entirely separate from the request path.' },
   { name: 'MCP over HTTP or SSE',
-    why: 'The hand rolled stdio loop covers local agents, and the markdown report covers the ones that cannot call it at all. A debug endpoint on the network is a security question before it is a feature, so this waits for a case that needs it. Dropped along the way: Ignition integration, which restated the response header, and a browser extension, which bought little for a store listing and a second codebase to maintain forever.' },
-  { name: 'Magento integration test suite', phase: '1.0, Hardening', status: 'backlog',
-    why: 'Deferred until the interface stops moving. What it would assert is covered today '
-      + 'by dev/smoke over HTTP, 24 assertions against a running store, without needing the '
-      + 'integration framework or a second database.' }
+    why: 'The hand rolled stdio loop covers local agents, and the markdown report covers the ones that cannot call it at all. A debug endpoint on the network is a security question before it is a feature, so this waits for a case that needs it. Dropped along the way: Ignition integration, which restated the response header, and a browser extension, which bought little for a store listing and a second codebase to maintain forever.' }
 ];
 
 /**
@@ -1945,7 +2032,7 @@ const RELEASES = [
   {
     release: '1.0',
     title: '1.0 — collect, reason, expose',
-    blurb: 'Seven collectors, nine finding rules, an Alpine viewer in a shadow root, and an '
+    blurb: 'Seven collectors, eight finding rules, an Alpine viewer in a shadow root, and an '
       + 'MCP server. Built and verified against a running store. Two items left, both about '
       + 'being installable by someone else rather than working here.'
   },
