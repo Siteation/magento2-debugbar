@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Siteation\DebugBar\Collector;
 
+use Magento\Framework\App\ResponseInterface;
 use Magento\Framework\Interception\PluginListInterface;
 use ReflectionClass;
 use ReflectionMethod;
@@ -41,21 +42,17 @@ class InterceptionCollector extends AbstractCollector
         parent::__construct($redactor, $clock, $maxItems);
     }
 
-    public function key(): string
-    {
-        return 'interception';
-    }
-
     public function label(): string
     {
         return 'Plugins';
     }
 
     /**
-     * Read at finalize rather than during the request: the plugin list only fills in as
-     * interceptors are hit, so asking early would undercount.
+     * Read here rather than during the request: the plugin list only fills in as
+     * interceptors are hit, so asking early would undercount. The response is nothing to
+     * do with it and is ignored.
      */
-    public function capture(): void
+    public function finalize(ResponseInterface $response): void
     {
         try {
             $this->collect();

@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace Siteation\DebugBar\Collector;
 
+use Magento\Framework\App\ResponseInterface;
 use Siteation\DebugBar\Api\CollectorInterface;
 use Siteation\DebugBar\Model\Clock;
 use Siteation\DebugBar\Model\Redactor;
+use Throwable;
 
 /**
  * Redacts and bounds every recorded item once, for all collectors.
@@ -49,9 +51,7 @@ abstract class AbstractCollector implements CollectorInterface
 
         $this->track($safe);
 
-        if ($this->retainedCount() >= $this->maxItems) {
-            $this->dropped++;
-
+        if ($this->atCapacity(count($this->items))) {
             return;
         }
 
@@ -62,12 +62,44 @@ abstract class AbstractCollector implements CollectorInterface
     {
         $retained = count($this->items);
 
+        return $this->counts($retained + $this->dropped, $retained);
+    }
+
+    /**
+     * The four keys every section summary carries.
+     *
+     * Collectors that aggregate their rows rather than list them build their own summary, so
+     * without this the shape TruncatedCollectorRule reads would be hand written once per
+     * collector.
+     *
+     * @param int $total everything that happened, dropped rows included
+     * @param int $retained what the payload actually holds
+     * @return array{count: int, retained_count: int, dropped_count: int, truncated: bool}
+     */
+    protected function counts(int $total, int $retained): array
+    {
         return [
-            'count' => $retained + $this->dropped,
+            'count' => $total,
             'retained_count' => $retained,
             'dropped_count' => $this->dropped,
             'truncated' => $this->dropped > 0,
         ];
+    }
+
+    /**
+     * True when there is no room for another row, counting the drop as it says so.
+     *
+     * @param int $retained how many rows are already held
+     */
+    protected function atCapacity(int $retained): bool
+    {
+        if ($retained < $this->maxItems) {
+            return false;
+        }
+
+        $this->dropped++;
+
+        return true;
     }
 
     public function payload(): array
@@ -82,8 +114,11 @@ abstract class AbstractCollector implements CollectorInterface
     {
     }
 
-    protected function retainedCount(): int
+    public function finalize(ResponseInterface $response): void
     {
-        return count($this->items);
+    }
+
+    public function captureFailure(Throwable $thrown): void
+    {
     }
 }

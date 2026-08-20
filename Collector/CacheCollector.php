@@ -24,11 +24,6 @@ class CacheCollector extends AbstractCollector
 
     private int $misses = 0;
 
-    public function key(): string
-    {
-        return 'cache';
-    }
-
     public function label(): string
     {
         return 'Cache';
@@ -59,9 +54,7 @@ class CacheCollector extends AbstractCollector
         $group = $this->group($identifier);
 
         if (!isset($this->groups[$group])) {
-            if (count($this->groups) >= $this->maxItems) {
-                $this->dropped++;
-
+            if ($this->atCapacity(count($this->groups))) {
                 return;
             }
 
@@ -98,10 +91,7 @@ class CacheCollector extends AbstractCollector
         }
 
         return [
-            'count' => $this->operationCount,
-            'retained_count' => count($this->groups),
-            'dropped_count' => $this->dropped,
-            'truncated' => $this->dropped > 0,
+            ...$this->counts($this->operationCount, count($this->groups)),
             'hits' => $this->hits,
             'misses' => $this->misses,
             'hit_rate' => $loads > 0 ? round($this->hits / $loads * 100, 1) : null,

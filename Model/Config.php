@@ -65,7 +65,6 @@ class Config
         private readonly ScopeConfigInterface $scopeConfig,
         private readonly State $appState,
         private readonly DirectoryList $directoryList,
-        private readonly int $maxItemsPerCollector = 500,
         private readonly int $maxProfiles = 20,
         private readonly int $maxAgeMinutes = 60
     ) {
@@ -92,11 +91,6 @@ class Config
         }
 
         return $this->enabled;
-    }
-
-    public function maxItemsPerCollector(): int
-    {
-        return $this->maxItemsPerCollector;
     }
 
     public function maxProfiles(): int

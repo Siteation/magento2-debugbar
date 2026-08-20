@@ -7,7 +7,6 @@ namespace Siteation\DebugBar\Plugin\App;
 use Closure;
 use Magento\Framework\App\Http as AppHttp;
 use Magento\Framework\App\ResponseInterface;
-use Siteation\DebugBar\Collector\RequestCollector;
 use Siteation\DebugBar\Model\AccessKey;
 use Psr\Log\LoggerInterface;
 use Siteation\DebugBar\Model\ProfileManager;
@@ -118,12 +117,7 @@ class HttpPlugin
     private function keepFailure(Throwable $thrown): void
     {
         try {
-            $collector = $this->manager->collector('request');
-
-            if ($collector instanceof RequestCollector) {
-                $collector->captureException($thrown);
-            }
-
+            $this->manager->recordFailure($thrown);
             $this->store->put($this->manager->finalize($this->response));
         } catch (Throwable $exception) {
             $this->log('could not record a failed request', $exception);

@@ -26,11 +26,6 @@ class EventCollector extends AbstractCollector
 
     private int $dispatchCount = 0;
 
-    public function key(): string
-    {
-        return 'events';
-    }
-
     public function label(): string
     {
         return 'Events';
@@ -49,9 +44,7 @@ class EventCollector extends AbstractCollector
         $this->dispatchCount++;
 
         if (!isset($this->events[$name])) {
-            if (count($this->events) >= $this->maxItems) {
-                $this->dropped++;
-
+            if ($this->atCapacity(count($this->events))) {
                 return;
             }
 
@@ -85,10 +78,7 @@ class EventCollector extends AbstractCollector
         }
 
         return [
-            'count' => $this->dispatchCount,
-            'retained_count' => count($this->events),
-            'dropped_count' => $this->dropped,
-            'truncated' => $this->dropped > 0,
+            ...$this->counts($this->dispatchCount, count($this->events)),
             'unique_count' => count($this->events),
             'observed_count' => $observed,
             'unobserved_count' => count($this->events) - $observed,

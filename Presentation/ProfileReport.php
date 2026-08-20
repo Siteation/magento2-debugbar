@@ -257,14 +257,14 @@ class ProfileReport
         ];
 
         foreach ($diff['metrics'] as $metric) {
+            // A side that is null was never measured, and printing it as 0.00 would read as
+            // a measurement of nothing rather than as nothing measured.
             $lines[] = sprintf(
-                '| %s | %s | %s | %s%s%s |',
+                '| %s | %s | %s | %s |',
                 $metric['label'],
-                $this->number($metric['baseline'] ?? 0, $metric['decimals']),
-                $this->number($metric['subject'] ?? 0, $metric['decimals']),
-                $metric['delta'] > 0 ? '+' : '',
-                $this->number($metric['delta'], $metric['decimals']),
-                $metric['verdict'] === 'same' ? '' : ' (' . $metric['verdict'] . ')'
+                $this->side($metric, 'baseline'),
+                $this->side($metric, 'subject'),
+                $this->delta($metric)
             );
         }
 
@@ -338,6 +338,31 @@ class ProfileReport
         return strlen($sql) <= self::MAX_SQL_LENGTH
             ? $sql
             : substr($sql, 0, self::MAX_SQL_LENGTH) . ' ...';
+    }
+
+    /**
+     * @param array<string, mixed> $metric
+     */
+    private function side(array $metric, string $side): string
+    {
+        return $metric[$side] === null
+            ? 'none'
+            : $this->number((float) $metric[$side], (int) $metric['decimals']);
+    }
+
+    /**
+     * @param array<string, mixed> $metric
+     */
+    private function delta(array $metric): string
+    {
+        if ($metric['delta'] === null) {
+            return 'not comparable';
+        }
+
+        $sign = $metric['delta'] > 0 ? '+' : '';
+        $verdict = $metric['verdict'] === 'same' ? '' : ' (' . $metric['verdict'] . ')';
+
+        return $sign . $this->number((float) $metric['delta'], (int) $metric['decimals']) . $verdict;
     }
 
     private function number(mixed $value, int $decimals): string

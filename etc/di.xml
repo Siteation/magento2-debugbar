@@ -13,6 +13,26 @@
                 sortOrder="1"/>
     </type>
 
+    <!--
+        Everything the plugin only touches after the gate says yes, behind a proxy.
+
+        Constructing HttpPlugin builds whatever its arguments need, and that happens on
+        every request in every area before allows() is consulted. Eagerly that is the whole
+        module: seven collectors, eight rules, the filesystem, and the asset repository with
+        the design resolver behind it. The module's posture is that it is safe to leave
+        installed because it is off by default, and this is what makes that true.
+
+        RequestEligibility and the logger stay eager: they are what the gate is.
+    -->
+    <type name="Siteation\DebugBar\Plugin\App\HttpPlugin">
+        <arguments>
+            <argument name="accessKey" xsi:type="object">Siteation\DebugBar\Model\AccessKey\Proxy</argument>
+            <argument name="manager" xsi:type="object">Siteation\DebugBar\Model\ProfileManager\Proxy</argument>
+            <argument name="store" xsi:type="object">Siteation\DebugBar\Model\ProfileStore\Proxy</argument>
+            <argument name="injector" xsi:type="object">Siteation\DebugBar\Presentation\BarInjector\Proxy</argument>
+        </arguments>
+    </type>
+
     <!-- The PDO adapter brackets every query with these two calls -->
     <type name="Magento\Framework\DB\LoggerInterface">
         <plugin name="siteation_debugbar_query"

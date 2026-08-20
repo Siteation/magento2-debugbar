@@ -44,11 +44,6 @@ class RequestCollector extends AbstractCollector
         parent::__construct($redactor, $clock, $maxItems);
     }
 
-    public function key(): string
-    {
-        return 'request';
-    }
-
     public function label(): string
     {
         return 'Request';
@@ -70,7 +65,7 @@ class RequestCollector extends AbstractCollector
      * any other captured string: an exception is as likely to quote an email address as a
      * query is.
      */
-    public function captureException(Throwable $exception): void
+    public function captureFailure(Throwable $exception): void
     {
         $this->exception = [
             'class' => $exception::class,
@@ -128,7 +123,7 @@ class RequestCollector extends AbstractCollector
         return $this->redactor->cleanSql($message);
     }
 
-    public function capture(ResponseInterface $response): void
+    public function finalize(ResponseInterface $response): void
     {
         $this->request = [
             'method' => (string) $this->httpRequest->getMethod(),

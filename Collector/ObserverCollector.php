@@ -17,11 +17,6 @@ class ObserverCollector extends AbstractCollector
 
     private int $invocationCount = 0;
 
-    public function key(): string
-    {
-        return 'observers';
-    }
-
     public function label(): string
     {
         return 'Observers';
@@ -44,9 +39,7 @@ class ObserverCollector extends AbstractCollector
         $key = $event . "\0" . $name;
 
         if (!isset($this->observers[$key])) {
-            if (count($this->observers) >= $this->maxItems) {
-                $this->dropped++;
-
+            if ($this->atCapacity(count($this->observers))) {
                 return;
             }
 
@@ -73,10 +66,7 @@ class ObserverCollector extends AbstractCollector
         }
 
         return [
-            'count' => $this->invocationCount,
-            'retained_count' => count($this->observers),
-            'dropped_count' => $this->dropped,
-            'truncated' => $this->dropped > 0,
+            ...$this->counts($this->invocationCount, count($this->observers)),
             'unique_count' => count($this->observers),
             'duration_ms' => round($total, 2),
         ];

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Siteation\DebugBar\Model;
 
 use Magento\Framework\App\Filesystem\DirectoryList;
+use Magento\Framework\Component\ComponentRegistrar;
 
 /**
  * Finds the application frame a query came from.
@@ -15,20 +16,30 @@ use Magento\Framework\App\Filesystem\DirectoryList;
  */
 class CallSiteResolver
 {
-    /** @var list<string> */
+    private const MODULE_NAME = 'Siteation_DebugBar';
+
+    /**
+     * The bar's own frames are excluded by asking the registrar where the module is, not by
+     * naming a path: it is installed from vendor/, symlinked from a package directory, or
+     * wherever else a developer put it, and a literal only excludes the one layout it was
+     * written on.
+     *
+     * @var list<string>
+     */
     private const EXCLUDED_PATHS = [
         '/vendor/magento/framework/',
         '/vendor/magento/zend-db/',
         '/vendor/laminas/',
         '/generated/code/',
-        '/package-source/siteation/module-debugbar/',
-        '/vendor/siteation/magento2-debugbar/',
     ];
 
     private ?string $root = null;
 
+    private ?string $ownPath = null;
+
     public function __construct(
         private readonly DirectoryList $directoryList,
+        private readonly ComponentRegistrar $registrar,
         private readonly bool $enabled = true,
         private readonly int $keepFrames = 5,
         private readonly int $scanLimit = 40
@@ -45,28 +56,7 @@ class CallSiteResolver
         }
 
         // phpcs:ignore Magento2.Functions.DiscouragedFunction
-        $frames = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, $this->scanLimit);
-        $found = [];
-
-        foreach ($frames as $index => $frame) {
-            $file = $frame['file'] ?? null;
-
-            if (!is_string($file) || $this->isExcluded($file)) {
-                continue;
-            }
-
-            $found[] = [
-                'file' => $this->relative($file),
-                'line' => (int) ($frame['line'] ?? 0),
-                'call' => $this->call($frames[$index + 1] ?? []),
-            ];
-
-            if (count($found) >= $this->keepFrames) {
-                break;
-            }
-        }
-
-        return $found;
+        return $this->frames(debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, $this->scanLimit));
     }
 
     /**
@@ -79,6 +69,19 @@ class CallSiteResolver
      * @return list<array{file: string, line: int, call: string}>
      */
     public function fromTrace(array $trace): array
+    {
+        return $this->frames($trace);
+    }
+
+    /**
+     * One loop for both, so the exclusion set and the frame bound cannot differ between a
+     * live backtrace and a thrown one, which is the pair a reader compares when a request
+     * fails.
+     *
+     * @param list<array<string, mixed>> $trace
+     * @return list<array{file: string, line: int, call: string}>
+     */
+    private function frames(array $trace): array
     {
         $found = [];
 
@@ -129,7 +132,20 @@ class CallSiteResolver
             }
         }
 
-        return false;
+        $own = $this->ownPath();
+
+        return $own !== '' && str_starts_with($normalized, $own);
+    }
+
+    /** Where this module is installed, with a trailing slash, or '' if it cannot be found. */
+    private function ownPath(): string
+    {
+        if ($this->ownPath === null) {
+            $path = $this->registrar->getPath(ComponentRegistrar::MODULE, self::MODULE_NAME);
+            $this->ownPath = $path === null ? '' : rtrim(str_replace('\\', '/', $path), '/') . '/';
+        }
+
+        return $this->ownPath;
     }
 
     /** A path as the profile stores them: relative to the application root. */

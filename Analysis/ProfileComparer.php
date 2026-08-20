@@ -104,7 +104,7 @@ class ProfileComparer
                 'better' => $metric['better'],
                 'baseline' => $was,
                 'subject' => $now,
-                ...$this->change((float) $was, (float) $now, $metric['better']),
+                ...$this->metricChange($was, $now, $metric['better']),
             ];
         }
 
@@ -124,6 +124,24 @@ class ProfileComparer
         ];
 
         return $rows;
+    }
+
+    /**
+     * A metric one side never measured has no change to report.
+     *
+     * Cache hit rate is null on a request that read no cache (CacheCollector::summary), and
+     * casting that to zero turns "there was nothing to hit" into "0% to 80%, better", which
+     * is a verdict about a number nobody wrote down.
+     *
+     * @return array{delta: float|null, percent: float|null, verdict: string}
+     */
+    private function metricChange(?float $was, ?float $now, string $better): array
+    {
+        if ($was === null || $now === null) {
+            return ['delta' => null, 'percent' => null, 'verdict' => 'unanswerable'];
+        }
+
+        return $this->change($was, $now, $better);
     }
 
     /**

@@ -22,11 +22,6 @@ class BlockCollector extends AbstractCollector
 
     private int $renderCount = 0;
 
-    public function key(): string
-    {
-        return 'blocks';
-    }
-
     public function label(): string
     {
         return 'Blocks';
@@ -68,9 +63,7 @@ class BlockCollector extends AbstractCollector
         $this->renderCount++;
 
         if (!isset($this->blocks[$name])) {
-            if (count($this->blocks) >= $this->maxItems) {
-                $this->dropped++;
-
+            if ($this->atCapacity(count($this->blocks))) {
                 return;
             }
 
@@ -107,10 +100,7 @@ class BlockCollector extends AbstractCollector
         }
 
         return [
-            'count' => $this->renderCount,
-            'retained_count' => count($this->blocks),
-            'dropped_count' => $this->dropped,
-            'truncated' => $this->dropped > 0,
+            ...$this->counts($this->renderCount, count($this->blocks)),
             'unique_count' => count($this->blocks),
             'template_count' => $templated,
             'duration_ms' => round($ownTotal, 2),

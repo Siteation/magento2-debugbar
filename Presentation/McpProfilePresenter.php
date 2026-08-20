@@ -151,9 +151,6 @@ class McpProfilePresenter
     }
 
     /**
-     * @return array<string, mixed>
-     */
-    /**
      * What changed between two requests. The comparison itself is bounded already, so this
      * only has to say which profiles it read.
      *
@@ -221,15 +218,6 @@ class McpProfilePresenter
 
         return $response;
     }
-
-    /**
-     * @param array<string, mixed> $profile
-     * @return array<string, mixed>
-     */
-
-    /**
-     * @param list<array<string, mixed>> $findings
-     */
 
     /**
      * @param array<string, mixed> $profile

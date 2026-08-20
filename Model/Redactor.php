@@ -91,25 +91,10 @@ class Redactor
      */
     public function cleanBindings(array $bindings, string $policy = self::POLICY_FULL): array
     {
-        if ($policy === self::POLICY_NONE) {
-            return [];
-        }
-
-        $clean = [];
-
-        foreach ($bindings as $key => $value) {
-            if ($this->isSensitiveKey((string) $key)) {
-                $clean[$key] = self::REDACTED;
-
-                continue;
-            }
-
-            $clean[$key] = $policy === self::POLICY_MASKED
-                ? $this->mask($value)
-                : $this->clean($value, 1);
-        }
-
-        return $clean;
+        // Deliberately the same treatment. A binding and a query parameter are both a value
+        // someone typed, and the policy is the module's whole safety story: implemented
+        // twice, the two paths drift the first time a new sensitive key class is added.
+        return $this->cleanValues($bindings, $policy);
     }
 
     /**

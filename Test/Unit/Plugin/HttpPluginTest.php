@@ -10,7 +10,6 @@ use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 use RuntimeException;
-use Siteation\DebugBar\Collector\RequestCollector;
 use Siteation\DebugBar\Model\AccessKey;
 use Siteation\DebugBar\Model\ProfileManager;
 use Siteation\DebugBar\Model\ProfileStore;
@@ -78,11 +77,8 @@ class HttpPluginTest extends TestCase
     #[Test]
     public function aRequestThatThrowsIsStillProfiled(): void
     {
-        $collector = $this->createMock(RequestCollector::class);
-        $collector->expects($this->once())->method('captureException');
-
-        $manager = $this->createStub(ProfileManager::class);
-        $manager->method('collector')->willReturn($collector);
+        $manager = $this->createMock(ProfileManager::class);
+        $manager->expects($this->once())->method('recordFailure');
         $manager->method('finalize')->willReturn(['id' => 'x']);
 
         $store = $this->createMock(ProfileStore::class);
@@ -104,7 +100,7 @@ class HttpPluginTest extends TestCase
     public function aFailureWhileRecordingAFailureStillRethrows(): void
     {
         $manager = $this->createStub(ProfileManager::class);
-        $manager->method('collector')->willThrowException(new RuntimeException('no collector'));
+        $manager->method('recordFailure')->willThrowException(new RuntimeException('no collector'));
 
         $plugin = $this->plugin(manager: $manager);
 
@@ -135,19 +131,21 @@ class HttpPluginTest extends TestCase
     private function plugin(
         bool $eligible = true,
         ?ProfileManager $manager = null,
-        ?ProfileStore $store = null
+        ?ProfileStore $store = null,
+        ?AccessKey $accessKey = null,
+        ?LoggerInterface $logger = null
     ): HttpPlugin {
         $eligibility = $this->createStub(RequestEligibility::class);
         $eligibility->method('allows')->willReturn($eligible);
 
         return new HttpPlugin(
             $eligibility,
-            $this->createStub(AccessKey::class),
+            $accessKey ?? $this->createStub(AccessKey::class),
             $manager ?? $this->createStub(ProfileManager::class),
             $store ?? $this->createStub(ProfileStore::class),
             $this->createStub(BarInjector::class),
             new Response(),
-            $this->createStub(LoggerInterface::class)
+            $logger ?? $this->createStub(LoggerInterface::class)
         );
     }
 }

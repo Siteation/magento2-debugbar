@@ -35,11 +35,6 @@ class QueryCollector extends AbstractCollector
         parent::__construct($redactor, $clock, $maxItems);
     }
 
-    public function key(): string
-    {
-        return 'queries';
-    }
-
     /**
      * Each query is told how many times its shape ran.
      *

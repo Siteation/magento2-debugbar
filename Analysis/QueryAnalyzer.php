@@ -64,7 +64,7 @@ class QueryAnalyzer
         $result = [];
 
         foreach ($groups as $group) {
-            $result[] = $this->finish($group, $queries);
+            $result[] = $this->finish($group);
         }
 
         usort($result, static fn (array $left, array $right): int
@@ -75,10 +75,9 @@ class QueryAnalyzer
 
     /**
      * @param array<string, mixed> $group
-     * @param list<array<string, mixed>> $queries
      * @return array<string, mixed>
      */
-    private function finish(array $group, array $queries): array
+    private function finish(array $group): array
     {
         $bindings = $group['bindings'];
         $callSites = array_filter($group['call_sites']);

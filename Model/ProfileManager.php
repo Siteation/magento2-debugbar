@@ -9,8 +9,6 @@ use Psr\Log\LoggerInterface;
 use Siteation\DebugBar\Api\CollectorInterface;
 use Siteation\DebugBar\Analysis\ProfileAnalyzer;
 use Siteation\DebugBar\Analysis\TimelineBuilder;
-use Siteation\DebugBar\Collector\InterceptionCollector;
-use Siteation\DebugBar\Collector\RequestCollector;
 use Throwable;
 
 /**
@@ -63,11 +61,6 @@ class ProfileManager
         return $this->id;
     }
 
-    public function collector(string $key): ?CollectorInterface
-    {
-        return $this->collectors[$key] ?? null;
-    }
-
     /**
      * Runs a collector call so that it can only ever cost data, never the response.
      *
@@ -86,6 +79,17 @@ class ProfileManager
         }
     }
 
+    /**
+     * The request threw. Told to every collector, because which of them owns the answer is
+     * di.xml's business rather than the caller's.
+     */
+    public function recordFailure(Throwable $thrown): void
+    {
+        foreach ($this->collectors as $collector) {
+            $this->quietly(fn () => $collector->captureFailure($thrown));
+        }
+    }
+
     public function discard(): void
     {
         $this->collecting = false;
@@ -100,13 +104,7 @@ class ProfileManager
         $this->collecting = false;
 
         foreach ($this->collectors as $collector) {
-            if ($collector instanceof RequestCollector) {
-                $this->quietly(fn () => $collector->capture($response));
-            }
-
-            if ($collector instanceof InterceptionCollector) {
-                $this->quietly(fn () => $collector->capture());
-            }
+            $this->quietly(fn () => $collector->finalize($response));
         }
 
         $sections = [];
