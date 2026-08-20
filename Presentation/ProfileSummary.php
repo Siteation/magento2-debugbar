@@ -37,6 +37,8 @@ class ProfileSummary
             'finding_count' => count($findings),
             'worst_severity' => $this->worstSeverity($findings),
             'started_at' => $profile['started_at'] ?? null,
+            // Only where there is one, so every other list stays the shape it was.
+            ...(isset($request['magewire']) ? ['magewire' => $request['magewire']] : []),
         ];
     }
 

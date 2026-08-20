@@ -32,6 +32,21 @@ class ProfileReportTest extends TestCase
     }
 
     #[Test]
+    public function aMagewireUpdateIsNamedByItsComponentRatherThanItsUrl(): void
+    {
+        $profile = $this->profile();
+        $profile['sections']['request']['summary']['path'] = '/magewire/post/livewire';
+        $profile['sections']['request']['summary']['magewire'] = [
+            'component' => 'checkout.cart',
+            'action' => 'addToCart()',
+        ];
+
+        $markdown = $this->report()->render($profile);
+
+        $this->assertStringStartsWith('# GET checkout.cart addToCart()', $markdown);
+    }
+
+    #[Test]
     public function aLongStatementIsCutRatherThanPasted(): void
     {
         $profile = $this->profile();

@@ -225,11 +225,18 @@ class McpProfilePresenter
     private function requestLine(array $profile): string
     {
         $request = $profile['sections']['request']['summary'] ?? [];
+        $magewire = $request['magewire'] ?? null;
+
+        // Named rather than pathed where the path is shared. An agent picking a profile out
+        // of a list cannot tell eleven Magewire updates apart by URL, because they have one.
+        $what = is_array($magewire) && ($magewire['component'] ?? '') !== ''
+            ? trim(sprintf('%s %s', $magewire['component'], $magewire['action'] ?? ''))
+            : ($request['path'] ?? '?');
 
         return trim(sprintf(
             '%s %s -> %s',
             $request['method'] ?? '?',
-            $request['path'] ?? '?',
+            $what,
             (string) ($request['status'] ?? '?')
         ));
     }

@@ -14,6 +14,9 @@
  */
 (function () {
   const HEADER = 'x-siteation-debugbar-profile'
+  // What the request was, when the URL does not say. Every Magewire component posts to the
+  // same one, so without this the list is a column of identical rows.
+  const LABEL_HEADER = 'x-siteation-debugbar-label'
   const MAX_ERRORS = 25
   const state = {
     requests: [],
@@ -24,7 +27,7 @@
 
   window.__siteationDebugBar = state
 
-  function report(id, method, url, status) {
+  function report(id, method, url, status, label) {
     // No URL filter for the bar's own endpoints: RequestEligibility::isOwnRequest excludes
     // them from collection, so their responses carry no profile header and the id check
     // above has already returned.
@@ -37,6 +40,7 @@
       // typed, and this list only ever needs to say which request it was.
       url: String(url).split('?')[0],
       status: status,
+      label: label ? String(label).slice(0, 240) : '',
     }
 
     if (state.requests.some((seen) => seen.id === entry.id)) return
@@ -94,7 +98,13 @@
           const method = (args[1] && args[1].method)
             || (typeof Request !== 'undefined' && args[0] instanceof Request ? args[0].method : 'GET')
 
-          report(response.headers.get(HEADER), method, response.url || args[0], response.status)
+          report(
+            response.headers.get(HEADER),
+            method,
+            response.url || args[0],
+            response.status,
+            response.headers.get(LABEL_HEADER)
+          )
         } catch (error) {
           // Never let watching a request break it.
         }
@@ -123,7 +133,8 @@
           request.getResponseHeader(HEADER),
           request.__ndbMethod,
           request.__ndbUrl,
-          request.status
+          request.status,
+          request.getResponseHeader(LABEL_HEADER)
         )
       } catch (error) {
         // As above.

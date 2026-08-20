@@ -34,7 +34,7 @@ export function header({ sheet }) {
           data-ndb-bind:title="request.path">
     <span class="ndb-method" data-ndb-text="request.method || 'GET'"></span>
     <span class="ndb-request-body">
-      <span class="ndb-path" data-ndb-text="request.path || '/'"></span>
+      <span class="ndb-path" data-ndb-text="requestLabel(request)"></span>
       <span class="ndb-request-meta">
         <span data-ndb-bind:class="'is-' + statusTone" data-ndb-text="request.status"></span>
         <span data-ndb-text="statusPhrase"></span>

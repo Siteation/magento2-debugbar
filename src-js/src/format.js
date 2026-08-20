@@ -84,6 +84,26 @@ export function shortUrl(url, origin) {
 }
 
 /**
+ * What to call a request in a list.
+ *
+ * The path is the one thing that does not tell two Magewire updates apart: every component
+ * posts to the same URL. Where the collector recognised one, the component and what it was
+ * asked to do stand in for it.
+ *
+ * @param {object} summary a request summary, or a history entry
+ * @returns {string}
+ */
+export function requestLabel(summary) {
+  const magewire = summary && summary.magewire
+
+  if (magewire && magewire.component) {
+    return `${magewire.component} ${magewire.action || ''}`.trim()
+  }
+
+  return (summary && summary.path) || '/'
+}
+
+/**
  * @param {object} metric
  * @returns {string} the change, signed, in the metric's own unit
  */

@@ -23,6 +23,9 @@ use Throwable;
  */
 class RequestCollector extends AbstractCollector
 {
+    /** Magewire's front name. Matched, never depended on. */
+    private const MAGEWIRE_ROUTE = 'magewire';
+
     /** @var array<string, mixed> */
     private array $request = [];
 
@@ -101,6 +104,83 @@ class RequestCollector extends AbstractCollector
     }
 
     /**
+     * What a Magewire update was actually for.
+     *
+     * Every component posts to one URL, so a page using Magewire produces a request list of
+     * rows that are identical apart from their duration. The component and what it was asked
+     * to do are in the body Livewire's client sends, and nothing else tells them apart.
+     *
+     * Read as a shape on a route name rather than through Magewire itself. The bar has to
+     * keep working on a store that does not have it installed, and this is one JSON decode
+     * on one route.
+     *
+     * Names only. A component name, a method name and a property name are the developer's
+     * own identifiers and are kept whatever the value policy says, the way the path is. The
+     * payload beside them is not: an update carries what the customer just typed.
+     *
+     * @return array{magewire: array<string, mixed>}|null
+     */
+    private function magewire(): ?array
+    {
+        if (strtolower((string) $this->httpRequest->getRouteName()) !== self::MAGEWIRE_ROUTE) {
+            return null;
+        }
+
+        try {
+            $body = json_decode((string) $this->httpRequest->getContent(), true, 8, JSON_THROW_ON_ERROR);
+        } catch (Throwable) {
+            return null;
+        }
+
+        if (!is_array($body) || !is_array($body['fingerprint'] ?? null)) {
+            return null;
+        }
+
+        $updates = is_array($body['updates'] ?? null) ? $body['updates'] : [];
+
+        return ['magewire' => [
+            'component' => $this->identifier($body['fingerprint']['name'] ?? null),
+            'resolver' => $this->identifier($body['fingerprint']['resolver'] ?? null),
+            // The first one names the request. A batch is rare and the rest are visible in
+            // the count beside it.
+            'action' => $this->action($updates[0] ?? []),
+            'update_count' => count($updates),
+        ]];
+    }
+
+    /**
+     * What one update asked for, as one readable phrase.
+     *
+     * @param array<string, mixed> $update
+     */
+    private function action(array $update): ?string
+    {
+        $type = (string) ($update['type'] ?? '');
+        $payload = is_array($update['payload'] ?? null) ? $update['payload'] : [];
+
+        return match ($type) {
+            'callMethod' => $this->identifier($payload['method'] ?? null) . '()',
+            'syncInput' => 'set ' . $this->identifier($payload['name'] ?? null),
+            'fireEvent' => 'on ' . $this->identifier($payload['event'] ?? null),
+            default => $type === '' ? null : $this->identifier($type),
+        };
+    }
+
+    /**
+     * A developer's own name for something, bounded and reduced to the characters one can
+     * be made of. Whatever arrives here came off the wire, and it is about to be shown as a
+     * label rather than escaped by a template.
+     */
+    private function identifier(mixed $value): string
+    {
+        // A # delimiter, because the set has to hold a forward slash: a resolver name is a
+        // path as often as it is a word.
+        $clean = preg_replace('#[^A-Za-z0-9_.:\\\\/-]#', '', is_string($value) ? $value : '');
+
+        return substr($clean ?? '', 0, 120);
+    }
+
+    /**
      * An exception message follows the value policy like anything else captured.
      *
      * Magento interpolates without quoting, so "No such entity with email = jane@example.com"
@@ -133,6 +213,9 @@ class RequestCollector extends AbstractCollector
             'area' => $this->areaCode(),
             'is_ajax' => $this->httpRequest->isAjax(),
             'is_secure' => $this->httpRequest->isSecure(),
+            // Only on a request that has one, so a store without Magewire carries no key
+            // for it rather than a null on every profile.
+            ...($this->magewire() ?? []),
         ];
 
         $this->response = [

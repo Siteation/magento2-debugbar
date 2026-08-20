@@ -126,11 +126,24 @@ test('a fact can be mono, toned, or raw markup', () => {
 test('the overview tells the request as stages rather than as a list', () => {
   const steps = template.match(/<li class="ndb-step">/g) || []
 
-  assert.equal(steps.length, 3, 'received, matched, responded')
+  assert.equal(steps.length, 4, 'received, matched, responded, and Magewire when there is one')
   assert.ok(template.includes('<h3>Received</h3>'))
   assert.ok(template.includes('<h3>Matched</h3>'))
   assert.ok(template.includes('<h3>Responded</h3>'))
   assert.ok(template.includes('ndb-summary'), 'the request is restated in one line above')
+})
+
+test('the Magewire stage appears only on a request that had one', () => {
+  // Guarded, not hidden: a store without Magewire must not render a stage about it, and
+  // every expression inside it would evaluate against a missing object if it were x-show.
+  assert.ok(template.includes('data-ndb-if="request.magewire"'))
+  assert.ok(!template.includes('data-ndb-show="request.magewire"'))
+
+  const guarded = template.slice(template.indexOf('data-ndb-if="request.magewire"'))
+  const before = template.slice(0, template.indexOf('data-ndb-if="request.magewire"'))
+
+  assert.ok(!/request\.magewire\./.test(before), 'every magewire expression belongs inside the guard')
+  assert.ok(/request\.magewire\.component/.test(guarded), 'and there are some')
 })
 
 test('the waterfall says what it is and what its marks mean', () => {

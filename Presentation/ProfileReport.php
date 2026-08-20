@@ -67,7 +67,7 @@ class ProfileReport
         return sprintf(
             "# %s %s\n\n%s in %s ms, %s %s, %d %s.",
             $summary['method'] ?? 'GET',
-            $summary['path'] ?? '/',
+            $this->requestLabel($summary),
             $summary['status'] ?? 'Threw, no response',
             $this->number($summary['duration_ms'] ?? 0, 2),
             $summary['area'] ?? 'unknown area',
@@ -338,6 +338,23 @@ class ProfileReport
         return strlen($sql) <= self::MAX_SQL_LENGTH
             ? $sql
             : substr($sql, 0, self::MAX_SQL_LENGTH) . ' ...';
+    }
+
+    /**
+     * The path does not tell two Magewire updates apart: every component posts to the same
+     * URL. Where the collector recognised one, the component and the action stand in.
+     *
+     * @param array<string, mixed> $summary
+     */
+    private function requestLabel(array $summary): string
+    {
+        $magewire = $summary['magewire'] ?? null;
+
+        if (is_array($magewire) && ($magewire['component'] ?? '') !== '') {
+            return trim(sprintf('%s %s', $magewire['component'], $magewire['action'] ?? ''));
+        }
+
+        return (string) ($summary['path'] ?? '/');
     }
 
     /**

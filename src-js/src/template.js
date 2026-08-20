@@ -85,7 +85,8 @@ export const template = `
                   data-ndb-bind:class="activeId === entry.id && 'is-active'"
                   data-ndb-bind:title="entry.method + ' ' + entry.url">
             <span data-ndb-text="entry.method"></span>
-            <span class="ndb-mono ndb-truncate" data-ndb-text="shortUrl(entry.url)"></span>
+            <span class="ndb-mono ndb-truncate"
+                  data-ndb-text="entry.label || shortUrl(entry.url)"></span>
             <span class="ndb-dim" data-ndb-text="entry.status"></span>
           </button>
         </template>
@@ -163,7 +164,7 @@ export const template = `
       <div>
         <div class="ndb-summary">
           <span class="ndb-method" data-ndb-text="request.method || 'GET'"></span>
-          <code class="ndb-summary-path" data-ndb-text="request.path || '/'"></code>
+          <code class="ndb-summary-path" data-ndb-text="requestLabel(request)"></code>
           <span class="ndb-summary-status" data-ndb-bind:class="'is-' + statusTone">
             <span data-ndb-text="request.status"></span>
             <span data-ndb-text="statusPhrase"></span>
@@ -211,6 +212,23 @@ export const template = `
               { label: 'Observers run', value: "observers.count || 0" },
             ])}
           </li>
+
+          <!--
+            Only where the request was one. The controller and the path above are the same
+            on every Magewire update, so this is the part that says which it was.
+          -->
+          <template data-ndb-if="request.magewire">
+          <li class="ndb-step">
+            <h3>Magewire</h3>
+            <p>Which component was asked to do what, over the URL they all share.</p>
+            ${facts([
+              { label: 'Component', value: 'request.magewire.component', mono: true },
+              { label: 'Action', value: "request.magewire.action || 'none'", mono: true },
+              { label: 'Resolver', value: "request.magewire.resolver || 'unknown'" },
+              { label: 'Updates', value: "plural(request.magewire.update_count, 'update', 'updates')" },
+            ])}
+          </li>
+          </template>
 
           <li class="ndb-step">
             <h3>Responded</h3>
@@ -625,7 +643,7 @@ export const template = `
                 <span class="ndb-history-method" data-ndb-text="entry.method || 'GET'"></span>
                 <span class="ndb-history-body">
                   <span class="ndb-history-path ndb-mono ndb-truncate"
-                        data-ndb-text="entry.path || '/'"></span>
+                        data-ndb-text="requestLabel(entry)"></span>
                   <span class="ndb-history-meta">
                     <span data-ndb-text="entry.area"></span>
                     <span data-ndb-text="plural(entry.query_count, 'query', 'queries')"></span>

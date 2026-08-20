@@ -14,6 +14,7 @@ import {
   methodList as formatMethodList,
   metricValue as formatMetricValue,
   number as formatNumber,
+  requestLabel as formatRequestLabel,
   plural as formatPlural,
   shortUrl as formatShortUrl,
 } from './format.js'
@@ -422,6 +423,14 @@ export function debugBar() {
       this.payloads = {}
       this.activeId = this.pageProfile.id || null
       this.loadPayloads()
+    },
+
+    /**
+     * @param {object} summary a request summary, or a history entry
+     * @returns {string}
+     */
+    requestLabel(summary) {
+      return formatRequestLabel(summary)
     },
 
     /**

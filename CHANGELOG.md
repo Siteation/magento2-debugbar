@@ -15,6 +15,11 @@ entries for the work that led up to it.
 * Findings: eight rules producing ten kinds of finding, each saying what is wrong, why it
   matters, where it came from and what to check next, and linking to the evidence behind
   it.
+* Magewire updates are named by their component and what it was asked to do. Every
+  component posts to one URL, so a page that uses it produced a request list of identical
+  rows; the bar, the history, the markdown report and the MCP tools all say
+  `checkout.cart addToCart()` instead. Magewire is not a dependency: the request is
+  recognised by shape.
 * Covers frontend HTML, adminhtml, AJAX, GraphQL and REST. Requests that cannot carry a
   bar still return `X-Siteation-DebugBar-Profile`, and the bar lists them so they can be
   opened.

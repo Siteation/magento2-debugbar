@@ -21,6 +21,7 @@ import {
   metricValue,
   number,
   plural,
+  requestLabel,
   shortUrl,
 } from '../src/format.js'
 
@@ -113,6 +114,24 @@ test('a long path keeps its last two segments, a short one keeps all of them', (
   // Nothing to resolve against, so there is no path to shorten and the input stands.
   const unresolvable = '/some/very/long/path/that/keeps/going/and/going'
   assert.equal(shortUrl(unresolvable, ''), unresolvable)
+})
+
+test('a Magewire update is named by its component, everything else by its path', () => {
+  // Every component posts to one URL, so the path is the one thing that cannot tell two of
+  // them apart.
+  assert.equal(
+    requestLabel({ path: '/magewire/post/livewire', magewire: { component: 'cart', action: 'refresh()' } }),
+    'cart refresh()'
+  )
+  assert.equal(
+    requestLabel({ path: '/magewire/post/livewire', magewire: { component: 'cart' } }),
+    'cart',
+    'a component with no action is still a name'
+  )
+  assert.equal(requestLabel({ path: '/checkout/cart/' }), '/checkout/cart/')
+  assert.equal(requestLabel({ path: '/x', magewire: { component: '' } }), '/x')
+  assert.equal(requestLabel({}), '/')
+  assert.equal(requestLabel(null), '/')
 })
 
 test('elapsed time reads in the largest unit that fits', () => {

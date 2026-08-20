@@ -38,6 +38,15 @@ class BarInjector
 {
     public const PROFILE_HEADER = 'X-Siteation-DebugBar-Profile';
 
+    /**
+     * What the request was, when the URL does not say.
+     *
+     * The bar's request list is built in the browser from what it saw go past, and all it
+     * has there is a method and a URL. Every Magewire component posts to the same one, so
+     * the server sends the label rather than have the watcher read request bodies.
+     */
+    public const LABEL_HEADER = 'X-Siteation-DebugBar-Label';
+
     private const ROOT_ID = 'siteation-debugbar';
     private const DATA_ID = 'siteation-debugbar-profile';
 
@@ -64,6 +73,13 @@ class BarInjector
         }
 
         $response->setHeader(self::PROFILE_HEADER, (string) $profile['id'], true);
+
+        $label = $this->label($profile);
+
+        if ($label !== null) {
+            $response->setHeader(self::LABEL_HEADER, $label, true);
+        }
+
         $this->refuseSharing($response);
 
         // The header rides on anything. Reading and rewriting a body needs the concrete
@@ -84,6 +100,20 @@ class BarInjector
      * cacheable by the presence of that header, so leaving it would leave the decision to a
      * rule that never heard of this module.
      */
+    /**
+     * @param array<string, mixed> $profile
+     */
+    private function label(array $profile): ?string
+    {
+        $magewire = $profile['sections']['request']['summary']['magewire'] ?? null;
+
+        if (!is_array($magewire) || ($magewire['component'] ?? '') === '') {
+            return null;
+        }
+
+        return trim(sprintf('%s %s', $magewire['component'], $magewire['action'] ?? ''));
+    }
+
     private function refuseSharing(HttpResponse $response): void
     {
         // The same directives Magento's own setNoCacheHeaders() sends, and deliberately not

@@ -113,6 +113,30 @@ class McpProfilePresenterTest extends TestCase
     }
 
     #[Test]
+    public function anAgentSeesWhichMagewireUpdateIsWhich(): void
+    {
+        // Eleven of them share a URL, so a list of paths is a list of one path.
+        $update = $this->profile('a', 'POST', '/magewire/post/livewire');
+        $update['sections']['request']['summary']['magewire'] = [
+            'component' => 'search.form',
+            'action' => 'set term',
+        ];
+
+        // findings() heads its answer with the request, which is where an agent reads what
+        // it is looking at.
+        $this->assertSame(
+            'POST search.form set term -> 200',
+            $this->presenter($update)->findings('a', 10)['request']
+        );
+
+        // And the list carries the same names, so choosing between them is possible at all.
+        $listed = $this->presenterWithRecent([$update])->list([], 10)['profiles'][0];
+
+        $this->assertSame('search.form', $listed['magewire']['component']);
+        $this->assertSame('set term', $listed['magewire']['action']);
+    }
+
+    #[Test]
     public function theListSaysHowManyItLeftOut(): void
     {
         $presenter = $this->presenterWithRecent([
