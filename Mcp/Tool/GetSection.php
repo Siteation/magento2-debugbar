@@ -21,8 +21,8 @@ class GetSection implements McpToolInterface
     public function description(): string
     {
         return 'Read one section of a profile: request, queries, events, observers, blocks, '
-            . 'cache or interception. Paginated. Ask for the smallest section that answers '
-            . 'the question rather than reading everything.';
+            . 'cache, interception or timeline. Paginated. Ask for the smallest section that '
+            . 'answers the question rather than reading everything.';
     }
 
     public function inputSchema(): array

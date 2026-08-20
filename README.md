@@ -8,7 +8,7 @@ can be injected into them.
 
 **Status: unreleased.** Everything described below is built and verified against a
 running store. There is no tagged release yet, so install it from source. See
-`docs/plan.md` for what is still being built.
+`docs/plan-1.1.md` for what is still being built.
 
 ## Requirements
 
@@ -240,7 +240,7 @@ difference is around 2%.
 | --- | --- |
 | Request lifecycle | `aroundLaunch` on `Magento\Framework\App\Http` |
 | Queries | plugin on `Magento\Framework\DB\LoggerInterface` |
-| Injection | `<script type="application/json">` plus two external files |
+| Injection | `<script type="application/json">` plus three external files (two scripts and a stylesheet) |
 | Agent access | `bin/magento siteation:debugbar:mcp`, MCP over stdio |
 
 The bar renders inside a shadow root with its own bundled Alpine under a `data-ndb-`
@@ -258,10 +258,15 @@ installing the module needs no build step.
 ```
 cd src-js
 npm install
-npm run build         # or: npm run dev, to rebuild on change
+npm run build         # or: npm run dev, to rebuild the bundle on change
 npm test              # node's own runner, no test dependency
 npm run test:browser  # drives the bar in Chrome against a running store
 ```
+
+`npm run dev` builds `early.js` once and then watches the main bundle only. Editing
+`early.js` during a watch session needs another `npm run build`, because the page keeps
+serving the committed file and its URL carries an mtime, so a stale one does not look
+like a cache problem.
 
 The browser suite needs the store up and the bar enabled. It uses your installed Chrome
 rather than downloading one; point it elsewhere with `NDB_BASE_URL` or
@@ -279,6 +284,7 @@ $PKG/dev/smoke https://your-store.test admin
 ## Documentation
 
 * `docs/handoff.md` — start here if you are picking this up cold
-* `docs/plan.md` — the build plan, phase by phase
+* `docs/plan.md` — the 1.0 build plan, phase by phase
+* `docs/plan-1.1.md` — what is being built now
 * `docs/research.md` — prior art, verified framework hooks, and the traps found in them
 * `docs/build-status.html` — progress tracker

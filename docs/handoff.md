@@ -46,7 +46,7 @@ Modelled on [newdebugbar/newdebugbar](https://github.com/newdebugbar/newdebugbar
 The root `composer.json` has a `path` repository at `package-source/*/*`, so the package
 installs as a symlink and edits take effect immediately.
 
-## Three stale artifact traps
+## Four stale artifact traps
 
 These cost hours each. Check them before believing a bug is real.
 
@@ -81,7 +81,8 @@ all of them. Seven: request, queries, events, observers, blocks, cache, intercep
 `timeline` section built at finalize by `Analysis\TimelineBuilder`.
 
 **Findings** are produced by rules behind `Api\RuleInterface`, also registered in `di.xml`.
-A rule that throws is skipped and logged. Nine rules ship.
+A rule that throws is skipped and logged. Eight rules ship, producing ten kinds of
+finding: `RequestErrorRule` and `RepeatedQueryRule` emit two each.
 
 **The bar** renders in a shadow root with its own bundled Alpine under a `data-ndb-` prefix
 and is started with `Alpine.initTree(root)`, never `Alpine.start()`. A full start installs
@@ -148,15 +149,17 @@ a length of time.
 Rutger's call: it needs the repository made public so Packagist can read it. Not an
 engineering task, and not something to push toward.
 
-**1.1**: 23 of 27.
+**1.1**: 46 done, 3 closed by decision, none open. `docs/build-status.html` holds the live
+count. The phase list below says what each one delivered; it does not repeat the numbers,
+because two places that count the same work only ever agree for a while.
 
-| Phase | | |
-| --- | --- | --- |
-| A. Timeline | 5/5 | `at_ms` on every item, `TimelineBuilder`, waterfall view |
-| B. Window | 5/5 | floating glass dock, modal sheet, `lockHost`, window controls |
-| C. Navigation | 6/7 | 210px sidebar, favourites with drag, section leads, inline findings |
-| D. Alpine | 6/7 | components, stores, deferred, health, sub-tabs, value policy |
-| E. Comfort | 6/7 | all of it: light theme, type, palette, their layouts, highlighting, history |
+| Phase | |
+| --- | --- |
+| A. Timeline | `at_ms` on every item, `TimelineBuilder`, waterfall view |
+| B. Window | floating glass dock, modal sheet, `lockHost`, window controls |
+| C. Navigation | 210px sidebar, favourites with drag, section leads, inline findings |
+| D. Alpine | components, stores, deferred, health, sub-tabs, value policy |
+| E. Comfort | all of it: light theme, type, palette, their layouts, highlighting, history |
 
 Backlog is in `build-status.html`, which is the live tracker. Open it in a browser.
 
@@ -204,7 +207,7 @@ extension.
 * The cookie manager resolves its domain through the store, so it cannot be used at the top
   of `launch()`: there is no store yet. Issue cookies after `proceed()`.
 
-Beyond the three stale artifact traps, the ones most likely to bite again:
+Beyond the four stale artifact traps, the ones most likely to bite again:
 
 * A query's shape ignores numbers as well as quoted values, because Magento interpolates
   ids unquoted and an N+1 made of them was invisible. Identifiers are protected: `t1` is not

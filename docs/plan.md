@@ -28,7 +28,7 @@ Magento 2.4.9, PHP 8.3/8.4, Hyvä 3.0 with Alpine 3.14 and Tailwind 4, and Nebul
 (`qoliber/nebula-admin-theme`, Alpine 3 + Tailwind 4 + ES modules) in the admin.
 
 Full prior art notes, verified hooks and extracted code live in
-`package-source/siteation/magento2-debugbar/docs/research.md`.
+`docs/research.md`.
 
 ### Decisions already taken
 
@@ -87,7 +87,7 @@ served as real files. This is strictly better than every prior art module.
 ## Package layout
 
 ```
-package-source/siteation/magento2-debugbar/
+package-source/siteation/module-debugbar/
   composer.json                 exists, add "type": "magento2-module" deps only
   registration.php              exists
   etc/module.xml                exists

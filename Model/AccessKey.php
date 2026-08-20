@@ -45,8 +45,8 @@ class AccessKey
      * True when this request may be profiled and read.
      *
      * With no key configured there is nothing to prove, which is the developer machine case
-     * the module was written for. Config refuses to enable at all in production without one,
-     * so "nothing to prove" can never be the answer on a live site.
+     * the module was written for. Config refuses to enable at all in any other mode without
+     * one, so "nothing to prove" can never be the answer on a live site.
      */
     public function allows(): bool
     {

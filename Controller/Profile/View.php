@@ -24,7 +24,8 @@ use Siteation\DebugBar\Presentation\ProfileReport;
  * which is what the bar's copy button and anyone pasting into an assistant needs. One
  * renderer, in ProfileReport, shared with the console command.
  *
- * Gated on the same switch as the bar itself, so it is unreachable in production mode.
+ * Gated on the same switch as the bar itself, so outside developer mode it is refused
+ * unless a developer access key is set.
  */
 class View implements HttpGetActionInterface
 {
@@ -42,8 +43,6 @@ class View implements HttpGetActionInterface
     {
         $result = $this->resultFactory->create();
 
-        // The same gate as the bar. Without the address check this endpoint would be a
-        // way around the allowlist rather than covered by it.
         // One gate, shared with the collector. An endpoint that answers someone the bar
         // would not have collected for is a way around it rather than a thing behind it.
         if (!$this->eligibility->allowsRead()) {

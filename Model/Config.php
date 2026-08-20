@@ -162,7 +162,7 @@ class Config
      * The secret a request proves itself with, or an empty string when none is set.
      *
      * Empty is the developer machine: there is nobody to keep out. It cannot be empty in
-     * production, because resolve() refuses to enable there without one.
+     * any other mode, because resolve() refuses to enable there without one.
      */
     public function accessKey(): string
     {
@@ -223,10 +223,10 @@ class Config
 
         $this->accessKey = trim((string) $this->scopeConfig->getValue(self::XML_PATH_ACCESS_KEY));
 
-        // Keyless is a developer machine and nothing else. Production used to be refused
-        // outright, which was safe and also meant a live site could not be debugged at all;
-        // it is allowed now on one condition, that a key exists, so the bar is reachable by
-        // whoever holds it and by nobody else.
+        // Keyless is a developer machine and nothing else. Anywhere else the bar is
+        // reachable on one condition, that a key exists, so it answers whoever holds it and
+        // nobody else. Refusing outright would be safe and would also mean a live site could
+        // not be debugged at all.
         //
         // The rule is "not developer" rather than "is production" because default mode is
         // the third one, is what MAGE_MODE falling back lands on, and is what plenty of live

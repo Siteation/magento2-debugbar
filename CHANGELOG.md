@@ -12,8 +12,9 @@ entries for the work that led up to it.
 * Seven collectors: request, queries, events, observers, blocks, cache and interception.
 * Repeated queries are matched by shape with numbers treated as values, so an N+1 built
   from interpolated ids is visible rather than hidden as one query per id.
-* Findings: nine rules that say what is wrong, why it matters, where it came from and what
-  to check next, each linking to the evidence behind it.
+* Findings: eight rules producing ten kinds of finding, each saying what is wrong, why it
+  matters, where it came from and what to check next, and linking to the evidence behind
+  it.
 * Covers frontend HTML, adminhtml, AJAX, GraphQL and REST. Requests that cannot carry a
   bar still return `X-Siteation-DebugBar-Profile`, and the bar lists them so they can be
   opened.
@@ -43,7 +44,7 @@ entries for the work that led up to it.
 
 ### For coding agents
 
-* `bin/magento siteation:debugbar:mcp` serves stored profiles over MCP on stdio, with four
+* `bin/magento siteation:debugbar:mcp` serves stored profiles over MCP on stdio, with five
   read only tools.
 * Responses are bounded by item count and byte budget. On an 817 kB profile, findings
   answer in 7 kB.

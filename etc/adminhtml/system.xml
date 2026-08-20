@@ -47,7 +47,7 @@
                 <field id="access_key" translate="label comment" type="text" sortOrder="55"
                        showInDefault="1" showInWebsite="0" showInStore="0" canRestore="1">
                     <label>Developer Access Key</label>
-                    <comment><![CDATA[Leave empty on a machine only you can reach. Set one to debug a live site: the bar then collects and answers only for requests carrying the key, and is invisible to everyone else. Generate one with <code>openssl rand -hex 32</code>. Present it as the <code>X-Siteation-DebugBar-Key</code> header, or visit any page once with <code>?siteation_debugbar_key=…</code> to swap it for a one hour cookie. Required in production mode. Stored as an ordinary setting, like the IP allowlist: rotate it with the same command when you are done.]]></comment>
+                    <comment><![CDATA[Leave empty on a machine only you can reach. Set one to debug a live site: the bar then collects and answers only for requests carrying the key, and is invisible to everyone else. Generate one with <code>openssl rand -hex 32</code>. Present it as the <code>X-Siteation-DebugBar-Key</code> header, or visit any page once with <code>?siteation_debugbar_key=…</code> to swap it for a one hour cookie. Required in any mode but developer. Stored as an ordinary setting, like the IP allowlist: rotate it with the same command when you are done.]]></comment>
                     <depends><field id="enabled">1</field></depends>
                 </field>
                 <field id="editor" translate="label comment" type="select" sortOrder="60"

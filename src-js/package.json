@@ -6,7 +6,7 @@
   "description": "Alpine sources for Siteation_DebugBar. Build output is committed to view/base/web.",
   "scripts": {
     "build": "vite build && vite build --config vite.early.config.js",
-    "dev": "vite build --watch",
+    "dev": "vite build --config vite.early.config.js && vite build --watch",
     "test": "node --test 'test/*.test.js'",
     "test:browser": "playwright test"
   },
