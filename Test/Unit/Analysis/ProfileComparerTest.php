@@ -124,9 +124,11 @@ class ProfileComparerTest extends TestCase
     {
         $subject = [];
 
+        // Distinct by identifier, not by number: a number is a value now, so thirty of
+        // those would be one shape rather than thirty.
         for ($shape = 0; $shape < 30; $shape++) {
             for ($run = 0; $run <= $shape; $run++) {
-                $subject[] = ['sql' => "SELECT $shape FROM t", 'duration_ms' => 0.1];
+                $subject[] = ['sql' => "SELECT * FROM `table_$shape`", 'duration_ms' => 0.1];
             }
         }
 

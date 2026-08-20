@@ -112,4 +112,61 @@ class QueryAnalyzerTest extends TestCase
             'callsite' => [['file' => $file, 'line' => (int) $line, 'call' => 'x()']],
         ];
     }
+    #[Test]
+    public function itSeesThroughAnInterpolatedNumber(): void
+    {
+        // Magento interpolates ids unquoted, so these were two different queries and an
+        // N+1 built from numeric ids could not be seen at all.
+        $result = $this->analyzer->analyze([
+            ['sql' => 'SELECT * FROM `t` WHERE (`entity_id` = 1)', 'duration_ms' => 1.0],
+            ['sql' => 'SELECT * FROM `t` WHERE (`entity_id` = 2)', 'duration_ms' => 1.0],
+            ['sql' => 'SELECT * FROM `t` WHERE (`entity_id` = 3)', 'duration_ms' => 1.0],
+        ]);
+
+        $this->assertCount(1, $result['groups']);
+        $this->assertSame(3, $result['groups'][0]['count']);
+        $this->assertStringContainsString('= ?', $result['groups'][0]['sql']);
+    }
+
+    #[Test]
+    public function itLeavesTheDigitsInsideAnIdentifierAlone(): void
+    {
+        // `t1` is not `t2`, and merging them would invent repetition that never happened.
+        $result = $this->analyzer->analyze([
+            ['sql' => 'SELECT `t1`.`a` FROM `x` AS `t1`', 'duration_ms' => 1.0],
+            ['sql' => 'SELECT `t2`.`a` FROM `x` AS `t2`', 'duration_ms' => 1.0],
+            ['sql' => 'SELECT `attribute_2`.* FROM `y`', 'duration_ms' => 1.0],
+            ['sql' => 'SELECT `attribute_3`.* FROM `y`', 'duration_ms' => 1.0],
+        ]);
+
+        $this->assertCount(4, $result['groups'], 'Four identifiers, four queries.');
+    }
+
+    #[Test]
+    public function itTreatsTwoLimitsAsOneStatement(): void
+    {
+        // Deliberate: this counts how often a statement ran, and these are one statement.
+        // What each run cost is reported per group, so a heavy one still shows itself.
+        $result = $this->analyzer->analyze([
+            ['sql' => 'SELECT * FROM `t` LIMIT 10', 'duration_ms' => 1.0],
+            ['sql' => 'SELECT * FROM `t` LIMIT 1000', 'duration_ms' => 9.0],
+        ]);
+
+        $this->assertCount(1, $result['groups']);
+        $this->assertSame(10.0, $result['groups'][0]['duration_ms']);
+    }
+
+    #[Test]
+    public function itDoesNotReachIntoAQuotedValue(): void
+    {
+        $result = $this->analyzer->analyze([
+            ['sql' => "SELECT * FROM `t` WHERE `code` = 'a1'", 'duration_ms' => 1.0],
+            ['sql' => "SELECT * FROM `t` WHERE `code` = 'a2'", 'duration_ms' => 1.0],
+        ]);
+
+        // The redactor replaces quoted values long before this; whatever survives that is
+        // not something to rewrite again.
+        $this->assertCount(2, $result['groups']);
+    }
+
 }

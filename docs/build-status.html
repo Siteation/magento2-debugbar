@@ -1470,6 +1470,26 @@ inspect_debug_queries       slowest first, with call sites</code></pre>
             survives it.</p>
             <p>Cost: 60 kB raw, 18 kB gzipped. The plan guessed 20 kB, which was optimistic
             about the core and about SQL's keyword list.</p>` },
+      { t: 'Query shapes see through an interpolated number', s: 'done',
+        d: `<p>The redactor strips quoted values, and Magento interpolates ids unquoted, so
+            <code>entity_id = 1</code> and <code>entity_id = 2</code> were two different
+            queries. An N+1 built from numeric ids was invisible to the rule that exists to
+            find it.</p>
+            <p>Numbers are values now, as every profiler treats them, but only where a
+            number is a value. Backticked identifiers and quoted strings match the pattern
+            first and come back untouched, because <code>t1</code> is not <code>t2</code>
+            and merging those would invent repetition that never happened.</p>
+            <p><code>LIMIT 10</code> and <code>LIMIT 100</code> become one shape,
+            deliberately. This counts how often a statement ran and those are one
+            statement; what each run cost is reported per group, so a heavy one still shows
+            itself.</p>
+            <p>Measured before believing it. On this instance the admin went from 19 shapes
+            to 13 and grew a finding it could not previously produce: five UPDATEs to
+            <code>theme</code>, one per row, from a single call site. A real loop that the
+            analyser had been unable to see.</p>
+            <p>It cost 1 ms per 250 queries, and it found a test of its own that was wrong:
+            the comparer's fixture built thirty "different" queries by varying a number,
+            which is now correctly one.</p>` },
       { t: 'Reverted: the theme toggle should not have left the header', s: 'done',
         d: `<p>It was taken out with the placement toggle when the header was crowded, on
             the grounds that the palette already names all three themes. That reasoning was

@@ -107,7 +107,7 @@ Claude Code as `siteation-debugbar`.
 bin/magento cache:flush                                        # after any plugin change
 vendor/bin/phpcs  --standard=<pkg>/phpcs.xml.dist <pkg>
 vendor/bin/phpstan analyse -c <pkg>/phpstan.neon.dist
-vendor/bin/phpunit --configuration <pkg>/phpunit.xml.dist      # 89 tests
+vendor/bin/phpunit --configuration <pkg>/phpunit.xml.dist      # 93 tests
 <pkg>/dev/smoke https://mage-debugbar.test magedebugbar_admin  # 29 assertions
 cd <pkg>/src-js && npm test                                    # 38 tests, no dependency
 cd <pkg>/src-js && npm run test:browser                        # 9 tests, needs the store up
@@ -186,6 +186,9 @@ extension.
 
 Beyond the three stale artifact traps, the ones most likely to bite again:
 
+* A query's shape ignores numbers as well as quoted values, because Magento interpolates
+  ids unquoted and an N+1 made of them was invisible. Identifiers are protected: `t1` is not
+  `t2`. `LIMIT 10` and `LIMIT 100` are deliberately one shape.
 * An interface plugin fires **once per implementing object in the chain**, not once per
   logical operation. `LoggerInterface` resolves to `LoggerProxy`, which delegates to
   another implementer, so every query was counted twice for months.

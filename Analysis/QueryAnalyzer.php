@@ -7,9 +7,19 @@ namespace Siteation\DebugBar\Analysis;
 /**
  * Groups queries by shape so repetition becomes visible.
  *
- * Two queries are the same shape when their normalised SQL and connection match. Literal
- * values are already stripped at record time, so "the same query with different ids"
- * collapses to one group, which is exactly what an N+1 looks like.
+ * Two queries are the same shape when their normalised SQL matches. Quoted values are
+ * already stripped at record time; numbers are not, because Magento interpolates them
+ * unquoted, so `entity_id = 1` and `entity_id = 2` used to be two different queries and an
+ * N+1 built from numeric ids could not be seen at all.
+ *
+ * Numbers are therefore replaced here as well, which is what every profiler does, but only
+ * where a number is a value. An identifier may contain digits, and `t1` is not `t2`: those
+ * are different tables and merging them would invent repetition that does not exist. So
+ * anything inside backticks or quotes is left exactly as it was found.
+ *
+ * `LIMIT 10` and `LIMIT 100` become the same shape. That is deliberate. This counts how
+ * often a statement ran, and the two are the same statement; their cost is reported per
+ * group, so a heavy one still shows itself.
  */
 class QueryAnalyzer
 {
@@ -102,9 +112,25 @@ class QueryAnalyzer
         return substr(hash('sha256', $this->normalize($sql)), 0, 16);
     }
 
+    /**
+     * Backticked identifiers and quoted strings match first and are returned untouched, so
+     * only what is left over, a bare number, can be replaced. The lookarounds keep the
+     * digits inside `attribute_2` and `t1` out of it: a number is only a value when nothing
+     * word-like is against it.
+     */
     private function normalize(string $sql): string
     {
-        return trim((string) preg_replace('/\s+/', ' ', $sql));
+        $sql = trim((string) preg_replace('/\s+/', ' ', $sql));
+
+        $normalized = preg_replace_callback(
+            '/`[^`]*`|\'(?:[^\'\\\\]|\\\\.)*\'|"(?:[^"\\\\]|\\\\.)*"|(?<![\w.`])\d+(?:\.\d+)?(?![\w.`])/',
+            static fn (array $matches): string => in_array($matches[0][0], ['`', "'", '"'], true)
+                ? $matches[0]
+                : '?',
+            $sql
+        );
+
+        return $normalized ?? $sql;
     }
 
     /**

@@ -10,6 +10,8 @@ entries for the work that led up to it.
 * One JSON profile per request, stored under `var/siteation_debugbar/`, pruned to the last
   20 or 60 minutes, written `0600` in a `0700` directory.
 * Seven collectors: request, queries, events, observers, blocks, cache and interception.
+* Repeated queries are matched by shape with numbers treated as values, so an N+1 built
+  from interpolated ids is visible rather than hidden as one query per id.
 * Findings: nine rules that say what is wrong, why it matters, where it came from and what
   to check next, each linking to the evidence behind it.
 * Covers frontend HTML, adminhtml, AJAX, GraphQL and REST. Requests that cannot carry a
