@@ -1773,6 +1773,9 @@
 .ndb-delta.is-worse { color: var(--ndb-bad); }
 .ndb-delta.is-same { color: var(--ndb-dim); font-weight: 400; }
 
+/* One side never measured the metric, which is neither a change nor an absence of one. */
+.ndb-delta.is-unanswerable { color: var(--ndb-dim); font-weight: 400; font-style: italic; }
+
 .ndb-delta small {
   display: block;
   font-size: 12px;

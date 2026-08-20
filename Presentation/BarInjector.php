@@ -9,7 +9,6 @@ use Magento\Framework\App\ResponseInterface;
 use Magento\Framework\HTTP\PhpEnvironment\Response as ReadableResponse;
 use Magento\Framework\UrlInterface;
 use Siteation\DebugBar\Model\Config;
-use Siteation\DebugBar\Model\RequestEligibility;
 
 /**
  * Adds the bar to HTML responses, and the profile id to every profiled response.
@@ -156,7 +155,7 @@ class BarInjector
         );
 
         $markup = sprintf(
-            '<div id="%s" data-css="%s" data-profile-url="%s" data-front-name="%s"'
+            '<div id="%s" data-css="%s" data-profile-url="%s"'
             . ' data-value-policy="%s" data-history-url="%s" data-compare-url="%s"'
             . ' data-editor="%s" data-editor-root="%s"></div>'
             . '<script type="application/json" id="%s">%s</script>'
@@ -164,7 +163,6 @@ class BarInjector
             self::ROOT_ID,
             $this->escape($this->assets->for('css/debugbar.css')),
             $this->escape($this->profileUrl(self::ID_PLACEHOLDER)),
-            RequestEligibility::FRONT_NAME,
             $this->escape($this->config->valuePolicy()),
             $this->escape($this->url->getUrl('siteation_debugbar/profile/history', ['_secure' => true])),
             $this->escape($this->url->getUrl('siteation_debugbar/profile/compare', ['_secure' => true])),

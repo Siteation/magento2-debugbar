@@ -4,9 +4,22 @@ import { SECTIONS, countFor } from './sections.js'
 import { commandsFor, matchCommands } from './palette.js'
 import { policyName } from './redact.js'
 import { highlight as highlightCode } from './highlight.js'
+import { fetchJson, fetchProfile } from './transport.js'
 import {
-  alpineErrors,
-  alpineHealth,
+  ago as formatAgo,
+  bytes as formatBytes,
+  deltaLabel as formatDeltaLabel,
+  editorUrl as buildEditorUrl,
+  locationUrl as buildLocationUrl,
+  methodList as formatMethodList,
+  metricValue as formatMetricValue,
+  number as formatNumber,
+  plural as formatPlural,
+  shortUrl as formatShortUrl,
+} from './format.js'
+import {
+  alpineErrors as readAlpineErrors,
+  alpineHealth as readAlpineHealth,
   outline,
   scanComponents,
   scanStores,
@@ -227,18 +240,9 @@ export function debugBar() {
       this.loadError = ''
 
       try {
-        const response = await fetch(url, { headers: { Accept: 'application/json' } })
+        const { profile, payloads } = await fetchProfile(url)
 
-        if (!response.ok) throw new Error(`HTTP ${response.status}`)
-
-        const full = await response.json()
-        const payloads = {}
-
-        Object.entries(full.sections || {}).forEach(([key, section]) => {
-          payloads[key] = section.payload || {}
-        })
-
-        this.profile = full
+        this.profile = profile
         this.payloads = payloads
         this.activeId = id
       } catch (error) {
@@ -263,11 +267,7 @@ export function debugBar() {
       this.historyError = ''
 
       try {
-        const response = await fetch(url, { headers: { Accept: 'application/json' } })
-
-        if (!response.ok) throw new Error(`HTTP ${response.status}`)
-
-        const body = await response.json()
+        const body = await fetchJson(url)
 
         this.history = Array.isArray(body.profiles) ? body.profiles : []
         this.historyLoaded = true
@@ -368,12 +368,7 @@ export function debugBar() {
         + `/subject/${encodeURIComponent(this.activeId)}/`
 
       try {
-        const response = await fetch(url, { headers: { Accept: 'application/json' } })
-        const body = await response.json()
-
-        if (!response.ok) throw new Error(body.error || `HTTP ${response.status}`)
-
-        this.comparison = body
+        this.comparison = await fetchJson(url)
       } catch (error) {
         this.comparison = null
         this.compareError = String(error.message || error)
@@ -387,28 +382,16 @@ export function debugBar() {
      * @returns {string} the change, signed, in the metric's own unit
      */
     deltaLabel(metric) {
-      if (!metric || metric.delta === 0) return 'no change'
-
-      const sign = metric.delta > 0 ? '+' : '-'
-      const size = metric.unit === 'B'
-        ? this.bytes(Math.abs(metric.delta))
-        : `${this.number(Math.abs(metric.delta), metric.decimals)}${metric.unit ? ` ${metric.unit}` : ''}`
-
-      return `${sign}${size}`
+      return formatDeltaLabel(metric)
     },
 
     /**
      * @param {object} metric
+     * @param {'baseline'|'subject'} side which profile's value the cell shows
      * @returns {string}
      */
     metricValue(metric, side) {
-      const value = metric[side]
-
-      if (value === null || value === undefined) return 'none'
-
-      return metric.unit === 'B'
-        ? this.bytes(value)
-        : `${this.number(value, metric.decimals)}${metric.unit ? ` ${metric.unit}` : ''}`
+      return formatMetricValue(metric, side)
     },
 
     /**
@@ -428,12 +411,7 @@ export function debugBar() {
      * @returns {string}
      */
     ago(seconds) {
-      const elapsed = Math.max(0, Date.now() / 1000 - Number(seconds || 0))
-
-      if (elapsed < 60) return `${Math.round(elapsed)}s ago`
-      if (elapsed < 3600) return `${Math.round(elapsed / 60)}m ago`
-
-      return `${Math.round(elapsed / 3600)}h ago`
+      return formatAgo(seconds)
     },
 
     /** Go back to the request that rendered the page. */
@@ -447,29 +425,11 @@ export function debugBar() {
     },
 
     /**
-     * A path short enough to sit in a chip.
-     *
-     * A REST call carries a masked cart id in the middle and its meaning at the end, so a
-     * long path keeps its last two segments rather than its first: `.../shipping-information`
-     * says what the request was, `/rest/default/V1/carts` does not.
-     *
      * @param {string} url
      * @returns {string}
      */
     shortUrl(url) {
-      let path = url
-
-      try {
-        path = new URL(url, window.location.origin).pathname
-      } catch {
-        return url
-      }
-
-      if (path.length <= 42) return path
-
-      const segments = path.split('/').filter(Boolean)
-
-      return segments.length > 2 ? `…/${segments.slice(-2).join('/')}` : path
+      return formatShortUrl(url, window.location.origin)
     },
 
     /**
@@ -490,18 +450,7 @@ export function debugBar() {
       this.loadError = ''
 
       try {
-        const response = await fetch(url, { headers: { Accept: 'application/json' } })
-
-        if (!response.ok) throw new Error(`HTTP ${response.status}`)
-
-        const full = await response.json()
-        const payloads = {}
-
-        Object.entries(full.sections || {}).forEach(([key, section]) => {
-          payloads[key] = section.payload || {}
-        })
-
-        this.payloads = payloads
+        this.payloads = (await fetchProfile(url)).payloads
       } catch (error) {
         this.loadError = String(error.message || error)
       } finally {
@@ -1036,10 +985,10 @@ export function debugBar() {
      * waited for.
      */
     refreshAlpine() {
-      this.alpineHealth = alpineHealth()
+      this.alpineHealth = readAlpineHealth()
       this.alpineComponents = scanComponents(this.valuePolicy)
       this.alpineStores = scanStores(this.valuePolicy)
-      this.alpineErrors = alpineErrors(this.valuePolicy)
+      this.alpineErrors = readAlpineErrors(this.valuePolicy)
 
       this.alpineExpanded.forEach((id) => {
         this.alpineStates[id] = stateJson(id, this.valuePolicy)
@@ -1237,7 +1186,7 @@ export function debugBar() {
      * @returns {string}
      */
     number(value, decimals = 0) {
-      return Number(value || 0).toFixed(decimals)
+      return formatNumber(value, decimals)
     },
 
     /**
@@ -1245,9 +1194,7 @@ export function debugBar() {
      * @returns {string}
      */
     methodList(plugin) {
-      return Object.entries(plugin.methods || {})
-        .map(([method, kind]) => `${kind} ${method}`)
-        .join(', ')
+      return formatMethodList(plugin)
     },
 
     /**
@@ -1260,47 +1207,20 @@ export function debugBar() {
     },
 
     /**
-     * A link that opens the file at the line, or an empty string when no editor is
-     * configured, in which case the call site stays plain text.
-     *
-     * Stored paths are relative to the application root, so the root is what gets mapped
-     * for a container. An absolute path is left alone: it came from outside the root and
-     * nothing here knows where it went.
-     *
      * @param {string} file
      * @param {number} line
      * @returns {string}
      */
     editorUrl(file, line) {
-      if (!this.editorTemplate || !file) return ''
-
-      // Only a scheme that opens an editor. The template comes from configuration, and a
-      // javascript: or data: one would turn every call site into a link worth not clicking.
-      if (!/^[a-z][a-z0-9+.-]*:\/\//i.test(this.editorTemplate)
-        || /^(javascript|data|vbscript):/i.test(this.editorTemplate)) {
-        return ''
-      }
-
-      const absolute = file.startsWith('/') ? file : `${this.editorRoot}/${file}`
-
-      // Function replacements, because $& and $1 in a path are replacement patterns to
-      // String.replace and would eat part of the very path they appear in.
-      return this.editorTemplate
-        .replace('%f', () => encodeURI(absolute))
-        .replace('%l', () => String(line || 1))
+      return buildEditorUrl(this.editorTemplate, this.editorRoot, file, line)
     },
 
     /**
-     * A finding's location is a class name as often as it is a file, so it only becomes a
-     * link when it is one: `path/to/File.php:120`.
-     *
      * @param {string} location
      * @returns {string}
      */
     locationUrl(location) {
-      const match = String(location || '').match(/^(.+\.php):(\d+)$/)
-
-      return match ? this.editorUrl(match[1], Number(match[2])) : ''
+      return buildLocationUrl(this.editorTemplate, this.editorRoot, location)
     },
 
     /**
@@ -1323,7 +1243,7 @@ export function debugBar() {
      * @returns {string}
      */
     plural(count, one, many) {
-      return `${count} ${Number(count) === 1 ? one : many}`
+      return formatPlural(count, one, many)
     },
 
     /**
@@ -1331,12 +1251,7 @@ export function debugBar() {
      * @returns {string}
      */
     bytes(bytes) {
-      const value = Number(bytes || 0)
-
-      if (value < 1024) return `${value} B`
-      if (value < 1048576) return `${(value / 1024).toFixed(1)} kB`
-
-      return `${(value / 1048576).toFixed(1)} MB`
+      return formatBytes(bytes)
     },
   }
 }

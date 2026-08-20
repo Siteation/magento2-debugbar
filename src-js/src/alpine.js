@@ -15,7 +15,7 @@
  */
 import ourAlpine from 'alpinejs'
 import { hostAlpine } from './host-alpine.js'
-import { POLICY_NONE, clean, cleanExpression, cleanString, describeNode, keysOf } from './redact.js'
+import { POLICY_NONE, clean, cleanExpression, cleanString, keysOf } from './redact.js'
 
 /**
  * Ids are stable across scans, so a component stays expanded while the list refreshes.
@@ -359,6 +359,7 @@ export function scanStores(policy) {
  * Expression errors, as they were reported. Alpine 3.14.3 has no setErrorHandler, so
  * early.js watches console.warn instead and this only has to read what it collected.
  *
+ * @param {string} policy
  * @returns {Array<AlpineError>}
  */
 export function alpineErrors(policy) {
@@ -447,14 +448,4 @@ export function outline(id, on) {
   element.style.outline = previous.outline
   element.style.outlineOffset = previous.offset
   outlines.delete(id)
-}
-
-/**
- * @param {number} id
- * @returns {string} what the element is, for a title attribute
- */
-export function describeComponent(id) {
-  const element = elements.get(id)
-
-  return element ? describeNode(element) : ''
 }

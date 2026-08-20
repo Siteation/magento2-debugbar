@@ -163,6 +163,18 @@ test('the theme can be flipped without opening anything', () => {
   assert.ok(!dock.includes('movePlacement'), 'placement is a palette command')
 })
 
+test('a section panel is built when it is looked at, not hidden after being built', () => {
+  // x-show only toggles display: every x-for inside a hidden panel still initialises and
+  // still re-runs, so opening the bar used to build all 24 loops and highlight every SQL
+  // string in the profile for the ten panels nobody asked for.
+  assert.ok(!template.includes('data-ndb-show="isSection('), 'panels must not be x-show')
+  assert.equal(
+    (template.match(/data-ndb-if="isSection\(/g) || []).length,
+    11,
+    'every panel is guarded, and there are eleven of them'
+  )
+})
+
 test('the whole collapsed bar opens the inspector, and a real button still does too', () => {
   const dock = template.slice(template.indexOf('class="ndb-dock"'), template.indexOf('ndb-overlay'))
 

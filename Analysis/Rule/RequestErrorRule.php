@@ -34,7 +34,7 @@ class RequestErrorRule implements RuleInterface
             new Finding(
                 'request.error',
                 $status >= 500 ? Finding::SEVERITY_ERROR : Finding::SEVERITY_WARNING,
-                'request',
+                'overview',
                 sprintf('The request returned HTTP %d.', $status),
                 $status >= 500
                     ? 'The application could not complete the request.'
@@ -45,6 +45,7 @@ class RequestErrorRule implements RuleInterface
             ),
         ];
     }
+
     /**
      * @param array<string, mixed> $exception
      */
@@ -55,7 +56,7 @@ class RequestErrorRule implements RuleInterface
         return new Finding(
             'request.exception',
             Finding::SEVERITY_ERROR,
-            'request',
+            'overview',
             sprintf('The request threw %s.', $this->shortClass((string) ($exception['class'] ?? ''))),
             (string) ($exception['message'] ?? 'No message.'),
             'Everything below is what ran before it stopped. The frame is where it stopped, '
@@ -80,5 +81,4 @@ class RequestErrorRule implements RuleInterface
 
         return end($parts) ?: $class;
     }
-
 }

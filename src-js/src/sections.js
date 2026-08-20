@@ -27,6 +27,7 @@ export const SECTIONS = [
     id: 'timeline',
     label: 'Timeline',
     lead: 'Follow important work in the order it happened across the request.',
+    graded: false,
   },
   {
     id: 'queries',
@@ -47,6 +48,7 @@ export const SECTIONS = [
     id: 'events',
     label: 'Events',
     lead: 'Every dispatched event, including the ones nothing is listening to.',
+    graded: false,
   },
   {
     id: 'cache',
@@ -57,6 +59,7 @@ export const SECTIONS = [
     id: 'plugins',
     label: 'Plugins',
     lead: 'Which interceptors were built for this request, and on what.',
+    graded: false,
   },
   {
     id: 'alpine',

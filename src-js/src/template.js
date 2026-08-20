@@ -96,7 +96,8 @@ export const template = `
         Could not load profile details: <span data-ndb-text="loadError"></span>
       </p>
 
-      <div data-ndb-show="isSection('findings')">
+      <template data-ndb-if="isSection('findings')">
+      <div>
         <p class="ndb-empty" data-ndb-show="findings.length === 0">
           Nothing worth flagging on this request.
         </p>
@@ -156,8 +157,10 @@ export const template = `
           </template>
         </ol>
       </div>
+      </template>
 
-      <div data-ndb-show="isSection('overview')">
+      <template data-ndb-if="isSection('overview')">
+      <div>
         <div class="ndb-summary">
           <span class="ndb-method" data-ndb-text="request.method || 'GET'"></span>
           <code class="ndb-summary-path" data-ndb-text="request.path || '/'"></code>
@@ -248,8 +251,10 @@ export const template = `
           Profile <code class="ndb-mono ndb-dim" data-ndb-text="profile.id"></code>
         </p>
       </div>
+      </template>
 
-      <div data-ndb-show="isSection('timeline')">
+      <template data-ndb-if="isSection('timeline')">
+      <div>
         <div class="ndb-subhead">
           <div>
             <h3>Waterfall</h3>
@@ -324,8 +329,10 @@ export const template = `
 
         <p class="ndb-empty" data-ndb-show="visibleTimeline.length === 0">No activity matches.</p>
       </div>
+      </template>
 
-      <div data-ndb-show="isSection('queries')">
+      <template data-ndb-if="isSection('queries')">
+      <div>
         <div class="ndb-controls">
           <button type="button" class="ndb-chip" data-ndb-on:click="queryFilter = 'all'"
                   data-ndb-bind:class="queryFilter === 'all' && 'is-active'">All</button>
@@ -383,8 +390,10 @@ export const template = `
 
         <p class="ndb-empty" data-ndb-show="visibleQueries.length === 0">No queries match.</p>
       </div>
+      </template>
 
-      <div data-ndb-show="isSection('events')">
+      <template data-ndb-if="isSection('events')">
+      <div>
         <div class="ndb-controls">
           <button type="button" class="ndb-chip" data-ndb-on:click="eventFilter = 'all'"
                   data-ndb-bind:class="eventFilter === 'all' && 'is-active'">All</button>
@@ -423,8 +432,10 @@ export const template = `
 
         <p class="ndb-empty" data-ndb-show="visibleEvents.length === 0">No events match.</p>
       </div>
+      </template>
 
-      <div data-ndb-show="isSection('observers')">
+      <template data-ndb-if="isSection('observers')">
+      <div>
         <div class="ndb-controls">
           <input class="ndb-search" type="search" placeholder="Filter observers"
                  data-ndb-model="observerSearch">
@@ -459,8 +470,10 @@ export const template = `
 
         <p class="ndb-empty" data-ndb-show="visibleObservers.length === 0">No observers match.</p>
       </div>
+      </template>
 
-      <div data-ndb-show="isSection('cache')">
+      <template data-ndb-if="isSection('cache')">
+      <div>
         <div class="ndb-controls">
           <span class="ndb-dim ndb-count">
             <span data-ndb-text="cache.hits || 0"></span> hits,
@@ -497,8 +510,10 @@ export const template = `
 
         <p class="ndb-empty" data-ndb-show="cacheItems.length === 0">No cache activity.</p>
       </div>
+      </template>
 
-      <div data-ndb-show="isSection('blocks')">
+      <template data-ndb-if="isSection('blocks')">
+      <div>
         <div class="ndb-controls">
           <input class="ndb-search" type="search" placeholder="Filter blocks and templates"
                  data-ndb-model="blockSearch">
@@ -534,8 +549,10 @@ export const template = `
 
         <p class="ndb-empty" data-ndb-show="visibleBlocks.length === 0">No blocks match.</p>
       </div>
+      </template>
 
-      <div data-ndb-show="isSection('plugins')">
+      <template data-ndb-if="isSection('plugins')">
+      <div>
         <div class="ndb-controls">
           <input class="ndb-search" type="search" placeholder="Filter types and plugins"
                  data-ndb-model="pluginSearch">
@@ -572,8 +589,10 @@ export const template = `
 
         <p class="ndb-empty" data-ndb-show="visiblePlugins.length === 0">No plugins match.</p>
       </div>
+      </template>
 
-      <div data-ndb-show="isSection('history')">
+      <template data-ndb-if="isSection('history')">
+      <div>
         ${subTabs('historyTab', [
           { id: 'recent', label: 'Recent', count: 'history.length' },
           { id: 'compare', label: 'Compare' },
@@ -799,8 +818,10 @@ export const template = `
           </template>
         </div>
       </div>
+      </template>
 
-      <div data-ndb-show="isSection('alpine')">
+      <template data-ndb-if="isSection('alpine')">
+      <div>
         <p class="ndb-note" data-ndb-show="!alpineHealth.present">
           No Alpine on this page. This section reads the page's own instance, so it has
           nothing to show until a theme loads one.
@@ -962,6 +983,7 @@ export const template = `
           </div>
         </div>
       </div>
+      </template>
 
       </div>
       </div>

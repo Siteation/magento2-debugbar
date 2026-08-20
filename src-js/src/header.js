@@ -56,7 +56,7 @@ ${sheet ? '' : `  <div class="ndb-stats">
       ${icon('database', 'is-accent')}
       <span>
         <span class="ndb-stat-key">Queries</span>
-        <span class="ndb-stat-value">
+        <span class="ndb-stat-value" data-ndb-bind:class="'is-' + queryTone">
           <span data-ndb-text="queries.count || 0"></span>
           <span class="ndb-dim" data-ndb-text="number(queries.duration_ms, 2) + ' ms'"></span>
         </span>

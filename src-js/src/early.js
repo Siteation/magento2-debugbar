@@ -18,7 +18,6 @@
   const state = {
     requests: [],
     onRequest: null,
-    frontName: 'siteation_debugbar',
     alpineErrors: [],
     alpineReady: false,
   }
@@ -26,7 +25,10 @@
   window.__siteationDebugBar = state
 
   function report(id, method, url, status) {
-    if (!id || String(url).indexOf('/' + state.frontName + '/') !== -1) return
+    // No URL filter for the bar's own endpoints: RequestEligibility::isOwnRequest excludes
+    // them from collection, so their responses carry no profile header and the id check
+    // above has already returned.
+    if (!id) return
 
     const entry = {
       id: id,
