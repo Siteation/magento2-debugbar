@@ -88,6 +88,12 @@ export const SECTIONS = [
     graded: false,
   },
   {
+    id: 'magewire',
+    label: 'Magewire',
+    lead: 'The components on the page right now, their state, and what each update cost.',
+    graded: false,
+  },
+  {
     id: 'history',
     label: 'History',
     lead: 'Every request still on disk, so an earlier one is one click away.',
@@ -99,8 +105,8 @@ export const SECTIONS = [
  * Counts shown beside each section in the sidebar. Null means the section has nothing
  * worth counting, so no badge is drawn rather than a misleading zero.
  *
- * Alpine is the one count that does not come from the profile. It is read from the page,
- * so it can change without the request changing.
+ * Alpine and Magewire are the two counts that do not come from the profile. They are read
+ * from the page, so they can change without the request changing.
  *
  * @param {string} id
  * @param {object} state the bar's Alpine component
@@ -118,6 +124,7 @@ export function countFor(id, state) {
     case 'cache': return state.cache.count || null
     case 'plugins': return state.interception.plugin_count || null
     case 'alpine': return state.alpineComponents.length || null
+    case 'magewire': return state.magewireComponents.length || null
     case 'history': return state.history.length || null
     default: return null
   }

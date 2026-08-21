@@ -615,6 +615,93 @@ export const template = `
       </div>
       </template>
 
+      <template data-ndb-if="isSection('magewire')">
+      <div>
+        <p class="ndb-note" data-ndb-show="!magewireHealth.present">
+          No Magewire on this page. This section reads the page's own instance, and Magewire
+          only loads where a component is in the layout.
+        </p>
+
+        <div data-ndb-show="magewireHealth.present">
+          ${subTabs('magewireTab', [
+            { id: 'components', label: 'Components', count: 'magewireComponents.length' },
+            { id: 'updates', label: 'Updates', count: 'magewireMessages.length' },
+          ])}
+
+          <div data-ndb-show="magewireTab === 'components'">
+            <p class="ndb-empty" data-ndb-show="magewireComponents.length === 0">
+              Magewire is on the page but no component has been mounted.
+            </p>
+
+            <ol class="ndb-list">
+              <template data-ndb-for="component in magewireComponents"
+                        data-ndb-bind:key="component.id">
+                <li class="ndb-alpine">
+                  <button type="button" class="ndb-alpine-head"
+                          data-ndb-on:click="toggleMagewireComponent(component.id)"
+                          data-ndb-on:mouseenter="highlightMagewire(component.id, true)"
+                          data-ndb-on:mouseleave="highlightMagewire(component.id, false)"
+                          data-ndb-on:focus="highlightMagewire(component.id, true)"
+                          data-ndb-on:blur="highlightMagewire(component.id, false)">
+                    ${icon('caret', 'ndb-alpine-caret')}
+                    <span class="ndb-alpine-name" data-ndb-text="component.name"></span>
+                    <span class="ndb-tag" data-ndb-show="component.children"
+                          data-ndb-text="plural(component.children, 'child', 'children')"></span>
+                    <span class="ndb-alpine-path ndb-dim ndb-truncate"
+                          data-ndb-text="component.resolver
+                            + ' · ' + plural(component.keys, 'property', 'properties')
+                            + ' · ' + plural(component.listeners, 'listener', 'listeners')"></span>
+                    <span class="ndb-pill"
+                          data-ndb-bind:class="component.memo_bytes > 20480 && 'is-warn'"
+                          data-ndb-text="bytes(component.memo_bytes)"></span>
+                  </button>
+
+                  <div class="ndb-alpine-body" data-ndb-show="isMagewireExpanded(component.id)">
+                    <pre class="ndb-json"
+                         data-ndb-code="highlight(magewireStates[component.id], 'json')"></pre>
+                  </div>
+                </li>
+              </template>
+            </ol>
+
+            <p class="ndb-note">
+              The size beside a component is the state it posts back and returns on every
+              update. A collection on a public property is the usual reason it is large.
+            </p>
+          </div>
+
+          <div data-ndb-show="magewireTab === 'updates'">
+            <p class="ndb-empty" data-ndb-show="magewireMessages.length === 0">
+              Nothing yet. Interact with a component and its round trip appears here.
+            </p>
+
+            <ol class="ndb-list">
+              <template data-ndb-for="(message, index) in magewireMessages"
+                        data-ndb-bind:key="index">
+                <li class="ndb-alpine">
+                  <div class="ndb-alpine-head is-static">
+                    <span class="ndb-alpine-name"
+                          data-ndb-text="message.component + ' ' + message.action"></span>
+                    <span class="ndb-tag is-bad" data-ndb-show="message.failed">failed</span>
+                    <span class="ndb-alpine-path ndb-dim ndb-truncate"
+                          data-ndb-show="!message.failed">round trip, browser to browser</span>
+                    <span class="ndb-pill" data-ndb-show="message.duration_ms !== null"
+                          data-ndb-text="number(message.duration_ms, 1) + ' ms'"></span>
+                  </div>
+                </li>
+              </template>
+            </ol>
+
+            <p class="ndb-note">
+              Measured in the browser, so this is the network and the DOM morph as well as
+              the server. The profile for the same update, in the request list above, is the
+              server's share of it.
+            </p>
+          </div>
+        </div>
+      </div>
+      </template>
+
       <template data-ndb-if="isSection('history')">
       <div>
         ${subTabs('historyTab', [

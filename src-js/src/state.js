@@ -19,6 +19,13 @@ import {
   shortUrl as formatShortUrl,
 } from './format.js'
 import {
+  componentState as magewireState,
+  magewireHealth as readMagewireHealth,
+  outline as outlineMagewire,
+  scanComponents as scanMagewire,
+  watchMessages,
+} from './magewire.js'
+import {
   alpineErrors as readAlpineErrors,
   alpineHealth as readAlpineHealth,
   outline,
@@ -117,6 +124,17 @@ export function debugBar() {
     alpineStores: [],
     alpineHealth: { present: false, version: '', csp: null, source: '', prefix: '' },
     alpineErrors: [],
+
+    magewireTab: 'components',
+    magewireHealth: { present: false, components: 0, endpoint: '' },
+    /** @type {Array<object>} */
+    magewireComponents: [],
+    /** @type {Array<object>} */
+    magewireMessages: [],
+    /** @type {Array<string>} */
+    magewireExpanded: [],
+    /** @type {Record<string, string>} */
+    magewireStates: {},
     alpineExpanded: [],
     alpineStates: {},
     alpineTimer: null,
@@ -172,6 +190,8 @@ export function debugBar() {
       this.editorTemplate = this.rootElement()?.dataset.editor || ''
       this.editorRoot = this.rootElement()?.dataset.editorRoot || ''
       this.refreshAlpine()
+      this.refreshMagewire()
+      this.listenToMagewire()
 
       this.$watch('alpineLiveWanted', () => this.syncAlpineLive())
       this.syncAlpineLive()
@@ -1010,6 +1030,64 @@ export function debugBar() {
      * The one section whose data is not in the profile, so it is read again rather than
      * waited for.
      */
+    /**
+     * The component list is read from the page, so it is asked for rather than watched: a
+     * Magewire update replaces components, and a list from before it is a list of ghosts.
+     */
+    refreshMagewire() {
+      this.magewireHealth = readMagewireHealth()
+      this.magewireComponents = scanMagewire(this.valuePolicy)
+
+      this.magewireExpanded.forEach((id) => {
+        this.magewireStates[id] = magewireState(id, this.valuePolicy)
+      })
+    },
+
+    /**
+     * Magewire loads before Alpine and the bar loads after both, so its global is normally
+     * there already. Normally is not always: a page that defers it, or one where the bar
+     * boots first, would otherwise have no hooks at all and a permanently empty list.
+     */
+    listenToMagewire() {
+      const record = (entry) => {
+        this.magewireMessages = [entry, ...this.magewireMessages].slice(0, 25)
+        this.refreshMagewire()
+      }
+
+      if (watchMessages(record)) return
+
+      document.addEventListener('magewire:load', () => {
+        watchMessages(record)
+        this.refreshMagewire()
+      }, { once: true, passive: true })
+    },
+
+    /** @param {string} id */
+    toggleMagewireComponent(id) {
+      if (this.magewireExpanded.includes(id)) {
+        this.magewireExpanded = this.magewireExpanded.filter((expanded) => expanded !== id)
+        delete this.magewireStates[id]
+
+        return
+      }
+
+      this.magewireExpanded = [...this.magewireExpanded, id]
+      this.magewireStates[id] = magewireState(id, this.valuePolicy)
+    },
+
+    /** @param {string} id */
+    isMagewireExpanded(id) {
+      return this.magewireExpanded.includes(id)
+    },
+
+    /**
+     * @param {string} id
+     * @param {boolean} on
+     */
+    highlightMagewire(id, on) {
+      outlineMagewire(id, on)
+    },
+
     refreshAlpine() {
       this.alpineHealth = readAlpineHealth()
       this.alpineComponents = scanComponents(this.valuePolicy)

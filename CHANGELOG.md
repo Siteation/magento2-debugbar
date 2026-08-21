@@ -15,6 +15,11 @@ entries for the work that led up to it.
 * Findings: eight rules producing ten kinds of finding, each saying what is wrong, why it
   matters, where it came from and what to check next, and linking to the evidence behind
   it.
+* A Magewire section: every component on the page with its resolver, its listeners, its
+  children, the state it posts back on every update, and that state itself under the value
+  policy. Plus the round trip each update actually took, measured in the browser, which is
+  the network and the DOM morph as well as the server. Read from the page's own Magewire,
+  so the module requires nothing and works on a store that has never heard of it.
 * One admin setting for what the bar collects and what it shows. A section switched off is
   not gathered either, so turning off Blocks on a page that renders four hundred of them
   makes the request being debugged cheaper as well as the panel quieter. Findings and the

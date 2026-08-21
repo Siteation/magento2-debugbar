@@ -27,6 +27,7 @@ function state(overrides = {}) {
     cache: {},
     interception: {},
     alpineComponents: [],
+    magewireComponents: [],
     history: [],
     ...overrides,
   }
@@ -208,8 +209,8 @@ test('a section panel is built when it is looked at, not hidden after being buil
   assert.ok(!template.includes('data-ndb-show="isSection('), 'panels must not be x-show')
   assert.equal(
     (template.match(/data-ndb-if="isSection\(/g) || []).length,
-    11,
-    'every panel is guarded, and there are eleven of them'
+    SECTIONS.length,
+    'every section has a panel and every panel is guarded'
   )
 })
 
