@@ -36,7 +36,7 @@ foreach (DOCS as $slug => $title) {
     }
 
     $markdown = (string) file_get_contents($source);
-    $html = page($title, $slug, render($markdown));
+    $html = page($title, $slug, siblingLinks(render($markdown)));
 
     file_put_contents($root . '/docs/' . $slug . '.html', $html);
     printf("docs/%s.html  %d KB\n", $slug, (int) round(strlen($html) / 1024));
@@ -44,6 +44,23 @@ foreach (DOCS as $slug => $title) {
 }
 
 printf("%d rendered\n", $written);
+
+/**
+ * Points a guide's links at its sibling's HTML rather than its Markdown.
+ *
+ * The Markdown links to Markdown, which is right on GitHub and in an editor. From the
+ * rendered page the same link would hand the reader a file to download. Only the two guides
+ * are rewritten, because only they have an HTML twin: SKILL.md is Markdown wherever it is
+ * read.
+ */
+function siblingLinks(string $html): string
+{
+    foreach (array_keys(DOCS) as $slug) {
+        $html = str_replace('href="' . $slug . '.md"', 'href="' . $slug . '.html"', $html);
+    }
+
+    return $html;
+}
 
 /**
  * Block level Markdown, line by line.

@@ -121,7 +121,7 @@
 <main>
 <h1 id="user-guide"><a class="anchor" href="#user-guide">User guide</a></h1>
 <p>Siteation_DebugBar records what one Magento request actually did, and gives you three ways to read it: a bar in the page, a markdown report, and an MCP server for a coding agent.</p>
-<p>This guide is about using it. If you are working on the module itself, read the <a href="developer-guide.md">developer guide</a>.</p>
+<p>This guide is about using it. If you are working on the module itself, read the <a href="developer-guide.html">developer guide</a>.</p>
 <h2 id="what-a-profile-is"><a class="anchor" href="#what-a-profile-is">What a profile is</a></h2>
 <p>Every request that the module is allowed to profile writes one JSON file under <code>var/siteation_debugbar/</code>. That file is the profile: the request line, timings, every query with the application frame it came from, the events and observers that ran, the blocks that rendered, the cache reads and writes, the plugins that were built, and the module&#039;s own findings about all of it.</p>
 <p>The profile is bounded and redacted as it is written, not when it is read. Sensitive keys are masked at record time, string literals are stripped from SQL, and each collector keeps a capped number of items. Nothing you read later can be larger or franker than what was stored.</p>
