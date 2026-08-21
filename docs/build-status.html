@@ -1102,12 +1102,16 @@ inspect_debug_queries       slowest first, with call sites</code></pre>
             and install and runs in minutes. The smoke test covers the regressions that
             actually bite for a fraction of that, so this waits until the interface has
             stopped moving after 1.1.</p>` },
-      { t: 'Tag 1.0.0 and publish', s: 'todo',
-        d: `<p>No longer blocked. The package is its own repository with composer.json at
-            its root, so Packagist can read it directly and no subtree split or mirror repo
-            is needed.</p>
-            <p>Two things left: a smoke test covering all four areas, and making the
-            repository public so Packagist can reach it.</p>` }
+      { t: 'Tag 1.0.0 and publish', s: 'done',
+        d: `<p>Tagged 1.0.0 on 2026-08-21. The package is its own repository with
+            composer.json at its root, so Packagist reads it directly and no subtree split
+            or mirror repo was needed.</p>
+            <p>Both blockers cleared: the smoke suite covers all four areas, and Rutger made
+            the repository public.</p>
+            <p>The tag covers the interface phases as well. They are numbered 1.1 here
+            because that is the order they were built in, not because they were held back
+            for a second version, and there is no 1.0.0 without them: the bar those phases
+            built is the thing this package is. The backlog below is the real 1.1.0.</p>` }
     ]
   },
 
@@ -1829,10 +1833,10 @@ inspect_debug_queries       slowest first, with call sites</code></pre>
  * @type {Array<{name: string, phase: string, status: string, why: string}>}
  */
 const REMAINING = [
-  { name: 'Tag 1.0.0 and publish', phase: '1.0, Hardening', status: 'todo',
-    why: 'Not an engineering task. Packagist can only read a public repository, and making '
-      + 'this one public is Rutger\'s decision. Everything it would ship is built, tested '
-      + 'and verified against a running store.' },
+  { name: 'Tag 1.0.0 and publish', phase: '1.0, Hardening', status: 'done',
+    why: 'Rutger made the repository public and 1.0.0 is tagged and pushed. Submitting it to '
+      + 'Packagist is the remaining step and is his: it is an account action, not a change to '
+      + 'this repository.' },
 
   { name: 'Collectors that bypass AbstractCollector', phase: 'Audit, php-design', status: 'done',
     why: 'The contract has one home again. AbstractCollector holds counts() and '
@@ -2081,8 +2085,8 @@ const RELEASES = [
     release: '1.0',
     title: '1.0 — collect, reason, expose',
     blurb: 'Seven collectors, eight finding rules, an Alpine viewer in a shadow root, and an '
-      + 'MCP server. Built and verified against a running store. Two items left, both about '
-      + 'being installable by someone else rather than working here.'
+      + 'MCP server. Built and verified against a running store, and tagged 1.0.0 on '
+      + '2026-08-21 together with the interface phases below.'
   },
   {
     release: '1.1',
@@ -2091,7 +2095,9 @@ const RELEASES = [
       + 'screenshots: a floating glass window, a modal sheet, a sidebar with favourites, '
       + 'sections that explain themselves, and a real waterfall. Plus an Alpine section, '
       + 'which is ours. The waterfall lands first, because it needs every collector to stamp '
-      + 'when things happened and retrofitting that under a finished interface would be worse.'
+      + 'when things happened and retrofitting that under a finished interface would be worse. '
+      + 'A build phase rather than a version: it shipped inside the 1.0.0 tag, and the backlog '
+      + 'is what 1.1.0 will be.'
   }
 ];
 

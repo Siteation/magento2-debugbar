@@ -17,7 +17,7 @@ Modelled on [newdebugbar/newdebugbar](https://github.com/newdebugbar/newdebugbar
 
 * **Repositories live under the `Siteation` GitHub org.** Never a personal account.
 * **Everything starts private.** Making something public is Rutger's decision, never a step
-  in a plan.
+  in a plan. He made this one public on 2026-08-21; the rule still holds for the next repo.
 * **No GitHub Actions.** The org's Actions budget is spent. This project needs none: tests
   run locally, the JS build output is committed, and Packagist uses a webhook.
 * **Keyless is developer mode and nothing else.** Production and default both require an
@@ -38,7 +38,7 @@ Modelled on [newdebugbar/newdebugbar](https://github.com/newdebugbar/newdebugbar
 | | |
 | --- | --- |
 | Package | `package-source/siteation/module-debugbar` (symlinked into `vendor/siteation/magento2-debugbar`) |
-| Remote | `git@github.com:Siteation/magento2-debugbar.git`, private, branch `main` |
+| Remote | `git@github.com:Siteation/magento2-debugbar.git`, public since 1.0.0, branch `main` |
 | Instance | `https://mage-debugbar.test`, admin at `/magedebugbar_admin` |
 | Profiles | `var/siteation_debugbar/*.json`, 20 files or 60 minutes, `0600` |
 | Root repo | local only, no remote, keeps `composer.json`, `composer.lock`, `CLAUDE.md` |
@@ -155,11 +155,13 @@ a length of time.
 
 ## State
 
-**1.0**: 53 done, 2 closed, **1 open**. The open item is *tag 1.0.0 and publish*, which is
-Rutger's call: it needs the repository made public so Packagist can read it. Not an
-engineering task, and not something to push toward.
+**Released as 1.0.0 on 2026-08-21.** Rutger made the repository public and the tag is
+pushed. Submitting it to Packagist is a separate step and is his, not a task here.
 
-**1.1**: 49 done, 3 closed by decision, none open. `docs/build-status.html` holds the live
+**1.0**: 54 done, 2 closed, none open.
+
+**1.1**: 49 done, 3 closed by decision, none open. It is a build phase and not a version:
+the interface it built shipped inside the 1.0.0 tag, and the backlog is what 1.1.0 will be. `docs/build-status.html` holds the live
 count. The phase list below says what each one delivered; it does not repeat the numbers,
 because two places that count the same work only ever agree for a while.
 
@@ -182,12 +184,12 @@ interceptor before the exception ever happens. Delete it afterwards.
 
 ## Next
 
-Nothing is scheduled. The backlog holds, in the order I would take them: capturing the
-exception on a 5xx so a failed request says what threw, the Magento integration suite,
-message queue and cron profiling (parked until async work is what you are debugging), and
-MCP over HTTP (a network endpoint is a security question before it is a feature).
-
-Tagging 1.0.0 remains Rutger's, and needs the repository public.
+1.1.0, from the backlog in `build-status.html`. The three audit items are the ones with a
+named defect behind them: nothing marks MCP tool output as recorded request data, the
+access key has no strength floor and no rate limit, and a profile read by id is never
+checked for age. After those, the Magento integration suite, message queue and cron
+profiling (parked until async work is what you are debugging), and MCP over HTTP (a network
+endpoint is a security question before it is a feature).
 
 Dropped, with the reasoning kept in `build-status.html`: Ignition integration and a browser
 extension.
@@ -204,7 +206,7 @@ extension.
 
 ## Open, needing Rutger
 
-* Tagging 1.0.0, which needs the repo public.
+* Submitting the package to Packagist, now that the repository is public and tagged.
 * Deleting `allrude/siteation-magento2`, the old monorepo. The token lacks `delete_repo`:
   `gh auth refresh -h github.com -s delete_repo` then `gh repo delete ... --yes`.
 * Magento's full integration test suite, deferred until the interface stops moving.

@@ -6,9 +6,9 @@ Every request writes one bounded, redacted JSON profile. The bar in the page is 
 over that profile, so AJAX, GraphQL and REST requests are captured too even though nothing
 can be injected into them.
 
-**Status: unreleased.** Everything described below is built and verified against a
-running store. There is no tagged release yet, so install it from source. See
-`docs/plan-1.1.md` for what is still being built.
+**Status: 1.0.0.** Everything described below is built and verified against a running
+store: 189 unit tests, 67 for the bar's own JavaScript, 16 driving it in a browser, and a
+30 assertion smoke suite against all four areas.
 
 ## Requirements
 
@@ -25,12 +25,8 @@ bin/magento module:enable Siteation_DebugBar
 bin/magento setup:upgrade
 ```
 
-Until there is a tagged release, point Composer at a checkout instead:
-
-```
-composer config repositories.siteation path /path/to/module-debugbar
-composer require --dev siteation/magento2-debugbar:@dev
-```
+`--dev` on purpose. The module is a development tool, and a production build should not
+carry the plugins it registers.
 
 ## Use
 
@@ -284,7 +280,7 @@ $PKG/dev/smoke https://your-store.test admin
 ## Documentation
 
 * `docs/handoff.md` — start here if you are picking this up cold
-* `docs/plan.md` — the 1.0 build plan, phase by phase
-* `docs/plan-1.1.md` — what is being built now
+* `docs/plan.md` — the collection and analysis build plan, phase by phase
+* `docs/plan-1.1.md` — the interface build plan, which shipped in 1.0.0 too
 * `docs/research.md` — prior art, verified framework hooks, and the traps found in them
 * `docs/build-status.html` — progress tracker
