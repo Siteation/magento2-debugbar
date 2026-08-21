@@ -5,7 +5,7 @@
     <!--
         Brackets every web request in every area: frontend, adminhtml, GraphQL and REST.
         Must be an around plugin: launch() switches the object manager to the request's
-        area, and an after listener does not survive that reload. See docs/research.md 13.1.
+        area, and an after listener does not survive that reload. See docs/developer-guide.md.
     -->
     <type name="Magento\Framework\App\Http">
         <plugin name="siteation_debugbar_http"

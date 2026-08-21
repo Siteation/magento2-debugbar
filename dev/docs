@@ -1,0 +1,417 @@
+#!/usr/bin/env php
+<?php
+
+declare(strict_types=1);
+
+/**
+ * Renders the guides in docs/ from Markdown to HTML.
+ *
+ * The Markdown is the source and the HTML is a view of it. Two hand written copies of one
+ * document agree for about a week, so the second one is generated and this script is the
+ * only place the two can differ.
+ *
+ * No dependencies, and none wanted: the module ships its JavaScript prebuilt precisely so
+ * installing it needs no toolchain, and a docs build that needed one would undo that. The
+ * Markdown it understands is the Markdown these guides use, listed in inline(): headings,
+ * paragraphs, lists, fenced code, tables, and inline code, bold and links.
+ *
+ * Run from anywhere: php dev/docs
+ */
+
+const DOCS = [
+    'user-guide' => 'Siteation_DebugBar user guide',
+    'developer-guide' => 'Siteation_DebugBar developer guide',
+];
+
+$root = dirname(__DIR__);
+$written = 0;
+
+foreach (DOCS as $slug => $title) {
+    $source = $root . '/docs/' . $slug . '.md';
+
+    if (!is_file($source)) {
+        fwrite(STDERR, "missing: docs/$slug.md\n");
+
+        exit(1);
+    }
+
+    $markdown = (string) file_get_contents($source);
+    $html = page($title, $slug, render($markdown));
+
+    file_put_contents($root . '/docs/' . $slug . '.html', $html);
+    printf("docs/%s.html  %d KB\n", $slug, (int) round(strlen($html) / 1024));
+    $written++;
+}
+
+printf("%d rendered\n", $written);
+
+/**
+ * Block level Markdown, line by line.
+ *
+ * Line by line and not by regex over the whole document, because a fenced code block has to
+ * suspend every other rule and a state machine says that in one place. The one thing it
+ * refuses to guess at is nesting: these guides do not nest lists, and a renderer that half
+ * supports it would be a trap for whoever writes the next section.
+ */
+function render(string $markdown): string
+{
+    $lines = preg_split('/\R/', $markdown) ?: [];
+    $out = [];
+    $list = null;
+    $fence = null;
+    $table = [];
+    $paragraph = [];
+
+    $closeList = static function () use (&$list, &$out): void {
+        if ($list !== null) {
+            $out[] = "</$list>";
+            $list = null;
+        }
+    };
+
+    $closeParagraph = static function () use (&$paragraph, &$out): void {
+        if ($paragraph !== []) {
+            $out[] = '<p>' . inline(implode(' ', $paragraph)) . '</p>';
+            $paragraph = [];
+        }
+    };
+
+    $closeTable = static function () use (&$table, &$out): void {
+        if ($table !== []) {
+            $out[] = renderTable($table);
+            $table = [];
+        }
+    };
+
+    foreach ($lines as $line) {
+        if (preg_match('/^```(\w*)\s*$/', $line, $match)) {
+            if ($fence === null) {
+                $closeParagraph();
+                $closeList();
+                $closeTable();
+                $fence = [];
+                continue;
+            }
+
+            $out[] = '<pre><code>' . escape(implode("\n", $fence)) . '</code></pre>';
+            $fence = null;
+            continue;
+        }
+
+        if ($fence !== null) {
+            $fence[] = $line;
+            continue;
+        }
+
+        if (trim($line) === '') {
+            $closeParagraph();
+            $closeList();
+            $closeTable();
+            continue;
+        }
+
+        if (preg_match('/^(#{1,4})\s+(.*)$/', $line, $match)) {
+            $closeParagraph();
+            $closeList();
+            $closeTable();
+
+            $level = strlen($match[1]);
+            $text = trim($match[2]);
+            $id = slug($text);
+
+            $out[] = sprintf(
+                '<h%d id="%s"><a class="anchor" href="#%s">%s</a></h%d>',
+                $level,
+                $id,
+                $id,
+                inline($text),
+                $level
+            );
+            continue;
+        }
+
+        // A table is recognised by its pipes and collected whole, so the divider row can be
+        // dropped and the first row can become the header.
+        if (str_starts_with(trim($line), '|')) {
+            $closeParagraph();
+            $closeList();
+            $table[] = trim($line);
+            continue;
+        }
+
+        if (preg_match('/^\s*[-*]\s+(.*)$/', $line, $match)) {
+            $closeParagraph();
+            $closeTable();
+
+            if ($list !== 'ul') {
+                $closeList();
+                $out[] = '<ul>';
+                $list = 'ul';
+            }
+
+            $out[] = '<li>' . inline(trim($match[1])) . '</li>';
+            continue;
+        }
+
+        if (preg_match('/^\s*\d+\.\s+(.*)$/', $line, $match)) {
+            $closeParagraph();
+            $closeTable();
+
+            if ($list !== 'ol') {
+                $closeList();
+                $out[] = '<ol>';
+                $list = 'ol';
+            }
+
+            $out[] = '<li>' . inline(trim($match[1])) . '</li>';
+            continue;
+        }
+
+        // A continuation line inside a list item belongs to that item, not to a paragraph
+        // that would be emitted after the list closed.
+        if ($list !== null) {
+            $last = array_pop($out);
+            $out[] = substr($last, 0, -5) . ' ' . inline(trim($line)) . '</li>';
+            continue;
+        }
+
+        $closeTable();
+        $paragraph[] = trim($line);
+    }
+
+    $closeParagraph();
+    $closeList();
+    $closeTable();
+
+    return implode("\n", $out);
+}
+
+/**
+ * @param list<string> $rows
+ */
+function renderTable(array $rows): string
+{
+    // One pipe stripped from each end, not every pipe and space: "| | |" is a two column
+    // header of empty cells, and trimming the class would collapse it to one.
+    $cells = static function (string $row): array {
+        $row = trim($row);
+        $row = str_starts_with($row, '|') ? substr($row, 1) : $row;
+        $row = str_ends_with($row, '|') ? substr($row, 0, -1) : $row;
+
+        return array_map('trim', explode('|', $row));
+    };
+
+    $header = $cells(array_shift($rows));
+
+    // The divider row is presentation in Markdown and nothing in HTML.
+    if ($rows !== [] && preg_match('/^[\s|:-]+$/', $rows[0])) {
+        array_shift($rows);
+    }
+
+    // A table whose header row is empty is a two column layout, not a table with blank
+    // headings. Rendering the empty thead leaves a stripe above the first row.
+    $head = implode('', $header) === ''
+        ? ''
+        : '<thead><tr>' . implode('', array_map(
+            static fn (string $c): string => '<th>' . inline($c) . '</th>',
+            $header
+        )) . '</tr></thead>';
+
+    $body = '';
+
+    foreach ($rows as $row) {
+        $body .= '<tr>' . implode('', array_map(
+            static fn (string $c): string => '<td>' . inline($c) . '</td>',
+            $cells($row)
+        )) . '</tr>';
+    }
+
+    return "<table>$head<tbody>$body</tbody></table>";
+}
+
+/**
+ * Inline Markdown.
+ *
+ * Code spans are lifted out first and put back last, so a backtick span containing
+ * asterisks or brackets is left exactly as it was written. Doing it in place is how a
+ * renderer ends up italicising the middle of a SQL string.
+ */
+function inline(string $text): string
+{
+    $spans = [];
+    $text = preg_replace_callback(
+        '/`([^`]+)`/',
+        static function (array $m) use (&$spans): string {
+            $spans[] = '<code>' . escape($m[1]) . '</code>';
+
+            return "\0" . (count($spans) - 1) . "\0";
+        },
+        $text
+    ) ?? $text;
+
+    $text = escape($text);
+    $text = preg_replace('/\*\*([^*]+)\*\*/', '<strong>$1</strong>', $text) ?? $text;
+    $text = preg_replace(
+        '/\[([^\]]+)\]\(([^)\s]+)\)/',
+        '<a href="$2">$1</a>',
+        $text
+    ) ?? $text;
+
+    return preg_replace_callback(
+        '/\0(\d+)\0/',
+        static fn (array $m): string => $spans[(int) $m[1]],
+        $text
+    ) ?? $text;
+}
+
+function escape(string $text): string
+{
+    return htmlspecialchars($text, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+}
+
+function slug(string $text): string
+{
+    $slug = strtolower(trim(preg_replace('/[^a-zA-Z0-9]+/', '-', $text) ?? ''));
+
+    return trim($slug, '-');
+}
+
+/**
+ * The shell. Self contained: no stylesheet to fetch, no font, no script, so a guide opens
+ * from a file path as readily as from a web server.
+ */
+function page(string $title, string $slug, string $body): string
+{
+    $escaped = escape($title);
+    $other = $slug === 'user-guide' ? 'developer-guide' : 'user-guide';
+    $otherLabel = $slug === 'user-guide' ? 'Developer guide' : 'User guide';
+
+    return <<<HTML
+        <!doctype html>
+        <html lang="en">
+        <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>$escaped</title>
+        <style>
+          :root {
+            color-scheme: light dark;
+
+            --bg: #f6f7f9;
+            --surface: #ffffff;
+            --surface-2: #f0f2f5;
+            --border: #dfe3e8;
+            --text: #14181f;
+            --text-dim: #5b6572;
+            --text-faint: #8a94a2;
+            --accent: #3159d8;
+
+            --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+            --sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+          }
+
+          @media (prefers-color-scheme: dark) {
+            :root:not([data-theme="light"]) {
+              --bg: #0e1116;
+              --surface: #161b22;
+              --surface-2: #1c222b;
+              --border: #2a313c;
+              --text: #e6e9ee;
+              --text-dim: #9aa4b2;
+              --text-faint: #6e7885;
+              --accent: #7f9cf5;
+            }
+          }
+
+          * { box-sizing: border-box; }
+
+          body {
+            margin: 0;
+            padding: 2.5rem 1.25rem 6rem;
+            background: var(--bg);
+            color: var(--text);
+            font-family: var(--sans);
+            font-size: 15px;
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+          }
+
+          main { max-width: 48rem; margin: 0 auto; }
+
+          nav.family {
+            max-width: 48rem;
+            margin: 0 auto 2.5rem;
+            display: flex;
+            gap: 1rem;
+            font-size: 0.85rem;
+            color: var(--text-faint);
+          }
+
+          nav.family a { color: var(--text-dim); }
+
+          h1 { font-size: 1.9rem; line-height: 1.2; margin: 0 0 1.5rem; letter-spacing: -0.02em; }
+          h2 {
+            font-size: 1.25rem;
+            margin: 3rem 0 0.75rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border);
+            letter-spacing: -0.01em;
+          }
+          h3 { font-size: 1rem; margin: 2rem 0 0.5rem; }
+          h4 { font-size: 0.95rem; margin: 1.5rem 0 0.5rem; color: var(--text-dim); }
+
+          p, ul, ol, table { margin: 0 0 1rem; }
+          li { margin-bottom: 0.35rem; }
+          li > code:first-child { font-weight: 600; }
+
+          a { color: var(--accent); }
+          a.anchor { color: inherit; text-decoration: none; }
+          a.anchor:hover { text-decoration: underline; }
+
+          code {
+            font-family: var(--mono);
+            font-size: 0.86em;
+            background: var(--surface-2);
+            border-radius: 4px;
+            padding: 0.1em 0.35em;
+          }
+
+          pre {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 0.9rem 1rem;
+            overflow-x: auto;
+            margin: 0 0 1.25rem;
+          }
+
+          pre code { background: none; padding: 0; font-size: 0.83rem; line-height: 1.55; }
+
+          table { width: 100%; border-collapse: collapse; font-size: 0.92rem; display: block; overflow-x: auto; }
+          th, td { text-align: left; padding: 0.5rem 0.75rem; border-bottom: 1px solid var(--border); vertical-align: top; }
+          th { color: var(--text-dim); font-weight: 600; white-space: nowrap; }
+
+          footer {
+            max-width: 48rem;
+            margin: 4rem auto 0;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border);
+            color: var(--text-faint);
+            font-size: 0.85rem;
+          }
+        </style>
+        </head>
+        <body>
+        <nav class="family">
+          <a href="$other.html">$otherLabel</a>
+          <a href="SKILL.md">Agent skill</a>
+          <a href="https://github.com/Siteation/magento2-debugbar">Repository</a>
+        </nav>
+        <main>
+        $body
+        </main>
+        <footer>Generated from docs/$slug.md by dev/docs. Edit the Markdown, not this file.</footer>
+        </body>
+        </html>
+        HTML;
+}

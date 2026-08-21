@@ -1,0 +1,250 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Siteation_DebugBar developer guide</title>
+<style>
+  :root {
+    color-scheme: light dark;
+
+    --bg: #f6f7f9;
+    --surface: #ffffff;
+    --surface-2: #f0f2f5;
+    --border: #dfe3e8;
+    --text: #14181f;
+    --text-dim: #5b6572;
+    --text-faint: #8a94a2;
+    --accent: #3159d8;
+
+    --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+    --sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0e1116;
+      --surface: #161b22;
+      --surface-2: #1c222b;
+      --border: #2a313c;
+      --text: #e6e9ee;
+      --text-dim: #9aa4b2;
+      --text-faint: #6e7885;
+      --accent: #7f9cf5;
+    }
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    padding: 2.5rem 1.25rem 6rem;
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 15px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  main { max-width: 48rem; margin: 0 auto; }
+
+  nav.family {
+    max-width: 48rem;
+    margin: 0 auto 2.5rem;
+    display: flex;
+    gap: 1rem;
+    font-size: 0.85rem;
+    color: var(--text-faint);
+  }
+
+  nav.family a { color: var(--text-dim); }
+
+  h1 { font-size: 1.9rem; line-height: 1.2; margin: 0 0 1.5rem; letter-spacing: -0.02em; }
+  h2 {
+    font-size: 1.25rem;
+    margin: 3rem 0 0.75rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border);
+    letter-spacing: -0.01em;
+  }
+  h3 { font-size: 1rem; margin: 2rem 0 0.5rem; }
+  h4 { font-size: 0.95rem; margin: 1.5rem 0 0.5rem; color: var(--text-dim); }
+
+  p, ul, ol, table { margin: 0 0 1rem; }
+  li { margin-bottom: 0.35rem; }
+  li > code:first-child { font-weight: 600; }
+
+  a { color: var(--accent); }
+  a.anchor { color: inherit; text-decoration: none; }
+  a.anchor:hover { text-decoration: underline; }
+
+  code {
+    font-family: var(--mono);
+    font-size: 0.86em;
+    background: var(--surface-2);
+    border-radius: 4px;
+    padding: 0.1em 0.35em;
+  }
+
+  pre {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0.9rem 1rem;
+    overflow-x: auto;
+    margin: 0 0 1.25rem;
+  }
+
+  pre code { background: none; padding: 0; font-size: 0.83rem; line-height: 1.55; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 0.92rem; display: block; overflow-x: auto; }
+  th, td { text-align: left; padding: 0.5rem 0.75rem; border-bottom: 1px solid var(--border); vertical-align: top; }
+  th { color: var(--text-dim); font-weight: 600; white-space: nowrap; }
+
+  footer {
+    max-width: 48rem;
+    margin: 4rem auto 0;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border);
+    color: var(--text-faint);
+    font-size: 0.85rem;
+  }
+</style>
+</head>
+<body>
+<nav class="family">
+  <a href="user-guide.html">User guide</a>
+  <a href="SKILL.md">Agent skill</a>
+  <a href="https://github.com/Siteation/magento2-debugbar">Repository</a>
+</nav>
+<main>
+<h1 id="developer-guide"><a class="anchor" href="#developer-guide">Developer guide</a></h1>
+<p>For working on Siteation_DebugBar itself. If you want to use it, read the <a href="user-guide.md">user guide</a>.</p>
+<h2 id="layout"><a class="anchor" href="#layout">Layout</a></h2>
+<table><tbody><tr><td><code>Api/</code></td><td><code>CollectorInterface</code>, <code>RuleInterface</code>, <code>McpToolInterface</code></td></tr><tr><td><code>Plugin/</code></td><td>The entry hook and the four collection hooks</td></tr><tr><td><code>Collector/</code></td><td>Seven collectors and the abstract they share</td></tr><tr><td><code>Analysis/</code></td><td>Findings, rules, the query analyzer, the timeline, the comparer</td></tr><tr><td><code>Model/</code></td><td>Config, the gate, the access key, the store, the redactor</td></tr><tr><td><code>Presentation/</code></td><td>Bar injection, the markdown report, the MCP presenter</td></tr><tr><td><code>Mcp/</code></td><td>JSON-RPC server and five tools</td></tr><tr><td><code>Controller/Profile/</code></td><td><code>view</code>, <code>history</code>, <code>compare</code></td></tr><tr><td><code>Console/</code></td><td><code>siteation:debugbar:mcp</code>, <code>siteation:debugbar:report</code></td></tr><tr><td><code>src-js/</code></td><td>Alpine sources for the bar; build output is committed</td></tr><tr><td><code>view/base/web/</code></td><td>The committed build output</td></tr><tr><td><code>dev/</code></td><td><code>smoke</code>, an HTTP test over a running store, and <code>docs</code></td></tr></tbody></table>
+<p>PHP is edited in place. The package installs as a Composer path symlink, so nothing needs reinstalling after an edit.</p>
+<h2 id="how-a-request-becomes-a-profile"><a class="anchor" href="#how-a-request-becomes-a-profile">How a request becomes a profile</a></h2>
+<p><strong>One entry hook.</strong> An <code>around</code> plugin on <code>Magento\Framework\App\Http::launch()</code> brackets every web request in every area.</p>
+<p>It has to be <code>around</code>. <code>launch()</code> switches the object manager to the request&#039;s area, <code>PluginList</code> reloads its scoped data as it does so, and an <code>after</code> listener does not survive that reload: it dies inside <code>getPlugin()</code>. There is no ordering trick that fixes it; the bracket has to be taken before the switch.</p>
+<p>In order:</p>
+<ol>
+<li><code>RequestEligibility::allows()</code> decides whether to profile at all. It reads the config flag, the area list, the IP allowlist, the access key, and whether this is one of the bar&#039;s own endpoints.</li>
+<li><code>ProfileManager</code> starts collecting. Every plugin records through it, and it holds a single boolean that the plugins branch on, so an unprofiled request pays a plugin hop and no config read.</li>
+<li><code>proceed()</code> runs the application. The query, event, observer, block and cache plugins record as they fire.</li>
+<li><code>finalize()</code> asks each enabled collector for its section, builds the timeline, runs the rules, and hands the result to <code>ProfileStore</code>.</li>
+<li><code>BarInjector</code> sets the profile header, marks the response unshareable, and injects the bar if the response can carry one.</li>
+</ol>
+<p><strong>Nothing may read configuration while a request is being collected.</strong> A config read can miss the cache, a cache miss issues queries and dispatches events, and the query, cache and event collectors all call back in. <code>Config</code> resolves every value once in one guarded pass, at launch, before any collector is active.</p>
+<p><strong>Never break the page being debugged.</strong> Every collector call and the whole finalize step is wrapped. A throw discards the profile and returns the untouched response.</p>
+<h2 id="adding-a-collector"><a class="anchor" href="#adding-a-collector">Adding a collector</a></h2>
+<p>Implement <code>Api\CollectorInterface</code>, extend <code>Collector\AbstractCollector</code>, and register it in the sorted array on <code>ProfileManager</code> in <code>etc/di.xml</code>.</p>
+<p><code>AbstractCollector</code> does redaction, bounding and <code>at_ms</code> stamping once for all of them. Do not do any of those in your collector; a collector that bypasses the abstract is how the contract stops meaning anything.</p>
+<p>Recording is done through <code>ProfileManager::quietly()</code>, which is also where the &quot;is this section switched on&quot; decision is honoured, so a section that is off costs nothing rather than being gathered and hidden.</p>
+<p>Add the section to <code>src-js/src/sections.js</code> as well, or the panel will never be drawn. <code>Test/Unit/Analysis/RuleSectionTest.php</code> reads that list from PHP, so the two cannot drift.</p>
+<h2 id="adding-a-rule"><a class="anchor" href="#adding-a-rule">Adding a rule</a></h2>
+<p>Implement <code>Api\RuleInterface</code> and register it in the rules array in <code>etc/di.xml</code>. A rule that throws is skipped and logged rather than taking the profile with it.</p>
+<p>A rule returns <code>Analysis\Finding</code> objects. Each carries a severity, a message, where it came from, what to check next, and the section and filter holding its evidence. Point the action at a filter that actually narrows: mapping <code>repeated</code> to <code>all</code> is no filter at all, which is a mistake this codebase has already made once.</p>
+<p>Eight rules ship, producing ten kinds of finding. <code>RequestErrorRule</code> and <code>RepeatedQueryRule</code> emit two each.</p>
+<h2 id="the-profile"><a class="anchor" href="#the-profile">The profile</a></h2>
+<p>One JSON file per request under <code>var/siteation_debugbar/</code>, <code>0600</code> inside a <code>0700</code> directory, pruned to 20 files or 60 minutes.</p>
+<p>Retention is enforced twice. <code>ProfileStore::tidy()</code> sweeps on a write and when the history endpoint is read, and <code>get()</code> refuses anything past the age bound whether or not a sweep has reached it. <code>get()</code> refuses rather than deletes: the MCP tools read through the same path and are advertised as read only.</p>
+<p><code>Model\Redactor</code> masks sensitive keys at record time, bounds depth and item counts, and strips string literals from SQL. <code>src-js/src/redact.js</code> mirrors it for the Alpine section, which reads live objects rather than a stored profile and therefore has to apply the policy itself.</p>
+<p><strong>Query shapes ignore numbers as well as quoted values</strong>, because Magento interpolates ids unquoted and an N+1 made of them was invisible otherwise. Identifiers are protected, so <code>t1</code> is not <code>t2</code>, and <code>LIMIT 10</code> and <code>LIMIT 100</code> are deliberately one shape.</p>
+<h2 id="the-gate-and-the-endpoints"><a class="anchor" href="#the-gate-and-the-endpoints">The gate and the endpoints</a></h2>
+<p><code>RequestEligibility::allows()</code> decides whether a request is profiled. <code>allowsRead()</code> decides whether one may be read. Three controllers call <code>allowsRead()</code> rather than repeating the check, because an endpoint that hands out a profile to someone the bar would not have collected for is a way around the gate rather than a thing behind it.</p>
+<p>Three endpoints, all behind the same gate: <code>profile/view</code> for one profile, <code>profile/history</code> for the list, <code>profile/compare</code> for the diff. Anything that hands out profile ids sits behind the same check as the thing that hands out profiles.</p>
+<p><code>Model\AccessKey</code> is what makes a live site possible. <code>Config::MIN_ACCESS_KEY_LENGTH</code> is 32; below that the bar refuses to run rather than treating the key as absent, since absent means keyless. <code>Model\Config\Backend\AccessKey</code> refuses it on save so the refusal is visible, and <code>Model\AccessAttempts</code> stops answering an address that offers ten wrong keys inside fifteen minutes.</p>
+<p><code>Model\ClientAddress</code> is the one definition of who a request came from, <code>REMOTE_ADDR</code> and never a forwarded header. The allowlist and the lockout both read it, because a difference between them would be a way around one of the two.</p>
+<h2 id="the-bar"><a class="anchor" href="#the-bar">The bar</a></h2>
+<p>Sources in <code>src-js/src/</code>, output committed to <code>view/base/web/</code>. Installing the module needs no build step, and that is deliberate.</p>
+<pre><code>cd src-js
+npm install
+npm run build         # or npm run dev, which watches the main bundle</code></pre>
+<p><code>npm run dev</code> builds <code>early.js</code> once and then watches the main bundle only. Editing <code>early.js</code> during a watch session needs another <code>npm run build</code>.</p>
+<p><strong>The host is a custom element</strong>, <code>&lt;siteation-debugbar&gt;</code>, written before <code>&lt;/body&gt;</code> alongside the profile JSON and the module script. It mounts itself in <code>connectedCallback</code>, so the tag name is the only thing <code>BarInjector</code>, <code>debugbar.js</code> and <code>early.js</code> have to agree on.</p>
+<p><strong>A shadow root</strong> keeps the bar&#039;s styles off the store and the store&#039;s styles off the bar, and hides the bar&#039;s markup from the theme&#039;s Alpine.</p>
+<p><strong>Its own bundled Alpine</strong>, the CSP build, under a <code>data-ndb-</code> prefix, started with <code>Alpine.initTree(root)</code> and never <code>Alpine.start()</code>. A full start installs a document wide mutation observer that would claim the host theme&#039;s <code>@click</code> shorthands and bind every handler twice.</p>
+<p><strong>No inline script or style.</strong> The profile travels as <code>&lt;script type=&quot;application/json&quot;&gt;</code> and everything else is an external file, so <code>Magento_Csp</code> needs no nonce and no <code>unsafe-inline</code>.</p>
+<p><strong>Only summaries are embedded</strong>, about 1.5 kB. Section payloads are fetched from <code>profile/view</code> on first open.</p>
+<p>File by file: <code>state.js</code> is the Alpine component, <code>template.js</code> the markup, <code>sections.js</code> the section list, <code>header.js</code> the header used by both the dock and the sheet, <code>palette.js</code> the command list, <code>alpine.js</code> and <code>magewire.js</code> the two live readers, <code>early.js</code> the request watcher and error capture that loads in the head.</p>
+<h2 id="mcp"><a class="anchor" href="#mcp">MCP</a></h2>
+<p><code>bin/magento siteation:debugbar:mcp</code>, hand rolled JSON-RPC 2.0 over newline delimited stdio, five read only tools. It starts in about 0.2 seconds because it only reads files.</p>
+<p>Add a tool by implementing <code>Api\McpToolInterface</code> and registering it in the tools array in <code>etc/di.xml</code>. Shaping belongs in <code>Presentation\McpProfilePresenter</code>, which bounds every response by item count and byte budget and labels the payload as recorded data.</p>
+<p><strong>The presenter&#039;s envelope is built inside the byte budget</strong>, so anything added to it is paid for out of the response rather than pushing it over.</p>
+<h2 id="testing"><a class="anchor" href="#testing">Testing</a></h2>
+<pre><code>vendor/bin/phpcs  --standard=&lt;pkg&gt;/phpcs.xml.dist &lt;pkg&gt;
+vendor/bin/phpstan analyse -c &lt;pkg&gt;/phpstan.neon.dist
+vendor/bin/phpunit --configuration &lt;pkg&gt;/phpunit.xml.dist      # 202 tests
+&lt;pkg&gt;/dev/smoke https://your-store.test admin                  # 30 assertions over HTTP
+cd &lt;pkg&gt;/src-js &amp;&amp; npm test                                    # 67, no dependency
+cd &lt;pkg&gt;/src-js &amp;&amp; npm run test:browser                        # 16, needs the store up</code></pre>
+<p>Magento&#039;s integration framework is deliberately not used. It needs its own database and install and runs in minutes; <code>dev/smoke</code> drives a real store over HTTP across all four areas in seconds and asserts the same regressions.</p>
+<p><strong>The browser suite is the one that catches a binding that throws.</strong> <code>early.js</code> watches <code>console.warn</code> for every Alpine on the page, including the bar&#039;s own, and the suite walks every section and sub-tab and asserts that buffer is empty. A throwing binding renders as an empty element and says nothing otherwise. Two of the tests run under an injected policy that forbids <code>unsafe-eval</code>, because the store&#039;s own policy is report-only on most pages and the violations the bar used to commit were reported and never blocked.</p>
+<p>Two habits that suite enforces: the header is built once and used twice, so a header selector without <code>.ndb-sheet</code> matches both; and selecting a section starts work, so wait for the state rather than for a length of time.</p>
+<p>When looking at layout in a browser, measure geometry with JavaScript before diagnosing from a screenshot. Screenshots are scaled and have misled more than once.</p>
+<h2 id="adding-a-setting"><a class="anchor" href="#adding-a-setting">Adding a setting</a></h2>
+<ol>
+<li>A field in <code>etc/adminhtml/system.xml</code>, under the existing <code>general</code> group.</li>
+<li>A default in <code>etc/config.xml</code>.</li>
+<li>An <code>XML_PATH_</code> constant and a resolved property in <code>Model\Config</code>, set inside <code>resolve()</code>.</li>
+</ol>
+<p>Settings live at <code>siteation_debugbar/general/*</code> under a Siteation tab, deliberately not under Advanced &gt; Developer: Magento hides the whole <code>dev</code> section in production mode, which is exactly where the access key makes the bar usable.</p>
+<p>One group rather than several, because every field&#039;s <code>depends</code> on Enabled would otherwise become a cross group dependency.</p>
+<h2 id="traps-that-cost-hours"><a class="anchor" href="#traps-that-cost-hours">Traps that cost hours</a></h2>
+<p>These are the ones that have actually bitten. Check them before believing a bug is real.</p>
+<p><strong>Stale artifacts, in order of likelihood.</strong></p>
+<ol>
+<li><strong>The interception cache.</strong> <code>cache:clean config</code> does not reach it. After adding or changing a plugin, run <code>cache:flush</code> or the plugin silently never runs.</li>
+<li><strong>Generated interceptors.</strong> Developer mode creates them once and never rechecks, so changing a constructor gives <code>Too few arguments ... generated/code/.../Interceptor.php</code>. Fix with <code>rm -rf generated/code/Siteation</code>.</li>
+<li><strong><code>generated/metadata</code>.</strong> Adding an item to a <code>di.xml</code> argument array survives both of the above. It takes <code>rm -rf generated/metadata</code> as well.</li>
+<li><strong>Static assets.</strong> Asset URLs carry the built file&#039;s mtime, so a rebuilt bundle gets a new URL. If the bar looks unchanged after a build, hard reload.</li>
+</ol>
+<p><strong>PHP and Magento.</strong></p>
+<ul>
+<li>An interface plugin fires <strong>once per implementing object in the chain</strong>, not once per logical operation. <code>LoggerInterface</code> resolves to <code>LoggerProxy</code>, which delegates to another implementer, so every query was counted twice for months.</li>
+<li><code>preg_replace</code> reads backslashes in the <strong>replacement</strong> as escapes, so injecting a payload containing PHP class names corrupts it silently. Use <code>preg_replace_callback</code>.</li>
+<li>Two <code>&lt;comment&gt;</code> elements on one <code>system.xml</code> field cancel each other out: Magento collapses the repeat into an array and renders neither.</li>
+<li><code>Cache-Control: private</code> is not a milder <code>no-store</code> to Magento&#039;s Varnish. It means a 24 hour hit-for-pass that tag invalidation cannot clear.</li>
+<li>The cookie manager resolves its domain through the store, so it cannot be used at the top of <code>launch()</code>: there is no store yet. Issue cookies after <code>proceed()</code>.</li>
+<li>Magento hides the whole <code>dev</code> configuration section in production mode. The check runs against the structure path, not the stored one.</li>
+</ul>
+<p><strong>The bar.</strong></p>
+<ul>
+<li>Inside a shadow root, <code>rem</code> resolves against the <strong>document</strong> root. Size in <code>px</code>.</li>
+<li>A shadow root isolates the bar from the page, not from itself. Generic class names collide.</li>
+<li><code>x-show</code> <strong>evaluates everything inside it while hidden</strong>, so a panel bound to state that starts as <code>null</code> throws once per binding on every page load, invisibly. Use <code>x-if</code> for a panel that has no data yet. <code>x-show</code> also defers every reveal after the first through a <code>setTimeout</code>, so nothing can be timed against it.</li>
+<li>An <code>x-for</code> variable that shares a name with a component property silently redirects every write inside the loop. Nothing throws.</li>
+<li><code>Object.keys</code> on Alpine&#039;s merged scope proxy returns <code>[]</code>. Use <code>Reflect.ownKeys</code>.</li>
+<li><code>Alpine.$data(el)</code> folds every parent scope into the child. For one component&#039;s own state, read <code>el._x_dataStack[0]</code>.</li>
+<li>Alpine 3.14.3, which Hyvä ships, has no <code>setErrorHandler</code> and no <code>injectMagics</code>. Expression errors have to be read from <code>console.warn</code>.</li>
+<li>Writing to a key named <code>__proto__</code> on a plain object sets the prototype instead of the key, so the value disappears. Use <code>Object.create(null)</code> for anything built from page data.</li>
+<li>A background tab throttles timers and stops <code>requestAnimationFrame</code>, so anything timing sensitive measures as broken there.</li>
+</ul>
+<p><strong>Conventions.</strong></p>
+<ul>
+<li>A query&#039;s call site is stored under <code>callsite</code>, one word, relative to the application root.</li>
+<li>Label over value beats label beside value. <code>facts()</code> in <code>facts.js</code> builds the grid.</li>
+<li>No tiny type. 15px body, 14px mono, 12px floor. The uppercase micro label is 12px.</li>
+<li>An editor URL template writes <code>://file%f</code>, never <code>://file/%f</code>: <code>%f</code> is absolute, so the second form carries two slashes and Zed ignores it silently.</li>
+</ul>
+<h2 id="testing-a-crash"><a class="anchor" href="#testing-a-crash">Testing a crash</a></h2>
+<p>There is no fixture for a 500, on purpose: a route that throws does not belong on a working instance. Four files under <code>app/code/Siteation/BoomTest</code> recreate one, a controller whose <code>execute()</code> throws. Give it a real return type; <code>never</code> breaks Magento&#039;s generated interceptor before the exception ever happens. Delete it afterwards.</p>
+<h2 id="documentation"><a class="anchor" href="#documentation">Documentation</a></h2>
+<p>The two guides are Markdown, and their HTML is generated:</p>
+<pre><code>php dev/docs</code></pre>
+<p>Edit the <code>.md</code>. The <code>.html</code> is a view of it, and <code>dev/docs</code> is the only place the two can differ. It needs no dependencies, for the same reason the bar ships prebuilt.</p>
+<h2 id="releasing"><a class="anchor" href="#releasing">Releasing</a></h2>
+<ol>
+<li>Everything green: phpcs, phpstan, phpunit, smoke, both JS suites.</li>
+<li><code>npm run build</code>, and commit the output if it changed.</li>
+<li><code>php dev/docs</code> if a guide changed.</li>
+<li>A dated section in <code>CHANGELOG.md</code>.</li>
+<li>An annotated tag, plain semver with no <code>v</code> prefix, matching the other Siteation packages.</li>
+<li><code>git push origin main &amp;&amp; git push origin &lt;tag&gt;</code>.</li>
+</ol>
+<p>There are no GitHub Actions and none are wanted: tests run locally, the build output is committed, and Packagist reads the tag through a webhook.</p>
+</main>
+<footer>Generated from docs/developer-guide.md by dev/docs. Edit the Markdown, not this file.</footer>
+</body>
+</html>

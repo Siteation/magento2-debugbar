@@ -1,0 +1,229 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Siteation_DebugBar user guide</title>
+<style>
+  :root {
+    color-scheme: light dark;
+
+    --bg: #f6f7f9;
+    --surface: #ffffff;
+    --surface-2: #f0f2f5;
+    --border: #dfe3e8;
+    --text: #14181f;
+    --text-dim: #5b6572;
+    --text-faint: #8a94a2;
+    --accent: #3159d8;
+
+    --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+    --sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0e1116;
+      --surface: #161b22;
+      --surface-2: #1c222b;
+      --border: #2a313c;
+      --text: #e6e9ee;
+      --text-dim: #9aa4b2;
+      --text-faint: #6e7885;
+      --accent: #7f9cf5;
+    }
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    padding: 2.5rem 1.25rem 6rem;
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 15px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  main { max-width: 48rem; margin: 0 auto; }
+
+  nav.family {
+    max-width: 48rem;
+    margin: 0 auto 2.5rem;
+    display: flex;
+    gap: 1rem;
+    font-size: 0.85rem;
+    color: var(--text-faint);
+  }
+
+  nav.family a { color: var(--text-dim); }
+
+  h1 { font-size: 1.9rem; line-height: 1.2; margin: 0 0 1.5rem; letter-spacing: -0.02em; }
+  h2 {
+    font-size: 1.25rem;
+    margin: 3rem 0 0.75rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border);
+    letter-spacing: -0.01em;
+  }
+  h3 { font-size: 1rem; margin: 2rem 0 0.5rem; }
+  h4 { font-size: 0.95rem; margin: 1.5rem 0 0.5rem; color: var(--text-dim); }
+
+  p, ul, ol, table { margin: 0 0 1rem; }
+  li { margin-bottom: 0.35rem; }
+  li > code:first-child { font-weight: 600; }
+
+  a { color: var(--accent); }
+  a.anchor { color: inherit; text-decoration: none; }
+  a.anchor:hover { text-decoration: underline; }
+
+  code {
+    font-family: var(--mono);
+    font-size: 0.86em;
+    background: var(--surface-2);
+    border-radius: 4px;
+    padding: 0.1em 0.35em;
+  }
+
+  pre {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0.9rem 1rem;
+    overflow-x: auto;
+    margin: 0 0 1.25rem;
+  }
+
+  pre code { background: none; padding: 0; font-size: 0.83rem; line-height: 1.55; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 0.92rem; display: block; overflow-x: auto; }
+  th, td { text-align: left; padding: 0.5rem 0.75rem; border-bottom: 1px solid var(--border); vertical-align: top; }
+  th { color: var(--text-dim); font-weight: 600; white-space: nowrap; }
+
+  footer {
+    max-width: 48rem;
+    margin: 4rem auto 0;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border);
+    color: var(--text-faint);
+    font-size: 0.85rem;
+  }
+</style>
+</head>
+<body>
+<nav class="family">
+  <a href="developer-guide.html">Developer guide</a>
+  <a href="SKILL.md">Agent skill</a>
+  <a href="https://github.com/Siteation/magento2-debugbar">Repository</a>
+</nav>
+<main>
+<h1 id="user-guide"><a class="anchor" href="#user-guide">User guide</a></h1>
+<p>Siteation_DebugBar records what one Magento request actually did, and gives you three ways to read it: a bar in the page, a markdown report, and an MCP server for a coding agent.</p>
+<p>This guide is about using it. If you are working on the module itself, read the <a href="developer-guide.md">developer guide</a>.</p>
+<h2 id="what-a-profile-is"><a class="anchor" href="#what-a-profile-is">What a profile is</a></h2>
+<p>Every request that the module is allowed to profile writes one JSON file under <code>var/siteation_debugbar/</code>. That file is the profile: the request line, timings, every query with the application frame it came from, the events and observers that ran, the blocks that rendered, the cache reads and writes, the plugins that were built, and the module&#039;s own findings about all of it.</p>
+<p>The profile is bounded and redacted as it is written, not when it is read. Sensitive keys are masked at record time, string literals are stripped from SQL, and each collector keeps a capped number of items. Nothing you read later can be larger or franker than what was stored.</p>
+<p>Files are pruned to the newest 20 or the last 60 minutes, whichever comes first, and are written <code>0600</code> inside a <code>0700</code> directory. A profile past that window is refused on read as well as swept, so the retention holds whether or not anything has triggered a sweep.</p>
+<h2 id="switching-it-on"><a class="anchor" href="#switching-it-on">Switching it on</a></h2>
+<pre><code>bin/magento config:set siteation_debugbar/general/enabled 1</code></pre>
+<p>Settings live under <strong>Stores &gt; Configuration &gt; Siteation &gt; Debug Bar</strong>. They apply to the whole installation: the decision to collect is made before the store is known, so a per website or per store value is ignored rather than half honoured.</p>
+<p>In developer mode that is all it takes. In any other mode the bar also needs an access key, which is covered under <a href="#debugging-a-live-site">Debugging a live site</a>.</p>
+<h2 id="finding-the-request-you-mean"><a class="anchor" href="#finding-the-request-you-mean">Finding the request you mean</a></h2>
+<p>Every profiled response carries its id:</p>
+<pre><code>X-Siteation-DebugBar-Profile: 4ae570c5-d45f-418c-92a7-5cda582be81e</code></pre>
+<p>Use that header rather than assuming the newest profile is yours. A storefront page fires background XHR, and those are profiled too.</p>
+<h2 id="the-bar-in-the-page"><a class="anchor" href="#the-bar-in-the-page">The bar in the page</a></h2>
+<p>The bar renders in a shadow root, so it cannot collide with the theme&#039;s CSS or its Alpine, and it works on a page whose own JavaScript has failed.</p>
+<p><strong>Collapsed</strong>, it is a floating pill carrying the request line, the deploy mode, the query count and time, the duration and the peak memory. Clicking anywhere on it opens the inspector.</p>
+<p><strong>Open</strong>, it is a modal sheet with a sidebar. The page behind it is made inert, so a click lands where you meant it rather than on the store.</p>
+<p><strong>The bubble.</strong> Closing the bar with the X collapses it to a small circle in the corner. It keeps the findings count, so you can tell at a glance whether reopening is worth it, and it follows the top or bottom placement setting. Clicking it brings the bar back. This is remembered across pages, because being out of the way is a preference rather than a decision about one page.</p>
+<p>To take the bar off the screen entirely, for a screenshot or to test a sticky footer, use <strong>Hide the bar until the next page load</strong> in the palette. That one is not remembered, because nothing would be left on screen to undo it.</p>
+<h3 id="keyboard"><a class="anchor" href="#keyboard">Keyboard</a></h3>
+<table><tbody><tr><td><code>Cmd/Ctrl Shift P</code></td><td>Open the command palette</td></tr><tr><td><code>Escape</code></td><td>Close the inspector, or the palette if it is open</td></tr><tr><td><code>Tab</code></td><td>Cycles inside the sheet while it is open</td></tr></tbody></table>
+<p>The palette holds everything: every section, the three themes, the top or bottom placement, pinning a section to favourites, the window controls, copying the report, and hiding the bar. Filter it by typing.</p>
+<h2 id="the-sections"><a class="anchor" href="#the-sections">The sections</a></h2>
+<table><thead><tr><th>Section</th><th>What it answers</th></tr></thead><tbody><tr><td>Findings</td><td>What is worth your attention on this request, worst first</td></tr><tr><td>Overview</td><td>What was asked for, what came back, and what it cost</td></tr><tr><td>Timeline</td><td>Important work in the order it happened, as a waterfall</td></tr><tr><td>Queries</td><td>Every query, timed, with the application frame it came from</td></tr><tr><td>Blocks</td><td>Block render times, with own time excluding children</td></tr><tr><td>Observers</td><td>Every observer that actually ran, grouped by event</td></tr><tr><td>Events</td><td>Every dispatched event, including ones nothing listens to</td></tr><tr><td>Cache</td><td>Reads and writes grouped by key prefix, with hit rates</td></tr><tr><td>Plugins</td><td>Which interceptors were built for this request, and on what</td></tr><tr><td>Alpine</td><td>The components on the page right now, and their live state</td></tr><tr><td>Magewire</td><td>The components on the page, their state, and each update&#039;s cost</td></tr><tr><td>History</td><td>Every profile still on disk, so an earlier request is one click away</td></tr></tbody></table>
+<p>Alpine and Magewire read the live page rather than the stored profile, so they show what is in the browser now. Everything else is the profile.</p>
+<p>Only summaries travel with the page, about 1.5 kB. A section&#039;s contents are fetched the first time you open it.</p>
+<p>You can switch sections off entirely in the configuration. A section that is off is not collected either, so turning off Blocks on a page that renders four hundred of them makes the request you are measuring cheaper as well as the panel quieter. Findings and Overview are always on.</p>
+<h2 id="reading-findings"><a class="anchor" href="#reading-findings">Reading findings</a></h2>
+<p>Findings are the module&#039;s own conclusions, worst first. Each one says what is wrong, why it matters, where it came from, and what to look at next. Clicking one takes you to the section and filter holding its evidence.</p>
+<table><thead><tr><th>Finding</th><th>Means</th></tr></thead><tbody><tr><td><code>request.error</code></td><td>The response was a 4xx or 5xx</td></tr><tr><td><code>request.exception</code></td><td>Something threw; the finding names it and the frame it stopped at</td></tr><tr><td><code>request.slow</code></td><td>The request passed the slow request threshold</td></tr><tr><td><code>query.slow</code></td><td>A single query passed the slow query threshold</td></tr><tr><td><code>query.repeated</code></td><td>The same query shape ran three or more times</td></tr><tr><td><code>query.n_plus_one</code></td><td>A repeated shape that looks like a loop over ids</td></tr><tr><td><code>block.slow</code></td><td>A block&#039;s own render time stands out</td></tr><tr><td><code>observer.slow</code></td><td>An observer&#039;s time stands out</td></tr><tr><td><code>cache.high_miss_rate</code></td><td>A key prefix is missing far more often than it hits</td></tr><tr><td><code>collector.truncated</code></td><td>A collector hit its cap, so its list is shorter than its count</td></tr></tbody></table>
+<p>A finding is a lead, not a verdict. <code>query.n_plus_one</code> is deliberately conservative and chunked reads still trip it. Confirm before changing anything.</p>
+<p>Two habits worth keeping:</p>
+<ul>
+<li><strong>Read the counts, not the list length.</strong> Collectors cap what they keep. A section saying <code>count: 862</code> with 50 items is not a contradiction.</li>
+<li><strong>A profile with no queries and no events is a full page cache hit</strong>, not a fast page. The application never ran.</li>
+</ul>
+<h2 id="comparing-two-requests"><a class="anchor" href="#comparing-two-requests">Comparing two requests</a></h2>
+<p>The History section&#039;s Compare tab answers &quot;what did my change cost&quot;. Profile a page, make the change, load it again, and compare the two profiles: duration, memory, queries, cache and findings, plus the query shapes that were added or removed.</p>
+<p>&quot;The same query&quot; means the same shape, with values and numbers normalised, so an N+1 built from interpolated ids reads as one shape that ran ninety times rather than ninety queries.</p>
+<h2 id="requests-that-cannot-carry-a-bar"><a class="anchor" href="#requests-that-cannot-carry-a-bar">Requests that cannot carry a bar</a></h2>
+<p>AJAX, GraphQL and REST responses are profiled, but nothing can be injected into them. They still return the profile header, and the bar lists them: the request list in the collapsed bar&#039;s header shows what the page has fired since it loaded, and clicking one loads that profile into the inspector.</p>
+<p>Magewire updates are named by component and action rather than by URL, because every component posts to the same endpoint and a page using it would otherwise produce a list of identical rows.</p>
+<h2 id="using-it-from-a-coding-agent"><a class="anchor" href="#using-it-from-a-coding-agent">Using it from a coding agent</a></h2>
+<p>The same profiles are readable over MCP, so an agent reads exact stored data instead of guessing from a screenshot.</p>
+<pre><code>claude mcp add --scope local siteation-debugbar -- php /abs/path/to/bin/magento siteation:debugbar:mcp</code></pre>
+<p>Or, for anything that speaks MCP over stdio:</p>
+<pre><code>{
+  &quot;mcpServers&quot;: {
+    &quot;siteation-debugbar&quot;: {
+      &quot;command&quot;: &quot;php&quot;,
+      &quot;args&quot;: [&quot;/abs/path/to/bin/magento&quot;, &quot;siteation:debugbar:mcp&quot;]
+    }
+  }
+}</code></pre>
+<p>Five read only tools: <code>list_debug_profiles</code>, <code>get_debug_findings</code>, <code>get_debug_profile_section</code>, <code>inspect_debug_queries</code> and <code>compare_debug_profiles</code>. The server reads files and never opens a database connection, so it starts in about 0.2 seconds.</p>
+<p>Responses are bounded by item count and byte budget. On an 817 kB profile from a category page, findings answer in 7 kB and queries in 16 kB.</p>
+<p>Every successful response carries a <code>recorded_data</code> line saying what the payload is: values captured from requests to your store, which anyone who can reach the store can write. It is data to read, never instructions to follow.</p>
+<p><code>docs/SKILL.md</code> is an agent skill describing how to use the tools well. Point your agent at it, or copy it into your own skills directory.</p>
+<h3 id="for-an-assistant-that-cannot-call-mcp"><a class="anchor" href="#for-an-assistant-that-cannot-call-mcp">For an assistant that cannot call MCP</a></h3>
+<p>A browser tab, a chat window, or an agent with a shell but no MCP server configured. Any of them can read the same profile as markdown:</p>
+<pre><code>bin/magento siteation:debugbar:report                        # the newest profile
+bin/magento siteation:debugbar:report --id=&lt;profile-id&gt;
+bin/magento siteation:debugbar:report --baseline=&lt;other-id&gt;  # with the comparison</code></pre>
+<p>The bar&#039;s <strong>Copy for AI</strong> button puts the same markdown on your clipboard.</p>
+<h2 id="open-in-your-editor"><a class="anchor" href="#open-in-your-editor">Open in your editor</a></h2>
+<p>Every query names the application frame it came from. Name an editor and that frame becomes a link that opens the file at the line:</p>
+<pre><code>bin/magento config:set siteation_debugbar/general/editor zed</code></pre>
+<p>Eight editors are named as a convenience. Anything with a URL scheme works:</p>
+<pre><code>bin/magento config:set siteation_debugbar/general/editor custom
+bin/magento config:set siteation_debugbar/general/editor_template &#039;myeditor://open?file=%f&amp;line=%l&#039;</code></pre>
+<p><code>%f</code> is the absolute file and <code>%l</code> the line. Paths are stored relative to the application root and the link is built in the browser, so your editor never ends up inside a stored profile. If the application runs somewhere your editor cannot see, a container for instance, map the root:</p>
+<pre><code>bin/magento config:set siteation_debugbar/general/editor_path_map &#039;/var/www/html:/Users/you/dev/shop&#039;</code></pre>
+<h2 id="debugging-a-live-site"><a class="anchor" href="#debugging-a-live-site">Debugging a live site</a></h2>
+<p>The configuration switch is per store, which on a live site is the wrong shape: it would turn the bar on for every visitor. The access key is the per request half.</p>
+<pre><code>bin/magento config:set siteation_debugbar/general/access_key &quot;$(openssl rand -hex 32)&quot;
+bin/magento config:set siteation_debugbar/general/enabled 1</code></pre>
+<p>With a key set, a request that does not present it is an ordinary visitor&#039;s: no profile is written, no bar is injected, and the endpoints answer 404 as though the module were not installed.</p>
+<pre><code>curl -H &quot;X-Siteation-DebugBar-Key: &lt;key&gt;&quot; https://your-store.test/
+open &quot;https://your-store.test/?siteation_debugbar_key=&lt;key&gt;&quot;</code></pre>
+<p>The second swaps the key for an HttpOnly cookie lasting an hour, which is how long a profile lives, so the key leaves the address bar after one request.</p>
+<p><strong>The key must be at least 32 characters, or empty.</strong> Anything shorter is refused when you save it and refused again when the configuration resolves, so writing one straight into the database is no way around it. Outside developer mode the key is the entire reason the bar may run, and &quot;on for whoever holds the key&quot; means nothing when the key is <code>x</code>.</p>
+<p><strong>Wrong keys are counted per address.</strong> Ten from one address inside fifteen minutes and that address stops being answered at all until fifteen minutes after the last one, so the endpoints cannot be used as an oracle. Only a request that presented something counts, so ordinary customer traffic never fills the bucket. Behind a load balancer every client shares one bucket, which is a reason to keep the key long rather than to lean on the counter. <code>cache:flush</code> clears it.</p>
+<p>Two more things follow from a key being set:</p>
+<ul>
+<li><strong>Production and default mode are allowed, but only behind a key.</strong> Developer mode is the only one that runs keyless, because it is the only one that is not somebody&#039;s live site. Default mode is what <code>MAGE_MODE</code> falls back to, so it is treated as live.</li>
+<li><strong>Any response carrying a bar or a profile id is marked <code>no-store</code></strong> and stripped of its <code>X-Magento-Tags</code>, so Varnish and any CDN refuse to keep it. A page with your bar in it is one developer&#039;s view of one request and must never reach a second person.</li>
+</ul>
+<p>An IP allowlist can be combined with the key. On its own it is not enough behind a proxy: the address the module trusts is <code>REMOTE_ADDR</code>, never a forwarded header, because an allowlist that trusts a client supplied header is not an allowlist.</p>
+<p>Rotate the key with the same command when you are done, or empty it to close production again.</p>
+<h2 id="settings"><a class="anchor" href="#settings">Settings</a></h2>
+<p>All under <code>siteation_debugbar/general/</code>.</p>
+<table><thead><tr><th>Setting</th><th>Default</th><th></th></tr></thead><tbody><tr><td><code>enabled</code></td><td><code>0</code></td><td>Off until asked for</td></tr><tr><td><code>areas</code></td><td>all four</td><td>Which of storefront, admin, GraphQL, REST produce a profile</td></tr><tr><td><code>sections</code></td><td>all</td><td>What is collected and shown; off means not gathered either</td></tr><tr><td><code>slow_query_ms</code></td><td><code>100</code></td><td>Threshold behind <code>query.slow</code></td></tr><tr><td><code>slow_request_ms</code></td><td><code>1000</code></td><td>Threshold behind <code>request.slow</code></td></tr><tr><td><code>allowed_ips</code></td><td>empty</td><td>Comma separated; empty allows every address</td></tr><tr><td><code>value_policy</code></td><td><code>full</code></td><td><code>full</code>, <code>masked</code> or <code>none</code> for captured values</td></tr><tr><td><code>access_key</code></td><td>empty</td><td>32 characters or more; required outside developer mode</td></tr><tr><td><code>editor</code></td><td>empty</td><td>Editor for call site links</td></tr><tr><td><code>editor_template</code></td><td>empty</td><td>Used when <code>editor</code> is <code>custom</code></td></tr><tr><td><code>editor_path_map</code></td><td>empty</td><td><code>inside:outside</code> pairs for containers</td></tr></tbody></table>
+<p><strong>About <code>value_policy</code>.</strong> Query bindings are positional, so a value a customer typed cannot be recognised by name the way a key can. <code>full</code> keeps them, which is what makes SQL readable. Set <code>masked</code> or <code>none</code> if the instance is shared.</p>
+<h2 id="what-it-costs"><a class="anchor" href="#what-it-costs">What it costs</a></h2>
+<p>Collection is guarded by a boolean read, so a request that is not being profiled pays for a plugin hop and nothing else. A profiled request pays for the collectors that are switched on, which is why switching a section off stops it being gathered rather than just hidden.</p>
+<p>The bar itself embeds about 1.5 kB of summaries in the page and fetches sections on demand.</p>
+<h2 id="troubleshooting"><a class="anchor" href="#troubleshooting">Troubleshooting</a></h2>
+<p><strong>No bar on the page.</strong> In order: is it enabled, is the area on the list, is your address on the allowlist, and outside developer mode is a key set and presented. A response that was profiled carries <code>X-Siteation-DebugBar-Profile</code> even when it cannot carry a bar, so the header tells you which half is failing.</p>
+<p><strong>No bar behind Varnish.</strong> A Varnish hit never reaches PHP, so no profile is written on ordinary catalog and CMS pages. You will see the bar on pass-through pages: customer, checkout, POSTs. Magento&#039;s built in full page cache is different: <code>launch()</code> still runs and the bar is injected over the cached body.</p>
+<p><strong>The bar looks stale after a module update.</strong> Static asset URLs carry the built file&#039;s mtime, so a hard reload is enough.</p>
+<p><strong>A profile id returns &quot;not found&quot;.</strong> It has expired. Profiles last 20 files or 60 minutes, and both bounds are enforced on read.</p>
+<p><strong>Findings look wrong after changing a threshold.</strong> Thresholds are read when the profile is written, not when it is displayed. Load the page again.</p>
+</main>
+<footer>Generated from docs/user-guide.md by dev/docs. Edit the Markdown, not this file.</footer>
+</body>
+</html>

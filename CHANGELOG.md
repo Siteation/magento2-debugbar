@@ -28,8 +28,8 @@ and 202 unit tests.
 ## 1.0.0 - 2026-08-21
 
 First release. Everything below is what 1.0.0 contains, so there are no entries for the
-work that led up to it. `docs/build-status.html` calls part of this "1.1", which was a
-build phase for the interface rather than a version: it ships here.
+work that led up to it. The interface was built as a phase numbered 1.1 during
+development, which was a build order rather than a version: it ships here.
 
 ### The bar
 
