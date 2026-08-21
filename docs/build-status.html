@@ -1200,7 +1200,10 @@ inspect_debug_queries       slowest first, with call sites</code></pre>
         d: `<p>Maximise, minimise and close, plus the placement toggle. Maximise and
             placement are remembered.</p>
             <p>Close is deliberately not remembered. Hiding the bar for good with no way
-            back would be a trap, so it lasts until the next page load.</p>` },
+            back would be a trap, so it lasts until the next page load.</p>
+            <p>Superseded in E: a reload is what brings a hidden bar back, and a reload
+            profiles the page again, so the way back destroyed what it was for. The X
+            collapses to a bubble now, and that is remembered.</p>` },
       { t: 'Fixed: a class name collision', s: 'done',
         d: `<p>The new header's <code>.ndb-facts</code> clashed with the overview's
             <code>.ndb-facts</code>, a definition list laid out as a grid. The later rule
@@ -1765,7 +1768,22 @@ inspect_debug_queries       slowest first, with call sites</code></pre>
             summarizers for one question drift apart.</p>
             <p>It also caught a small lie: "No clear problem found" was appearing on
             History, a section about other requests entirely. Sections now declare whether
-            a rule can grade them.</p>` }
+            a rule can grade them.</p>` },
+      { t: 'The bar collapses to a bubble instead of disappearing', s: 'done',
+        d: `<p>Closing the bar hid it until the next page load, and that was the trap it was
+            written to avoid rather than the opposite. The only way back was a reload, and a
+            reload profiles the page again, so anyone who closed the bar to click what was
+            underneath it destroyed the request they had closed it to look at.</p>
+            <p>The X now collapses to a 44px bubble in the corner, which restores the bar
+            when clicked. It follows the top or bottom placement setting and carries the
+            findings badge in its tone, so whether reopening is worth it can be read without
+            reopening.</p>
+            <p>Unlike closing, this is remembered. Out of the way is a preference, not a
+            decision about one page, and a bubble is not destructive: something is still on
+            screen to bring the bar back.</p>
+            <p>Hiding for real stays, because a screenshot or a sticky footer wants nothing
+            on screen at all. It is a palette command, where a control that costs a reload
+            belongs, and it is still not remembered.</p>` }
     ]
   }
 ];

@@ -12,6 +12,10 @@ import { icon } from './icons.js'
  * modal sheet with a backdrop, so the page behind it stops being interactive rather than
  * merely being covered up.
  *
+ * A third state is the bubble, which is the pill collapsed to a corner: still there, out of
+ * the way of whatever is underneath, and carrying the findings count so you can tell
+ * whether bringing the bar back is worth it without bringing it back.
+ *
  * Directives use the data-ndb- prefix so the host theme's own Alpine, which reads x-,
  * never sees them.
  *
@@ -21,10 +25,19 @@ export const template = `
 <div class="ndb" data-ndb-data="debugBar" data-ndb-cloak
      data-ndb-bind:class="'is-' + placement + ' is-theme-' + resolvedTheme">
 
-  <div class="ndb-dock" data-ndb-show="!open && !dismissed" data-ndb-cloak
+  <div class="ndb-dock" data-ndb-show="!open && !dismissed && !collapsed" data-ndb-cloak
        title="Open the inspector" data-ndb-on:click="openFromBar($event)">
     ${header({ sheet: false })}
   </div>
+
+  <button type="button" class="ndb-bubble" data-ndb-show="collapsed && !dismissed" data-ndb-cloak
+          data-ndb-bind:class="findings.length > 0 && 'is-' + findingsTone"
+          data-ndb-on:click="expand()"
+          aria-label="Show the debug bar" title="Show the debug bar">
+    ${icon('pulse')}
+    <span class="ndb-badge" data-ndb-show="findings.length > 0"
+          data-ndb-text="findings.length"></span>
+  </button>
 
   ${palette()}
 

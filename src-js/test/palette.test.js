@@ -20,6 +20,7 @@ function state(overrides = {}) {
     placement: 'bottom',
     open: false,
     maximised: false,
+    collapsed: false,
     favourites: [],
     findings: [],
     timeline: {},
@@ -109,8 +110,8 @@ test('every command carries a kind the dispatcher handles', () => {
   // Kept in step with the switch in runCommand(). A command with an unknown kind is a row
   // that does nothing when it is chosen.
   const handled = new Set([
-    'section', 'theme', 'placement', 'favourite', 'inspector', 'maximise', 'dismiss',
-    'copy',
+    'section', 'theme', 'placement', 'favourite', 'inspector', 'maximise', 'collapse',
+    'dismiss', 'copy',
   ])
 
   commandsFor(state()).forEach((command) => {
@@ -121,6 +122,20 @@ test('every command carries a kind the dispatcher handles', () => {
 
   const ids = commandsFor(state()).map((command) => command.id)
   assert.equal(new Set(ids).size, ids.length, 'command ids are keys in the template')
+})
+
+test('collapsing and hiding are offered as the two different things they are', () => {
+  // The X on the header collapses. Hiding for real leaves nothing on screen to bring the
+  // bar back and costs a reload, which reprofiles the page, so it stays a palette command.
+  const commands = commandsFor(state())
+
+  assert.equal(byId(commands, 'collapse').label, 'Collapse the bar to a bubble')
+  assert.equal(byId(commands, 'dismiss').label, 'Hide the bar until the next page load')
+
+  assert.equal(
+    byId(commandsFor(state({ collapsed: true })), 'collapse').label,
+    'Show the bar again'
+  )
 })
 
 test('the filter reads the label, the group and the keywords', () => {

@@ -23,6 +23,7 @@ export const icons = {
   star: '<path d="m12 3.5 2.6 5.6 6 .8-4.4 4.2 1.1 6L12 17.3 6.7 20.1l1.1-6L3.4 9.9l6-.8L12 3.5Z"/>',
   menu: '<path d="M4 7h16M4 12h16M4 17h16"/>',
   caret: '<path d="m6 9 6 6 6-6"/>',
+  pulse: '<path d="M3 12h3.5l2.5-6 4 12 2.5-6H21"/>',
 }
 
 /**

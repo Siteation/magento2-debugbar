@@ -149,7 +149,7 @@ a length of time.
 Rutger's call: it needs the repository made public so Packagist can read it. Not an
 engineering task, and not something to push toward.
 
-**1.1**: 46 done, 3 closed by decision, none open. `docs/build-status.html` holds the live
+**1.1**: 47 done, 3 closed by decision, none open. `docs/build-status.html` holds the live
 count. The phase list below says what each one delivered; it does not repeat the numbers,
 because two places that count the same work only ever agree for a while.
 
@@ -159,7 +159,7 @@ because two places that count the same work only ever agree for a while.
 | B. Window | floating glass dock, modal sheet, `lockHost`, window controls |
 | C. Navigation | 210px sidebar, favourites with drag, section leads, inline findings |
 | D. Alpine | components, stores, deferred, health, sub-tabs, value policy |
-| E. Comfort | all of it: light theme, type, palette, their layouts, highlighting, history |
+| E. Comfort | all of it: light theme, type, palette, their layouts, highlighting, history, the bubble |
 
 Backlog is in `build-status.html`, which is the live tracker. Open it in a browser.
 

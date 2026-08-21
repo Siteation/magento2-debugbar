@@ -132,6 +132,49 @@
 .ndb.is-bottom .ndb-dock { bottom: 12px; }
 .ndb.is-top .ndb-dock { top: 12px; }
 
+/* the bubble the dock collapses to */
+
+.ndb-bubble {
+  position: fixed;
+  right: 12px;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: auto;
+  border: 1px solid var(--ndb-border-soft);
+  border-radius: 999px;
+  background: var(--ndb-glass);
+  color: var(--ndb-dim);
+  box-shadow: var(--ndb-shadow);
+  backdrop-filter: blur(20px) saturate(140%);
+  cursor: pointer;
+  transition: border-color 120ms ease, color 120ms ease;
+}
+
+.ndb-bubble:hover {
+  border-color: var(--ndb-border);
+  color: var(--ndb-text);
+}
+
+.ndb-bubble.is-warn { color: var(--ndb-warn); }
+.ndb-bubble.is-bad { color: var(--ndb-bad); }
+
+.ndb-bubble .ndb-icon {
+  width: 20px;
+  height: 20px;
+}
+
+.ndb-bubble .ndb-badge {
+  top: -2px;
+  right: -2px;
+}
+
+.ndb.is-bottom .ndb-bubble { bottom: 12px; }
+.ndb.is-top .ndb-bubble { top: 12px; }
+
 /* the modal sheet */
 
 .ndb-overlay {
@@ -385,12 +428,14 @@
  * currentColor: a background reads currentColor from the element's own colour, which here
  * is the badge's text colour, so the count was painted onto itself in both themes.
  */
-.ndb-icon-button.is-warn .ndb-badge {
+.ndb-icon-button.is-warn .ndb-badge,
+.ndb-bubble.is-warn .ndb-badge {
   background: var(--ndb-warn);
   color: var(--ndb-on-warn);
 }
 
-.ndb-icon-button.is-bad .ndb-badge {
+.ndb-icon-button.is-bad .ndb-badge,
+.ndb-bubble.is-bad .ndb-badge {
   background: var(--ndb-bad);
   color: var(--ndb-on-bad);
 }

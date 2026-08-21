@@ -350,6 +350,62 @@ test.describe('the bar', () => {
       await state(page, (data) => { data.setTheme('system') })
     })
 
+  test('closing the bar leaves a bubble behind, and the bubble is remembered',
+    async ({ page }) => {
+      await openBar(page)
+      await state(page, (data) => { data.closeInspector() })
+
+      await page.locator('.ndb-dock .ndb-icon-button[title="Collapse to a bubble"]').click()
+
+      await expect(page.locator('.ndb-bubble')).toBeVisible()
+      await expect(page.locator('.ndb-dock')).toBeHidden()
+
+      // The whole point: reopening costs a click, not a reload, so the profile being read
+      // survives being got out of the way.
+      const findings = await state(page, (data) => data.findings.length)
+      const badge = page.locator('.ndb-bubble .ndb-badge')
+
+      if (findings > 0) {
+        await expect(badge).toHaveText(String(findings))
+      } else {
+        await expect(badge).toBeHidden()
+      }
+
+      const viewport = page.viewportSize()
+      const atBottom = await page.locator('.ndb-bubble').boundingBox()
+
+      expect(atBottom.y).toBeGreaterThan(viewport.height / 2)
+
+      await state(page, (data) => { data.movePlacement() })
+      expect((await page.locator('.ndb-bubble').boundingBox()).y).toBeLessThan(viewport.height / 2)
+      await state(page, (data) => { data.movePlacement() })
+
+      // Remembered, unlike hiding: out of the way is a preference, not a decision about
+      // one page.
+      await page.reload()
+      await expect(page.locator('.ndb-bubble')).toBeVisible()
+      await expect(page.locator('.ndb-dock')).toBeHidden()
+
+      await page.locator('.ndb-bubble').click()
+      await expect(page.locator('.ndb-dock')).toBeVisible()
+      await expect(page.locator('.ndb-bubble')).toBeHidden()
+
+      expect(await ourAlpineErrors(page)).toEqual([])
+    })
+
+  test('the palette can still take the bar off the page entirely', async ({ page }) => {
+    await openBar(page)
+    await state(page, (data) => { data.runCommand({ kind: 'dismiss' }) })
+
+    await expect(page.locator('.ndb-dock')).toBeHidden()
+    await expect(page.locator('.ndb-bubble')).toBeHidden()
+    await expect(page.locator('.ndb-sheet')).toBeHidden()
+
+    // Not remembered, because nothing is left on screen to undo it.
+    await page.reload()
+    await expect(page.locator('.ndb-dock')).toBeVisible()
+  })
+
   test('a comparison renders, and its empty state does not throw', async ({ page }) => {
     await openBar(page)
     await state(page, (data) => { data.section = 'history'; data.historyTab = 'compare' })

@@ -3352,9 +3352,10 @@ const lc = {
   close: '<path d="M6 6l12 12M18 6 6 18"/>',
   star: '<path d="m12 3.5 2.6 5.6 6 .8-4.4 4.2 1.1 6L12 17.3 6.7 20.1l1.1-6L3.4 9.9l6-.8L12 3.5Z"/>',
   menu: '<path d="M4 7h16M4 12h16M4 17h16"/>',
-  caret: '<path d="m6 9 6 6 6-6"/>'
+  caret: '<path d="m6 9 6 6 6-6"/>',
+  pulse: '<path d="M3 12h3.5l2.5-6 4 12 2.5-6H21"/>'
 };
-function K(e, t = "") {
+function z(e, t = "") {
   return `<svg class="ndb-icon ${t}" viewBox="0 0 24 24" fill="none" stroke="currentColor"
     stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"
     aria-hidden="true">${lc[e] || ""}</svg>`;
@@ -3442,11 +3443,20 @@ function pc(e) {
       arg: ""
     },
     {
+      id: "collapse",
+      group: "Window",
+      label: e.collapsed ? "Show the bar again" : "Collapse the bar to a bubble",
+      hint: "",
+      keywords: "collapse bubble corner minimise restore show out of the way",
+      kind: "collapse",
+      arg: ""
+    },
+    {
       id: "dismiss",
       group: "Window",
       label: "Hide the bar until the next page load",
-      hint: "",
-      keywords: "hide dismiss close",
+      hint: "nothing on screen",
+      keywords: "hide dismiss close screenshot",
       kind: "dismiss",
       arg: ""
     }
@@ -3468,7 +3478,7 @@ function fc() {
   <div class="ndb-palette-box" data-ndb-ref="palette"
        role="dialog" aria-modal="true" aria-label="Commands">
     <div class="ndb-palette-field">
-      ${K("search")}
+      ${z("search")}
       <input class="ndb-palette-input" type="text" data-ndb-ref="paletteInput"
              data-ndb-model="paletteSearch" autocomplete="off" spellcheck="false"
              placeholder="Search sections and settings" aria-label="Search commands">
@@ -4133,8 +4143,8 @@ function Ac() {
         const k = this.matcherRe.exec(y);
         if (!k)
           return null;
-        const z = k.findIndex((st, un) => un > 0 && st !== void 0), F = this.matchIndexes[z];
-        return k.splice(0, z), Object.assign(k, F);
+        const K = k.findIndex((st, un) => un > 0 && st !== void 0), F = this.matchIndexes[K];
+        return k.splice(0, K), Object.assign(k, F);
       }
     }
     class O {
@@ -4145,7 +4155,7 @@ function Ac() {
       getMatcher(y) {
         if (this.multiRegexes[y]) return this.multiRegexes[y];
         const k = new f();
-        return this.rules.slice(y).forEach(([z, F]) => k.addRule(z, F)), k.compile(), this.multiRegexes[y] = k, k;
+        return this.rules.slice(y).forEach(([K, F]) => k.addRule(K, F)), k.compile(), this.multiRegexes[y] = k, k;
       }
       resumingScanAtSamePosition() {
         return this.regexIndex !== 0;
@@ -4161,12 +4171,12 @@ function Ac() {
       exec(y) {
         const k = this.getMatcher(this.regexIndex);
         k.lastIndex = this.lastIndex;
-        let z = k.exec(y);
-        if (this.resumingScanAtSamePosition() && !(z && z.index === this.lastIndex)) {
+        let K = k.exec(y);
+        if (this.resumingScanAtSamePosition() && !(K && K.index === this.lastIndex)) {
           const F = this.getMatcher(0);
-          F.lastIndex = this.lastIndex + 1, z = F.exec(y);
+          F.lastIndex = this.lastIndex + 1, K = F.exec(y);
         }
-        return z && (this.regexIndex += z.position + 1, this.regexIndex === this.count && this.considerAll()), z;
+        return K && (this.regexIndex += K.position + 1, this.regexIndex === this.count && this.considerAll()), K;
       }
     }
     function q(_) {
@@ -4194,8 +4204,8 @@ function Ac() {
         // default to 1 relevance if not specified
         Yr
       ].forEach((F) => F(_, y)), _.isCompiled = !0;
-      let z = null;
-      return typeof _.keywords == "object" && _.keywords.$pattern && (_.keywords = Object.assign({}, _.keywords), z = _.keywords.$pattern, delete _.keywords.$pattern), z = z || /\w+/, _.keywords && (_.keywords = As(_.keywords, l.case_insensitive)), k.keywordPatternRe = u(z, !0), y && (_.begin || (_.begin = /\B|\b/), k.beginRe = u(k.begin), !_.end && !_.endsWithParent && (_.end = /\B|\b/), _.end && (k.endRe = u(k.end)), k.terminatorEnd = m(k.end) || "", _.endsWithParent && y.terminatorEnd && (k.terminatorEnd += (_.end ? "|" : "") + y.terminatorEnd)), _.illegal && (k.illegalRe = u(
+      let K = null;
+      return typeof _.keywords == "object" && _.keywords.$pattern && (_.keywords = Object.assign({}, _.keywords), K = _.keywords.$pattern, delete _.keywords.$pattern), K = K || /\w+/, _.keywords && (_.keywords = As(_.keywords, l.case_insensitive)), k.keywordPatternRe = u(K, !0), y && (_.begin || (_.begin = /\B|\b/), k.beginRe = u(k.begin), !_.end && !_.endsWithParent && (_.end = /\B|\b/), _.end && (k.endRe = u(k.end)), k.terminatorEnd = m(k.end) || "", _.endsWithParent && y.terminatorEnd && (k.terminatorEnd += (_.end ? "|" : "") + y.terminatorEnd)), _.illegal && (k.illegalRe = u(
         /** @type {RegExp | string} */
         _.illegal
       )), _.contains || (_.contains = []), _.contains = [].concat(..._.contains.map(function(F) {
@@ -4248,7 +4258,7 @@ function Ac() {
     function k(h) {
       return y.noHighlightRe.test(h);
     }
-    function z(h) {
+    function K(h) {
       let x = h.className + " ";
       x += h.parentNode ? h.parentNode.className : "";
       const M = y.languageDetectRe.exec(x);
@@ -4499,7 +4509,7 @@ https://github.com/highlightjs/highlight.js/issues/2277`), H = h, $ = x), M === 
     }
     function hn(h) {
       let x = null;
-      const M = z(h);
+      const M = K(h);
       if (k(M)) return;
       if (Nt(
         "before:highlightElement",
@@ -6352,8 +6362,12 @@ function fd() {
     draggingId: null,
     dropTargetId: null,
     navOpen: !1,
-    // Deliberately not persisted. Hiding the bar for good with no way back would be a
-    // trap, so closing it lasts until the next page load.
+    // Out of the way, not gone: the bubble is still on the page, so this is a preference
+    // and survives navigation.
+    collapsed: !1,
+    // Deliberately not persisted. Nothing is left on screen to bring the bar back, and the
+    // only way back is a reload, which reprofiles the page and throws away the request
+    // being looked at.
     dismissed: !1,
     queryFilter: "all",
     querySearch: "",
@@ -6414,7 +6428,7 @@ function fd() {
     init() {
       this.profile = pd(), this.pageProfile = this.profile, this.activeId = this.profile.id || null;
       const e = hd();
-      this.open = e.open, this.section = e.section, this.placement = e.placement === "top" ? "top" : "bottom", this.maximised = !!e.maximised, this.theme = ["system", "light", "dark"].includes(e.theme) ? e.theme : "system", this.favourites = Array.isArray(e.favourites) ? e.favourites.filter((t) => Jt.some((n) => n.id === t)) : [], this.watchColorScheme(), this.valuePolicy = wc(this.rootElement()?.dataset.valuePolicy), this.editorTemplate = this.rootElement()?.dataset.editor || "", this.editorRoot = this.rootElement()?.dataset.editorRoot || "", this.refreshAlpine(), this.refreshMagewire(), this.listenToMagewire(), this.$watch("alpineLiveWanted", () => this.syncAlpineLive()), this.syncAlpineLive(), this.$watch("paletteSearch", () => {
+      this.collapsed = !!e.collapsed, this.open = e.open && !this.collapsed, this.section = e.section, this.placement = e.placement === "top" ? "top" : "bottom", this.maximised = !!e.maximised, this.theme = ["system", "light", "dark"].includes(e.theme) ? e.theme : "system", this.favourites = Array.isArray(e.favourites) ? e.favourites.filter((t) => Jt.some((n) => n.id === t)) : [], this.watchColorScheme(), this.valuePolicy = wc(this.rootElement()?.dataset.valuePolicy), this.editorTemplate = this.rootElement()?.dataset.editor || "", this.editorRoot = this.rootElement()?.dataset.editorRoot || "", this.refreshAlpine(), this.refreshMagewire(), this.listenToMagewire(), this.$watch("alpineLiveWanted", () => this.syncAlpineLive()), this.syncAlpineLive(), this.$watch("paletteSearch", () => {
         this.paletteIndex = 0;
       }), this.$watch("section", (t) => {
         t === "history" && this.loadHistory();
@@ -6924,7 +6938,7 @@ function fd() {
       n && !n.isCollapsed || this.openInspector();
     },
     openInspector() {
-      this.open || (this.returnFocusTo = this.$root.getRootNode().activeElement, this.open = !0, this.persist(), this.loadPayloads(), this.$nextTick(() => this.lock()));
+      this.open || (this.collapsed = !1, this.returnFocusTo = this.$root.getRootNode().activeElement, this.open = !0, this.persist(), this.loadPayloads(), this.$nextTick(() => this.lock()));
     },
     closeInspector() {
       this.open && (this.open = !1, this.persist(), rc(), this.returnFocusTo && typeof this.returnFocusTo.focus == "function" && this.returnFocusTo.focus());
@@ -6938,6 +6952,32 @@ function fd() {
     movePlacement() {
       this.placement = this.placement === "bottom" ? "top" : "bottom", this.persist();
     },
+    /**
+     * Collapse the bar to its bubble.
+     *
+     * The X used to hide the bar until the next page load, and a reload is the thing this
+     * bar cannot afford: it profiles the page again, so getting the bar back destroyed the
+     * request being investigated. Anyone who closed the bar to click what was under it had
+     * no way back to what they were reading.
+     *
+     * The bubble is not destructive, so unlike dismiss() it is remembered. Available but
+     * out of the way is a preference, not a decision about one page.
+     */
+    collapse() {
+      this.closeInspector(), this.collapsed = !0, this.persist();
+    },
+    expand() {
+      this.collapsed = !1, this.persist();
+    },
+    toggleCollapsed() {
+      this.collapsed ? this.expand() : this.collapse();
+    },
+    /**
+     * Take the bar off the page entirely, for a screenshot or a sticky footer.
+     *
+     * This is the one that leaves nothing behind, which is why it is only in the palette
+     * and why it is not remembered.
+     */
     dismiss() {
       this.closeInspector(), this.dismissed = !0;
     },
@@ -7124,6 +7164,9 @@ function fd() {
           case "maximise":
             this.toggleMaximised();
             break;
+          case "collapse":
+            this.toggleCollapsed();
+            break;
           case "dismiss":
             this.dismiss();
             break;
@@ -7152,6 +7195,7 @@ function fd() {
       try {
         localStorage.setItem(Br, JSON.stringify({
           open: this.open,
+          collapsed: this.collapsed,
           section: this.section,
           placement: this.placement,
           maximised: this.maximised,
@@ -7267,7 +7311,7 @@ ${e ? "" : `  <div class="ndb-stats">
     </div>
 
     <div class="ndb-stat">
-      ${K("database", "is-accent")}
+      ${z("database", "is-accent")}
       <span>
         <span class="ndb-stat-key">Queries</span>
         <span class="ndb-stat-value" data-ndb-bind:class="'is-' + queryTone">
@@ -7278,7 +7322,7 @@ ${e ? "" : `  <div class="ndb-stats">
     </div>
 
     <div class="ndb-stat">
-      ${K("clock", "is-accent")}
+      ${z("clock", "is-accent")}
       <span>
         <span class="ndb-stat-key">Duration</span>
         <span class="ndb-stat-value" data-ndb-bind:class="'is-' + durationTone"
@@ -7287,7 +7331,7 @@ ${e ? "" : `  <div class="ndb-stats">
     </div>
 
     <div class="ndb-stat is-secondary">
-      ${K("chip", "is-accent")}
+      ${z("chip", "is-accent")}
       <span>
         <span class="ndb-stat-key">Peak</span>
         <span class="ndb-stat-value" data-ndb-text="number(metrics.memory_peak_mb, 1) + ' MB'"></span>
@@ -7298,20 +7342,20 @@ ${e ? "" : `  <div class="ndb-stats">
   <div class="ndb-controls-group">
     <button type="button" class="ndb-icon-button" data-ndb-on:click="openPalette()"
             title="Search sections and settings">
-      ${K("search")}
+      ${z("search")}
     </button>
 
     <button type="button" class="ndb-icon-button" data-ndb-on:click="cycleTheme()"
             data-ndb-bind:title="'Theme: ' + theme + '. Click for the next one.'">
-      <span data-ndb-show="theme === 'system'">${K("monitor")}</span>
-      <span data-ndb-show="theme === 'light'">${K("sun")}</span>
-      <span data-ndb-show="theme === 'dark'">${K("moon")}</span>
+      <span data-ndb-show="theme === 'system'">${z("monitor")}</span>
+      <span data-ndb-show="theme === 'light'">${z("sun")}</span>
+      <span data-ndb-show="theme === 'dark'">${z("moon")}</span>
     </button>
 
     <button type="button" class="ndb-icon-button" data-ndb-on:click="select('findings')"
             data-ndb-bind:class="findings.length > 0 && 'is-' + findingsTone"
             title="Findings">
-      ${K("alert")}
+      ${z("alert")}
       <span class="ndb-badge" data-ndb-show="findings.length > 0"
             data-ndb-text="findings.length"></span>
     </button>
@@ -7321,23 +7365,23 @@ ${e ? "" : `  <div class="ndb-stats">
     ${e ? `
     <button type="button" class="ndb-icon-button" data-ndb-on:click="toggleMaximised()"
             data-ndb-bind:title="maximised ? 'Restore' : 'Maximise'">
-      <span data-ndb-show="!maximised">${K("expand")}</span>
-      <span data-ndb-show="maximised">${K("collapse")}</span>
+      <span data-ndb-show="!maximised">${z("expand")}</span>
+      <span data-ndb-show="maximised">${z("collapse")}</span>
     </button>
     <button type="button" class="ndb-icon-button" data-ndb-on:click="closeInspector()"
             title="Minimise">
-      ${K("minimise")}
+      ${z("minimise")}
     </button>
     ` : `
     <button type="button" class="ndb-icon-button is-open" data-ndb-on:click="openInspector()"
             title="Open the inspector">
-      ${K("expand")}
+      ${z("expand")}
     </button>
     `}
 
-    <button type="button" class="ndb-icon-button" data-ndb-on:click="dismiss()"
-            title="Hide until the next page load">
-      ${K("close")}
+    <button type="button" class="ndb-icon-button" data-ndb-on:click="collapse()"
+            title="Collapse to a bubble">
+      ${z("close")}
     </button>
   </div>
 </div>`;
@@ -7364,7 +7408,7 @@ function bi(e, t) {
             data-ndb-bind:class="isFavourite(item.id) && 'is-on'"
             data-ndb-on:click="toggleFavourite(item.id)"
             data-ndb-bind:title="isFavourite(item.id) ? 'Unpin' : 'Pin to favourites'">
-      ${K("star")}
+      ${z("star")}
     </button>
   </div>
 </template>`;
@@ -7396,10 +7440,19 @@ const gd = `
 <div class="ndb" data-ndb-data="debugBar" data-ndb-cloak
      data-ndb-bind:class="'is-' + placement + ' is-theme-' + resolvedTheme">
 
-  <div class="ndb-dock" data-ndb-show="!open && !dismissed" data-ndb-cloak
+  <div class="ndb-dock" data-ndb-show="!open && !dismissed && !collapsed" data-ndb-cloak
        title="Open the inspector" data-ndb-on:click="openFromBar($event)">
     ${fi({ sheet: !1 })}
   </div>
+
+  <button type="button" class="ndb-bubble" data-ndb-show="collapsed && !dismissed" data-ndb-cloak
+          data-ndb-bind:class="findings.length > 0 && 'is-' + findingsTone"
+          data-ndb-on:click="expand()"
+          aria-label="Show the debug bar" title="Show the debug bar">
+    ${z("pulse")}
+    <span class="ndb-badge" data-ndb-show="findings.length > 0"
+          data-ndb-text="findings.length"></span>
+  </button>
 
   ${fc()}
 
@@ -7415,7 +7468,7 @@ const gd = `
       <div class="ndb-body">
         <button type="button" class="ndb-nav-toggle" data-ndb-on:click="navOpen = !navOpen"
                 title="Sections">
-          ${K("menu")}
+          ${z("menu")}
           <span data-ndb-text="currentSection.label"></span>
         </button>
 
@@ -8021,7 +8074,7 @@ const gd = `
                           data-ndb-on:mouseleave="highlightMagewire(component.id, false)"
                           data-ndb-on:focus="highlightMagewire(component.id, true)"
                           data-ndb-on:blur="highlightMagewire(component.id, false)">
-                    ${K("caret", "ndb-alpine-caret")}
+                    ${z("caret", "ndb-alpine-caret")}
                     <span class="ndb-alpine-name" data-ndb-text="component.name"></span>
                     <span class="ndb-tag" data-ndb-show="component.children"
                           data-ndb-text="plural(component.children, 'child', 'children')"></span>
@@ -8370,7 +8423,7 @@ const gd = `
                           data-ndb-on:mouseleave="highlightAlpine(component.id, false)"
                           data-ndb-on:focus="highlightAlpine(component.id, true)"
                           data-ndb-on:blur="highlightAlpine(component.id, false)">
-                    ${K("caret", "ndb-alpine-caret")}
+                    ${z("caret", "ndb-alpine-caret")}
                     <span class="ndb-alpine-name" data-ndb-text="component.name"></span>
                     <span class="ndb-tag is-warn" data-ndb-show="!component.initialised">
                       not started

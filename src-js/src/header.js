@@ -18,6 +18,10 @@ import { icon } from './icons.js'
  * The mode dot reports the deploy mode and nothing else. It used to take its colour from
  * the worst finding, which is what the findings icon beside it already says, with a count.
  *
+ * The X collapses to the bubble rather than hiding the bar. Getting a hidden bar back
+ * costs a reload, and a reload reprofiles the page, so the one control on the header could
+ * destroy the request being read. Hiding for real is still available, in the palette.
+ *
  * The theme is here as well as in the palette. It was taken out when the header was
  * crowded, on the grounds that the palette already named all three, and that was a
  * mistake: naming a theme is a different act from flipping one, and a bar that renders on
@@ -121,8 +125,8 @@ ${sheet ? '' : `  <div class="ndb-stats">
     </button>
     `}
 
-    <button type="button" class="ndb-icon-button" data-ndb-on:click="dismiss()"
-            title="Hide until the next page load">
+    <button type="button" class="ndb-icon-button" data-ndb-on:click="collapse()"
+            title="Collapse to a bubble">
       ${icon('close')}
     </button>
   </div>

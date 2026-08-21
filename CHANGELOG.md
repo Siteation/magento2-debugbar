@@ -53,6 +53,11 @@ entries for the work that led up to it.
   one line summary of what happened.
 * A command palette on Cmd/Ctrl Shift P: every section, the themes, placement, pinning and
   the window controls, filtered as you type.
+* Closing the bar collapses it to a corner bubble that restores it, follows the top or
+  bottom placement and carries the findings count, so getting the bar back no longer costs
+  the reload that would profile the page again and lose the request being read. The bubble
+  is remembered across pages. Hiding the bar outright, for a screenshot or a sticky footer,
+  is a palette command and lasts until the next page load.
 * An Alpine section that reads the page's own instance: every component with its live
   state, the registered stores, which components Hyva deferred and whether they have
   started, and the version, build and expression errors behind it.

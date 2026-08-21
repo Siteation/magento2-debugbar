@@ -107,8 +107,12 @@ export function debugBar() {
     draggingId: null,
     dropTargetId: null,
     navOpen: false,
-    // Deliberately not persisted. Hiding the bar for good with no way back would be a
-    // trap, so closing it lasts until the next page load.
+    // Out of the way, not gone: the bubble is still on the page, so this is a preference
+    // and survives navigation.
+    collapsed: false,
+    // Deliberately not persisted. Nothing is left on screen to bring the bar back, and the
+    // only way back is a reload, which reprofiles the page and throws away the request
+    // being looked at.
     dismissed: false,
     queryFilter: 'all',
     querySearch: '',
@@ -175,7 +179,8 @@ export function debugBar() {
       this.activeId = this.profile.id || null
 
       const preferences = readPreferences()
-      this.open = preferences.open
+      this.collapsed = Boolean(preferences.collapsed)
+      this.open = preferences.open && !this.collapsed
       this.section = preferences.section
       this.placement = preferences.placement === 'top' ? 'top' : 'bottom'
       this.maximised = Boolean(preferences.maximised)
@@ -947,6 +952,7 @@ export function debugBar() {
     openInspector() {
       if (this.open) return
 
+      this.collapsed = false
       this.returnFocusTo = this.$root.getRootNode().activeElement
       this.open = true
       this.persist()
@@ -980,6 +986,38 @@ export function debugBar() {
       this.persist()
     },
 
+    /**
+     * Collapse the bar to its bubble.
+     *
+     * The X used to hide the bar until the next page load, and a reload is the thing this
+     * bar cannot afford: it profiles the page again, so getting the bar back destroyed the
+     * request being investigated. Anyone who closed the bar to click what was under it had
+     * no way back to what they were reading.
+     *
+     * The bubble is not destructive, so unlike dismiss() it is remembered. Available but
+     * out of the way is a preference, not a decision about one page.
+     */
+    collapse() {
+      this.closeInspector()
+      this.collapsed = true
+      this.persist()
+    },
+
+    expand() {
+      this.collapsed = false
+      this.persist()
+    },
+
+    toggleCollapsed() {
+      this.collapsed ? this.expand() : this.collapse()
+    },
+
+    /**
+     * Take the bar off the page entirely, for a screenshot or a sticky footer.
+     *
+     * This is the one that leaves nothing behind, which is why it is only in the palette
+     * and why it is not remembered.
+     */
     dismiss() {
       this.closeInspector()
       this.dismissed = true
@@ -1255,6 +1293,7 @@ export function debugBar() {
         case 'favourite': this.toggleFavourite(command.arg); break
         case 'inspector': this.toggle(); break
         case 'maximise': this.toggleMaximised(); break
+        case 'collapse': this.toggleCollapsed(); break
         case 'dismiss': this.dismiss(); break
         case 'copy': this.copyReport(); break
         default: break
@@ -1286,6 +1325,7 @@ export function debugBar() {
       try {
         localStorage.setItem(STORAGE_KEY, JSON.stringify({
           open: this.open,
+          collapsed: this.collapsed,
           section: this.section,
           placement: this.placement,
           maximised: this.maximised,

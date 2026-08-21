@@ -223,6 +223,33 @@ test('the whole collapsed bar opens the inspector, and a real button still does 
   assert.ok(header({ sheet: false }).includes('openInspector()'))
 })
 
+test('the header X collapses, and only the palette hides for real', () => {
+  // A hidden bar can only come back with a reload, and a reload reprofiles the page, so
+  // the control that is one click away from every request must not be the destructive one.
+  const dock = header({ sheet: false })
+  const sheet = header({ sheet: true })
+
+  assert.ok(dock.includes('collapse()'))
+  assert.ok(sheet.includes('collapse()'))
+  assert.ok(!dock.includes('dismiss()'), 'dismiss is a palette command')
+  assert.ok(!sheet.includes('dismiss()'))
+})
+
+test('the bubble is what the dock collapses to, and the two never share the screen', () => {
+  assert.ok(template.includes('data-ndb-show="!open && !dismissed && !collapsed"'))
+  assert.ok(template.includes('data-ndb-show="collapsed && !dismissed"'))
+
+  const start = template.indexOf('class="ndb-bubble"')
+  const bubble = template.slice(start, template.indexOf('</button>', start))
+
+  assert.ok(bubble.includes('data-ndb-on:click="expand()"'), 'clicking it brings the bar back')
+  assert.ok(bubble.includes('aria-label='), 'an icon only button needs a name')
+
+  // Reopening costs a click and a glance. The count says whether it is worth either.
+  assert.ok(bubble.includes(`data-ndb-bind:class="findings.length > 0 && 'is-' + findingsTone"`))
+  assert.ok(bubble.includes('class="ndb-badge"'))
+})
+
 test('a panel with no data yet is not rendered at all', () => {
   // x-show hides an element and evaluates every expression inside it anyway, so a panel
   // bound to a null object throws once per binding on every page load, in silence unless
