@@ -17,7 +17,7 @@ class ConfigTest extends TestCase
     #[Test]
     public function productionModeRefusesEvenWhenTheFlagIsOn(): void
     {
-        $config = $this->config(State::MODE_PRODUCTION, ['dev/siteation_debugbar/enabled' => true]);
+        $config = $this->config(State::MODE_PRODUCTION, ['siteation_debugbar/general/enabled' => true]);
 
         $this->assertFalse($config->isEnabled());
     }
@@ -27,7 +27,7 @@ class ConfigTest extends TestCase
     {
         $this->assertFalse($this->config(State::MODE_DEVELOPER, [])->isEnabled());
         $this->assertTrue(
-            $this->config(State::MODE_DEVELOPER, ['dev/siteation_debugbar/enabled' => true])->isEnabled()
+            $this->config(State::MODE_DEVELOPER, ['siteation_debugbar/general/enabled' => true])->isEnabled()
         );
     }
 
@@ -38,14 +38,14 @@ class ConfigTest extends TestCase
         // live sites actually run. Keying the rule off production alone left those open.
         foreach ([State::MODE_PRODUCTION, State::MODE_DEFAULT] as $mode) {
             $this->assertFalse(
-                $this->config($mode, ['dev/siteation_debugbar/enabled' => true])->isEnabled(),
+                $this->config($mode, ['siteation_debugbar/general/enabled' => true])->isEnabled(),
                 $mode . ' must not run keyless'
             );
 
             $this->assertTrue(
                 $this->config($mode, [
-                    'dev/siteation_debugbar/enabled' => true,
-                    'dev/siteation_debugbar/access_key' => 'a-secret',
+                    'siteation_debugbar/general/enabled' => true,
+                    'siteation_debugbar/general/access_key' => 'a-secret',
                 ])->isEnabled(),
                 $mode . ' runs behind a key'
             );
@@ -56,7 +56,7 @@ class ConfigTest extends TestCase
     public function developerModeIsTheOneThatRunsKeyless(): void
     {
         // It is the only mode that is not somebody's live site.
-        $config = $this->config(State::MODE_DEVELOPER, ['dev/siteation_debugbar/enabled' => true]);
+        $config = $this->config(State::MODE_DEVELOPER, ['siteation_debugbar/general/enabled' => true]);
 
         $this->assertTrue($config->isEnabled());
         $this->assertSame('', $config->accessKey());
@@ -74,7 +74,7 @@ class ConfigTest extends TestCase
     #[Test]
     public function anAreaListExcludesEverythingElse(): void
     {
-        $config = $this->enabled(['dev/siteation_debugbar/areas' => 'frontend,graphql']);
+        $config = $this->enabled(['siteation_debugbar/general/areas' => 'frontend,graphql']);
 
         $this->assertTrue($config->allowsArea('frontend'));
         $this->assertTrue($config->allowsArea('graphql'));
@@ -91,7 +91,7 @@ class ConfigTest extends TestCase
     #[Test]
     public function anAllowlistExcludesEverythingElse(): void
     {
-        $config = $this->enabled(['dev/siteation_debugbar/allowed_ips' => '127.0.0.1, 192.168.1.5']);
+        $config = $this->enabled(['siteation_debugbar/general/allowed_ips' => '127.0.0.1, 192.168.1.5']);
 
         $this->assertTrue($config->allowsIp('127.0.0.1'));
         $this->assertTrue($config->allowsIp('192.168.1.5'));
@@ -102,7 +102,7 @@ class ConfigTest extends TestCase
     #[Test]
     public function anUnknownValuePolicyFallsBackToFull(): void
     {
-        $config = $this->enabled(['dev/siteation_debugbar/value_policy' => 'nonsense']);
+        $config = $this->enabled(['siteation_debugbar/general/value_policy' => 'nonsense']);
 
         $this->assertSame(Redactor::POLICY_FULL, $config->valuePolicy());
     }
@@ -111,8 +111,8 @@ class ConfigTest extends TestCase
     public function thresholdsRejectNonsenseAndKeepTheirDefaults(): void
     {
         $config = $this->enabled([
-            'dev/siteation_debugbar/slow_query_ms' => 'abc',
-            'dev/siteation_debugbar/slow_request_ms' => '-5',
+            'siteation_debugbar/general/slow_query_ms' => 'abc',
+            'siteation_debugbar/general/slow_request_ms' => '-5',
         ]);
 
         $this->assertSame(100.0, $config->slowQueryMs());
@@ -126,7 +126,7 @@ class ConfigTest extends TestCase
     {
         return $this->config(
             State::MODE_DEVELOPER,
-            ['dev/siteation_debugbar/enabled' => true] + $values
+            ['siteation_debugbar/general/enabled' => true] + $values
         );
     }
 
@@ -137,13 +137,13 @@ class ConfigTest extends TestCase
     public function noEditorMeansNoLink(): void
     {
         $this->assertSame('', $this->enabled([])->editor());
-        $this->assertSame('', $this->enabled(['dev/siteation_debugbar/editor' => 'nonsense'])->editor());
+        $this->assertSame('', $this->enabled(['siteation_debugbar/general/editor' => 'nonsense'])->editor());
     }
 
     #[Test]
     public function aNamedEditorResolvesToItsTemplate(): void
     {
-        $config = $this->enabled(['dev/siteation_debugbar/editor' => 'vscode']);
+        $config = $this->enabled(['siteation_debugbar/general/editor' => 'vscode']);
 
         $this->assertSame('vscode://file%f:%l', $config->editor());
     }
@@ -154,7 +154,7 @@ class ConfigTest extends TestCase
         // %f is absolute, so ://file/%f would produce two slashes. Zed opens nothing at all
         // when it sees that, without complaining.
         foreach (['vscode', 'vscode_insiders', 'cursor', 'windsurf', 'zed'] as $editor) {
-            $template = $this->enabled(['dev/siteation_debugbar/editor' => $editor])->editor();
+            $template = $this->enabled(['siteation_debugbar/general/editor' => $editor])->editor();
 
             $this->assertStringContainsString('://file%f', $template, $editor);
         }
@@ -164,8 +164,8 @@ class ConfigTest extends TestCase
     public function aCustomEditorUsesTheTemplateThatWasTyped(): void
     {
         $config = $this->enabled([
-            'dev/siteation_debugbar/editor' => 'custom',
-            'dev/siteation_debugbar/editor_template' => '  myeditor://go?f=%f&l=%l  ',
+            'siteation_debugbar/general/editor' => 'custom',
+            'siteation_debugbar/general/editor_template' => '  myeditor://go?f=%f&l=%l  ',
         ]);
 
         $this->assertSame('myeditor://go?f=%f&l=%l', $config->editor());
@@ -181,7 +181,7 @@ class ConfigTest extends TestCase
     public function aPathMapMovesTheRootToWhereTheEditorCanSeeIt(): void
     {
         $config = $this->enabled([
-            'dev/siteation_debugbar/editor_path_map' => '/srv/app:/elsewhere,/var/www/html:/Users/you/shop',
+            'siteation_debugbar/general/editor_path_map' => '/srv/app:/elsewhere,/var/www/html:/Users/you/shop',
         ]);
 
         $this->assertSame(
@@ -194,7 +194,7 @@ class ConfigTest extends TestCase
     #[Test]
     public function aHalfWrittenPathMapChangesNothing(): void
     {
-        $config = $this->enabled(['dev/siteation_debugbar/editor_path_map' => '/var/www/html:, :/somewhere']);
+        $config = $this->enabled(['siteation_debugbar/general/editor_path_map' => '/var/www/html:, :/somewhere']);
 
         $this->assertSame('/var/www/html', $config->editorRoot());
     }
@@ -203,7 +203,7 @@ class ConfigTest extends TestCase
     public function noChosenSectionsMeansEverySection(): void
     {
         // Empty is all of them, so an instance that predates the setting behaves as it did.
-        $config = $this->config(State::MODE_DEVELOPER, ['dev/siteation_debugbar/enabled' => true]);
+        $config = $this->config(State::MODE_DEVELOPER, ['siteation_debugbar/general/enabled' => true]);
 
         foreach (['queries', 'blocks', 'events', 'cache', 'plugins', 'timeline'] as $section) {
             $this->assertTrue($config->collects($section), $section);
@@ -214,8 +214,8 @@ class ConfigTest extends TestCase
     public function onlyTheChosenSectionsAreCollected(): void
     {
         $config = $this->config(State::MODE_DEVELOPER, [
-            'dev/siteation_debugbar/enabled' => true,
-            'dev/siteation_debugbar/sections' => 'queries,timeline',
+            'siteation_debugbar/general/enabled' => true,
+            'siteation_debugbar/general/sections' => 'queries,timeline',
         ]);
 
         $this->assertTrue($config->collects('queries'));
@@ -231,8 +231,8 @@ class ConfigTest extends TestCase
         // report and the MCP tools cannot use, and the findings are what the bar is for.
         // Neither is offered in the admin field, and neither is read from it.
         $config = $this->config(State::MODE_DEVELOPER, [
-            'dev/siteation_debugbar/enabled' => true,
-            'dev/siteation_debugbar/sections' => 'queries',
+            'siteation_debugbar/general/enabled' => true,
+            'siteation_debugbar/general/sections' => 'queries',
         ]);
 
         $this->assertTrue($config->collects('overview'));

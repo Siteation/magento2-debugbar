@@ -73,6 +73,15 @@ entries for the work that led up to it.
   answer in 7 kB.
 * `docs/SKILL.md` describes how to use the tools without drawing the wrong conclusions.
 
+### Settings
+
+* Settings live at **Stores > Configuration > Siteation > Debug Bar**, beside the other
+  Siteation modules, and the values are at `siteation_debugbar/general/*`. Deliberately not
+  a group under Advanced > Developer: Magento hides that whole section in production mode,
+  which is exactly where the access key makes the bar usable, so the settings for it were
+  unreachable in the one mode that has to be configured before it does anything. The ACL
+  resource is still the developer one, so who may change them has not changed.
+
 ### Safety
 
 * Off by default. Production mode refuses unless a developer access key is set, and then

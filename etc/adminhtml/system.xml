@@ -2,10 +2,32 @@
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Config:etc/system_file.xsd">
     <system>
-        <section id="dev">
-            <group id="siteation_debugbar" translate="label" type="text" sortOrder="900"
+        <!--
+            Declared here as well as by every other Siteation module. Magento merges the
+            repeated declaration, which is how a family of unrelated modules shares one tab
+            without any of them depending on another.
+        -->
+        <tab id="siteation" translate="label" sortOrder="999">
+            <label>Siteation</label>
+        </tab>
+
+        <!--
+            Deliberately not a group under Advanced > Developer, where this started. Magento
+            hides the whole dev section in production mode (Magento_Backend's
+            ConcealInProduction), and production is precisely where the access key makes the
+            bar usable, so the settings for it were unreachable in the one mode that needs
+            them explained. The ACL resource stays the developer one, so who may change this
+            has not changed.
+        -->
+        <section id="siteation_debugbar" translate="label" type="text" sortOrder="100"
+                 showInDefault="1" showInWebsite="0" showInStore="0">
+            <label>Debug Bar</label>
+            <tab>siteation</tab>
+            <resource>Magento_Config::dev</resource>
+
+            <group id="general" translate="label" type="text" sortOrder="10"
                    showInDefault="1" showInWebsite="0" showInStore="0">
-                <label>Siteation Debug Bar</label>
+                <label>General</label>
                 <field id="enabled" translate="label comment" type="select" sortOrder="10"
                        showInDefault="1" showInWebsite="0" showInStore="0" canRestore="1">
                     <label>Enabled</label>

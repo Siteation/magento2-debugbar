@@ -25,20 +25,20 @@ use Throwable;
  */
 class Config
 {
-    private const XML_PATH_ENABLED = 'dev/siteation_debugbar/enabled';
-    private const XML_PATH_SLOW_QUERY_MS = 'dev/siteation_debugbar/slow_query_ms';
-    private const XML_PATH_SLOW_REQUEST_MS = 'dev/siteation_debugbar/slow_request_ms';
-    private const XML_PATH_ALLOWED_IPS = 'dev/siteation_debugbar/allowed_ips';
-    private const XML_PATH_VALUE_POLICY = 'dev/siteation_debugbar/value_policy';
-    private const XML_PATH_AREAS = 'dev/siteation_debugbar/areas';
-    private const XML_PATH_SECTIONS = 'dev/siteation_debugbar/sections';
+    private const XML_PATH_ENABLED = 'siteation_debugbar/general/enabled';
+    private const XML_PATH_SLOW_QUERY_MS = 'siteation_debugbar/general/slow_query_ms';
+    private const XML_PATH_SLOW_REQUEST_MS = 'siteation_debugbar/general/slow_request_ms';
+    private const XML_PATH_ALLOWED_IPS = 'siteation_debugbar/general/allowed_ips';
+    private const XML_PATH_VALUE_POLICY = 'siteation_debugbar/general/value_policy';
+    private const XML_PATH_AREAS = 'siteation_debugbar/general/areas';
+    private const XML_PATH_SECTIONS = 'siteation_debugbar/general/sections';
 
     /** @var list<string> */
     private const ALWAYS_COLLECTED = ['findings', 'overview'];
-    private const XML_PATH_ACCESS_KEY = 'dev/siteation_debugbar/access_key';
-    private const XML_PATH_EDITOR = 'dev/siteation_debugbar/editor';
-    private const XML_PATH_EDITOR_TEMPLATE = 'dev/siteation_debugbar/editor_template';
-    private const XML_PATH_EDITOR_PATH_MAP = 'dev/siteation_debugbar/editor_path_map';
+    private const XML_PATH_ACCESS_KEY = 'siteation_debugbar/general/access_key';
+    private const XML_PATH_EDITOR = 'siteation_debugbar/general/editor';
+    private const XML_PATH_EDITOR_TEMPLATE = 'siteation_debugbar/general/editor_template';
+    private const XML_PATH_EDITOR_PATH_MAP = 'siteation_debugbar/general/editor_path_map';
 
     private const DEFAULT_SLOW_QUERY_MS = 100.0;
     private const DEFAULT_SLOW_REQUEST_MS = 1000.0;

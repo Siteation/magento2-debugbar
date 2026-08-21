@@ -38,10 +38,10 @@ The bar collects nothing until it is switched on. Outside developer mode it also
 unless an access key is set, so a store switch can never mean "on for every customer":
 
 ```
-bin/magento config:set dev/siteation_debugbar/enabled 1
+bin/magento config:set siteation_debugbar/general/enabled 1
 ```
 
-Settings live under **Stores > Configuration > Advanced > Developer > Siteation Debug Bar**.
+Settings live under **Stores > Configuration > Siteation > Debug Bar**.
 They apply to the whole installation: the collector decides before the store is known, so a
 per website or per store value is ignored rather than half honoured.
 
@@ -133,20 +133,20 @@ the right default on a developer machine, where seeing the real value is the poi
 instance is shared, set **Captured Values** to *Masked* or *None*:
 
 ```
-bin/magento config:set dev/siteation_debugbar/value_policy masked
+bin/magento config:set siteation_debugbar/general/value_policy masked
 ```
 
 Choose which areas produce a profile under **Active In**, or from the CLI. Selecting
 nothing covers all of them:
 
 ```
-bin/magento config:set dev/siteation_debugbar/areas frontend,adminhtml
+bin/magento config:set siteation_debugbar/general/areas frontend,adminhtml
 ```
 
 An IP allowlist covers both the bar and the profile endpoint:
 
 ```
-bin/magento config:set dev/siteation_debugbar/allowed_ips 127.0.0.1
+bin/magento config:set siteation_debugbar/general/allowed_ips 127.0.0.1
 ```
 
 ## Debugging a live site
@@ -155,8 +155,8 @@ The switch in configuration is per store, which on a live site is the wrong shap
 turn the bar on for every visitor. The access key is the per request half.
 
 ```
-bin/magento config:set dev/siteation_debugbar/access_key "$(openssl rand -hex 32)"
-bin/magento config:set dev/siteation_debugbar/enabled 1
+bin/magento config:set siteation_debugbar/general/access_key "$(openssl rand -hex 32)"
+bin/magento config:set siteation_debugbar/general/enabled 1
 ```
 
 With a key set, a request that does not present it is an ordinary visitor's: no profile is
@@ -194,7 +194,7 @@ Every query shows the application frame it came from. Name an editor and that fr
 a link that opens the file at the line:
 
 ```
-bin/magento config:set dev/siteation_debugbar/editor zed
+bin/magento config:set siteation_debugbar/general/editor zed
 ```
 
 PhpStorm, VS Code and Insiders, Cursor, Windsurf, Zed, Sublime Text and TextMate are named.
@@ -202,8 +202,8 @@ Anything else with a URL scheme works through `custom`, where `%f` is the absolu
 `%l` the line:
 
 ```
-bin/magento config:set dev/siteation_debugbar/editor custom
-bin/magento config:set dev/siteation_debugbar/editor_template 'myeditor://open?file=%f&line=%l'
+bin/magento config:set siteation_debugbar/general/editor custom
+bin/magento config:set siteation_debugbar/general/editor_template 'myeditor://open?file=%f&line=%l'
 ```
 
 `%f` is absolute and so already starts with a slash. A path style template is therefore
@@ -214,7 +214,7 @@ If the application runs somewhere your editor cannot see, a container for instan
 root across. Paths are stored relative to it, so mapping the root maps every path:
 
 ```
-bin/magento config:set dev/siteation_debugbar/editor_path_map '/var/www/html:/Users/you/dev/shop'
+bin/magento config:set siteation_debugbar/general/editor_path_map '/var/www/html:/Users/you/dev/shop'
 ```
 
 Left unset, the file and line are shown as plain text.

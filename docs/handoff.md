@@ -70,6 +70,10 @@ every web request in every area. It has to be `around`: `launch()` switches the 
 manager to the request's area, `PluginList` reloads its scoped data, and an `after`
 listener dies in `getPlugin()`. See `research.md` 13.1.
 
+**Settings** are at `siteation_debugbar/general/*`, shown under Stores > Configuration >
+Siteation > Debug Bar. Not under Advanced > Developer, where they started: Magento hides
+the whole `dev` section in production mode, which is the mode the access key exists for.
+
 **The Alpine section is the exception to all of this.** It reads the page's live Alpine
 instead of a stored profile, so it is client only, invisible to MCP, and applies the value
 policy itself in `redact.js`. The policy reaches the page as `data-value-policy` on the
@@ -155,7 +159,7 @@ a length of time.
 Rutger's call: it needs the repository made public so Packagist can read it. Not an
 engineering task, and not something to push toward.
 
-**1.1**: 48 done, 3 closed by decision, none open. `docs/build-status.html` holds the live
+**1.1**: 49 done, 3 closed by decision, none open. `docs/build-status.html` holds the live
 count. The phase list below says what each one delivered; it does not repeat the numbers,
 because two places that count the same work only ever agree for a while.
 
@@ -165,7 +169,7 @@ because two places that count the same work only ever agree for a while.
 | B. Window | floating glass dock, modal sheet, `lockHost`, window controls |
 | C. Navigation | 210px sidebar, favourites with drag, section leads, inline findings |
 | D. Alpine | components, stores, deferred, health, sub-tabs, value policy |
-| E. Comfort | all of it: light theme, type, palette, their layouts, highlighting, history, the bubble |
+| E. Comfort | all of it: light theme, type, palette, their layouts, highlighting, history, the bubble, the Siteation config tab |
 
 Backlog is in `build-status.html`, which is the live tracker. Open it in a browser.
 
@@ -212,6 +216,12 @@ extension.
 
 * The cookie manager resolves its domain through the store, so it cannot be used at the top
   of `launch()`: there is no store yet. Issue cookies after `proceed()`.
+
+* Magento hides the whole `dev` configuration section in production mode. Magento_Backend's
+  adminhtml `di.xml` gives `ConcealInProduction` a single entry, `dev => HIDDEN`, and the
+  check runs against the **structure** path rather than the stored one, so `config_path`
+  would move a field out of reach of it without moving the value. A developer tool that has
+  anything to say on a live site does not belong in that section.
 
 Beyond the four stale artifact traps, the ones most likely to bite again:
 

@@ -1784,6 +1784,25 @@ inspect_debug_queries       slowest first, with call sites</code></pre>
             <p>Hiding for real stays, because a screenshot or a sticky footer wants nothing
             on screen at all. It is a palette command, where a control that costs a reload
             belongs, and it is still not remembered.</p>` },
+      { t: 'The settings leave Advanced &gt; Developer for the Siteation tab', s: 'done',
+        d: `<p>They were a group under <code>dev</code>, and Magento hides that entire
+            section in production mode: <code>ConcealInProduction</code> is configured with
+            <code>dev =&gt; HIDDEN</code> in Magento_Backend's adminhtml di.xml. Production
+            is precisely the mode where the bar needs an access key before it does anything,
+            so the settings that explain it were unreachable in the one mode that has to be
+            configured.</p>
+            <p>Now a section of its own under a Siteation tab, beside Store Info, Store
+            Menus and Store Usps. Each of those declares the same
+            <code>&lt;tab id="siteation"&gt;</code> and Magento merges the repeat, so a
+            family of unrelated modules shares one tab without any of them depending on
+            another. The ACL resource stays <code>Magento_Config::dev</code>: where the
+            settings appear changed, who may change them did not.</p>
+            <p>Paths moved with it, from <code>dev/siteation_debugbar/*</code> to
+            <code>siteation_debugbar/general/*</code>. One group rather than four, because
+            splitting them would make every <code>depends</code> on Enabled a cross group
+            dependency, and the ten fields that hide when the bar is off are worth more than
+            a tidier page. Nothing is released, so no data patch: values set before this are
+            orphaned rows and need setting once more.</p>` },
       { t: 'The bar hosts itself in a custom element', s: 'done',
         d: `<p><code>&lt;siteation-debugbar&gt;</code> instead of a div with a known id. The
             element mounts itself in <code>connectedCallback</code>, so nothing has to find
