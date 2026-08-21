@@ -163,15 +163,18 @@ a length of time.
 
 ## State
 
-**Released as 1.0.0 on 2026-08-21.** Rutger made the repository public and the tag is
-pushed. Submitting it to Packagist is a separate step and is his, not a task here.
+**Released as 1.1.0 on 2026-08-21**, which closed the three defects the security audit
+named. **1.0.0** was tagged the same day. The repository is public and both tags are
+pushed; submitting the package to Packagist is a separate step and is Rutger's.
 
-**1.0**: 54 done, 2 closed, none open.
+The two numbers below are build phases, not versions. Both shipped inside the 1.0.0 tag:
+a 1.0.0 without the interface would be collectors with no viewer. 1.1.0 is the audit work
+that followed. `docs/build-status.html` holds the live counts; the phase table repeats none
+of them, because two places that count the same work only ever agree for a while.
 
-**1.1**: 49 done, 3 closed by decision, none open. It is a build phase and not a version:
-the interface it built shipped inside the 1.0.0 tag, and the backlog is what 1.1.0 will be. `docs/build-status.html` holds the live
-count. The phase list below says what each one delivered; it does not repeat the numbers,
-because two places that count the same work only ever agree for a while.
+**1.0**: 54 done, 3 closed by decision, none open.
+
+**1.1**: 49 done, 3 closed by decision, none open.
 
 | Phase | |
 | --- | --- |
@@ -195,10 +198,11 @@ interceptor before the exception ever happens. Delete it afterwards.
 1.1.0, from the backlog in `build-status.html`. The three audit items with a named defect
 behind them are done: MCP output says it is recorded data, the access key has a 32
 character floor and a per address lockout, and a profile read by id is checked for age.
-What is left is the Magento integration suite, message queue and cron profiling (parked
-until async work is what you are debugging), MCP over HTTP (a network endpoint is a
-security question before it is a feature), and the low and informational remainder of the
-two audits.
+Released as 1.1.0. Magento's integration suite is closed by decision, not deferred: what it
+would assert is asserted by `dev/smoke`, the browser suite and 202 unit tests. What is left
+is message queue and cron profiling (parked until async work is what you are debugging),
+MCP over HTTP (a network endpoint is a security question before it is a feature), and the
+low and informational remainder of the two audits.
 
 Dropped, with the reasoning kept in `build-status.html`: Ignition integration and a browser
 extension.
@@ -218,7 +222,7 @@ extension.
 * Submitting the package to Packagist, now that the repository is public and tagged.
 * Deleting `allrude/siteation-magento2`, the old monorepo. The token lacks `delete_repo`:
   `gh auth refresh -h github.com -s delete_repo` then `gh repo delete ... --yes`.
-* Magento's full integration test suite, deferred until the interface stops moving.
+* Nothing. Magento's integration suite was closed by decision at 1.1.0.
 
 ## Things learned the hard way
 

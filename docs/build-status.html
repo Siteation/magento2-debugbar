@@ -1097,11 +1097,14 @@ inspect_debug_queries       slowest first, with call sites</code></pre>
         d: `<p>More reliable as a unit test than a smoke check. Four paths, each asserting
             the original response comes back untouched: not eligible, a collector that
             throws during finalize, a failure to start, and a store that cannot write.</p>` },
-      { t: 'Magento integration test suite', s: 'backlog',
-        d: `<p>The full <code>dev/tests/integration</code> framework needs its own database
-            and install and runs in minutes. The smoke test covers the regressions that
-            actually bite for a fraction of that, so this waits until the interface has
-            stopped moving after 1.1.</p>` },
+      { t: 'Magento integration test suite', s: 'closed',
+        d: `<p>Closed by decision at 1.1.0, not deferred again. The full
+            <code>dev/tests/integration</code> framework needs its own database and install
+            and runs in minutes.</p>
+            <p>What it would assert is asserted already. <code>dev/smoke</code> drives a real
+            store over HTTP across all four areas in seconds, the browser suite drives the
+            bar in Chrome under an enforced CSP, and 202 unit tests cover the decisions. A
+            second framework to re-cover that is cost without an answer.</p>` },
       { t: 'Tag 1.0.0 and publish', s: 'done',
         d: `<p>Tagged 1.0.0 on 2026-08-21. The package is its own repository with
             composer.json at its root, so Packagist reads it directly and no subtree split
@@ -1913,10 +1916,11 @@ const REMAINING = [
       + 'duplicated methods, JSDoc gaps, CHANGELOG counts, and hardening that only matters on '
       + 'a live site. Read them in docs/audit-security.html and docs/audit-code-quality.html.' },
 
-  { name: 'Magento integration test suite', phase: '1.0, Hardening', status: 'backlog',
-    why: 'Deferred until the interface stops moving. What it would assert is covered today '
-      + 'by dev/smoke over HTTP, against a running store, without needing the '
-      + 'integration framework or a second database.' }
+  { name: 'Magento integration test suite', phase: '1.0, Hardening', status: 'closed',
+    why: 'Closed by decision at 1.1.0 rather than deferred a third time. dev/smoke drives a '
+      + 'real store over HTTP across all four areas in seconds, the browser suite drives the '
+      + 'bar under an enforced CSP, and 202 unit tests cover the decisions. A second '
+      + 'framework needing its own database and install would re-cover that, slowly.' }
 ];
 
 /**

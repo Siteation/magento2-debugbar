@@ -6,7 +6,7 @@ Every request writes one bounded, redacted JSON profile. The bar in the page is 
 over that profile, so AJAX, GraphQL and REST requests are captured too even though nothing
 can be injected into them.
 
-**Status: 1.0.0.** Everything described below is built and verified against a running
+**Status: 1.1.0.** Everything described below is built and verified against a running
 store: 189 unit tests, 67 for the bar's own JavaScript, 16 driving it in a browser, and a
 30 assertion smoke suite against all four areas.
 

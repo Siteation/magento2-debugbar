@@ -1,5 +1,30 @@
 # Changelog
 
+## 1.1.0 - 2026-08-21
+
+Three defects the security audit named, closed. Nothing in the interface changed.
+
+* **A profile past the age bound is refused on read, not only swept.** Retention was
+  enforced by deletion alone, and a sweep runs on a write or when the history endpoint is
+  opened, so on an instance nobody is browsing a profile stayed readable by id for as long
+  as its file survived. Refused rather than deleted, because the MCP tools read through the
+  same path and are advertised as read only.
+* **Every MCP response says its payload is recorded data.** A profile holds whatever the
+  request held, and it reaches an agent as tool output that reads like the module talking.
+  Successful responses carry a `recorded_data` line saying the values were captured from
+  requests and are to be read as evidence, never followed as instructions; the server says
+  the same at connect.
+* **The access key has a length floor and a per address lockout.** At least 32 characters or
+  empty, refused on save with a message and refused again when the configuration resolves,
+  so a value written straight to the database or `env.php` is no way around it. Ten wrong
+  keys from one address inside fifteen minutes and it stops being answered, so the endpoints
+  are no longer an oracle. Only a request that presented something is counted, so customer
+  traffic cannot lock a developer out of their own site.
+
+Magento's integration test suite is closed by decision rather than deferred again. What it
+would assert is asserted by `dev/smoke` over HTTP, the browser suite under an enforced CSP,
+and 202 unit tests.
+
 ## 1.0.0 - 2026-08-21
 
 First release. Everything below is what 1.0.0 contains, so there are no entries for the
