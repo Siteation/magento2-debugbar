@@ -112,6 +112,59 @@ class ProfileStoreTest extends TestCase
     }
 
     #[Test]
+    public function aProfilePastTheAgeBoundIsRefusedEvenThoughTheFileIsStillThere(): void
+    {
+        // The bound used to be enforced by deletion alone, so on an instance nobody is
+        // browsing there is nothing to trigger a sweep and a profile stayed readable by id
+        // for as long as the file survived.
+        $id = ProfileStore::generateId();
+        $store = $this->store(maxAgeMinutes: 60);
+
+        $this->written[self::DIRECTORY . '/' . $id . '.json'] = json_encode(['id' => $id]);
+        $this->existing[$id . '.json'] = time() - 61 * 60;
+
+        $this->assertNull($store->get($id));
+        $this->assertSame([], $this->deleted, 'the read path refuses, it does not delete');
+
+        $this->existing[$id . '.json'] = time() - 59 * 60;
+
+        $this->assertSame($id, $store->get($id)['id'] ?? null, 'inside the window it reads');
+    }
+
+    #[Test]
+    public function aProfileWhoseAgeCannotBeEstablishedIsRefused(): void
+    {
+        // Failing closed. The file existed a line earlier, so a stat that throws is usually
+        // another request pruning it, and a profile of unknown age is not one to hand out.
+        $id = ProfileStore::generateId();
+        $store = $this->store();
+
+        $this->written[self::DIRECTORY . '/' . $id . '.json'] = json_encode(['id' => $id]);
+        $this->existing[$id . '.json'] = time();
+        $this->unstattable[] = self::DIRECTORY . '/' . $id . '.json';
+
+        $this->assertNull($store->get($id));
+    }
+
+    #[Test]
+    public function theHistoryListInheritsTheAgeCheckRatherThanRepeatingIt(): void
+    {
+        // recent() reads through get(), so an expired profile drops out of the list too and
+        // the list cannot advertise an id that the endpoint behind it would refuse.
+        $store = $this->store(maxAgeMinutes: 60);
+
+        foreach (['fresh' => time() - 60, 'stale' => time() - 61 * 60] as $age) {
+            $id = ProfileStore::generateId();
+            $this->written[self::DIRECTORY . '/' . $id . '.json'] = json_encode(['id' => $id]);
+            $this->existing[$id . '.json'] = $age;
+        }
+
+        $recent = $store->recent();
+
+        $this->assertCount(1, $recent);
+    }
+
+    #[Test]
     public function theCountBoundKeepsTheNewestAndDropsTheRest(): void
     {
         // The only thing standing between a var/ directory and every query, binding and
@@ -257,6 +310,8 @@ class ProfileStoreTest extends TestCase
             function (string $from, string $to): bool {
                 $this->written[$to] = $this->written[$from] ?? '';
                 unset($this->written[$from]);
+                // As on disk: a file that was just written is as old as the write.
+                $this->existing[basename($to)] = time();
 
                 return true;
             }

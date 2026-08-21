@@ -1884,10 +1884,14 @@ const REMAINING = [
       + 'turns any storefront XSS into a full profile dump. A minimum length and a short '
       + 'lockout are the two halves.' },
 
-  { name: 'Retention is activity triggered, and read by id never checks age', phase: 'Audit, security', status: 'todo',
-    why: 'Half fixed. ProfileStore::tidy() runs when the history endpoint is opened, so '
-      + 'looking enforces the bound, and prune now sweeps orphaned .tmp files by age too. '
-      + 'Still open: get() returns a profile of any age.' },
+  { name: 'Retention is activity triggered, and read by id never checks age', phase: '1.1', status: 'done',
+    why: 'Closed. get() now refuses anything past the age bound, so the retention holds where '
+      + 'it is observable rather than only where the sweep has reached; on a quiet instance '
+      + 'nothing triggered a sweep and a profile stayed readable indefinitely. Refused, not '
+      + 'deleted, because this is the read path the MCP tools come through and they promise '
+      + 'not to write. A stat that fails is refused too: the file existed a line earlier, so '
+      + 'the usual cause is another request pruning it. recent() reads through get(), so the '
+      + 'history list cannot offer an id the endpoint behind it would refuse.' },
 
   { name: 'The production rule is still stated four ways', phase: 'Audit, docs-drift', status: 'done',
     why: 'Every statement of it now says "outside developer mode", which is what Config '

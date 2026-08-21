@@ -119,7 +119,7 @@ class ProfileStore
         $directory = $this->directory();
         $filename = $this->filename($id);
 
-        if (!$directory->isExist($filename)) {
+        if (!$directory->isExist($filename) || $this->hasExpired($directory, $filename)) {
             return null;
         }
 
@@ -135,6 +135,31 @@ class ProfileStore
         }
 
         return is_array($profile) ? $profile : null;
+    }
+
+    /**
+     * Whether a profile is past the age bound, whatever the sweep has managed so far.
+     *
+     * The bound was enforced by deletion alone, so a profile stayed readable by id for as
+     * long as nothing happened to trigger a sweep: on a quiet instance, indefinitely. The
+     * retention the module promises has to hold on the read as well, because that is where
+     * it is observable.
+     *
+     * Refused rather than deleted. This is the read path, and the MCP tools that come
+     * through here are advertised as read only; tidy() is what removes things.
+     *
+     * A stat that fails means the age cannot be established, which is answered by refusing.
+     * The file existed a line ago, so the usual cause is another request pruning it.
+     */
+    private function hasExpired(WriteInterface $directory, string $filename): bool
+    {
+        try {
+            $stat = $directory->stat($filename);
+        } catch (Throwable) {
+            return true;
+        }
+
+        return (int) ($stat['mtime'] ?? 0) < time() - ($this->config->maxAgeMinutes() * 60);
     }
 
     /**
