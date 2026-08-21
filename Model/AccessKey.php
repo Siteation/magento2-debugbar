@@ -23,6 +23,10 @@ use Throwable;
  *
  * The comparison is hash_equals, so the answer takes the same time whether the first
  * character was wrong or the last.
+ *
+ * Wrong keys are counted, and an address that offers too many stops being answered for a
+ * while. Only a request that presented something counts: a customer presents nothing, and a
+ * live site must not lock out its own developer through the traffic it exists to serve.
  */
 class AccessKey
 {
@@ -37,7 +41,9 @@ class AccessKey
         private readonly Config $config,
         private readonly HttpRequest $request,
         private readonly CookieManagerInterface $cookies,
-        private readonly CookieMetadataFactory $cookieMetadata
+        private readonly CookieMetadataFactory $cookieMetadata,
+        private readonly AccessAttempts $attempts,
+        private readonly ClientAddress $client
     ) {
     }
 
@@ -56,11 +62,29 @@ class AccessKey
             return true;
         }
 
-        foreach ($this->presented() as $candidate) {
+        $candidates = $this->presented();
+
+        // Before the counter, so ordinary traffic on a live site costs no cache read at all
+        // and cannot fill a bucket it never meant to touch.
+        if ($candidates === []) {
+            return false;
+        }
+
+        $client = $this->client->get();
+
+        if ($this->attempts->lockedOut($client)) {
+            return false;
+        }
+
+        foreach ($candidates as $candidate) {
             if (hash_equals($expected, $candidate)) {
+                $this->attempts->forget($client);
+
                 return true;
             }
         }
+
+        $this->attempts->recordFailure($client);
 
         return false;
     }

@@ -26,7 +26,8 @@ class RequestEligibility
         private readonly Config $config,
         private readonly HttpRequest $request,
         private readonly AreaList $areaList,
-        private readonly AccessKey $accessKey
+        private readonly AccessKey $accessKey,
+        private readonly ClientAddress $client
     ) {
     }
 
@@ -71,15 +72,10 @@ class RequestEligibility
         }
     }
 
-    /**
-     * Deliberately ignores X-Forwarded-For. An allowlist that trusts a client supplied
-     * header is not an allowlist.
-     */
+    /** @see ClientAddress for why this ignores X-Forwarded-For. */
     public function clientIp(): ?string
     {
-        $ip = $this->request->getServer('REMOTE_ADDR');
-
-        return is_string($ip) && $ip !== '' ? $ip : null;
+        return $this->client->get();
     }
 
     private function isOwnRequest(): bool

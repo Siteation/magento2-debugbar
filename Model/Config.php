@@ -40,6 +40,16 @@ class Config
     private const XML_PATH_EDITOR_TEMPLATE = 'siteation_debugbar/general/editor_template';
     private const XML_PATH_EDITOR_PATH_MAP = 'siteation_debugbar/general/editor_path_map';
 
+    /**
+     * A key shorter than this is refused, on save and again here.
+     *
+     * Outside developer mode a key is the entire reason the bar may run, so "on for whoever
+     * holds the key" has to mean something. 32 characters is half of what the documented
+     * `openssl rand -hex 32` produces, which leaves room for a key chosen by hand while
+     * staying far past anything worth guessing at.
+     */
+    public const MIN_ACCESS_KEY_LENGTH = 32;
+
     private const DEFAULT_SLOW_QUERY_MS = 100.0;
     private const DEFAULT_SLOW_REQUEST_MS = 1000.0;
 
@@ -256,6 +266,14 @@ class Config
         }
 
         $this->accessKey = trim((string) $this->scopeConfig->getValue(self::XML_PATH_ACCESS_KEY));
+
+        // The backend model refuses to save one this short, so reaching here means the value
+        // was written straight to the database or to env.php. Refusing to run at all is the
+        // honest answer: a key too weak to be a control must not be read as one, and treating
+        // it as absent would quietly widen access instead of narrowing it.
+        if ($this->accessKey !== '' && strlen($this->accessKey) < self::MIN_ACCESS_KEY_LENGTH) {
+            return false;
+        }
 
         // Keyless is a developer machine and nothing else. Anywhere else the bar is
         // reachable on one condition, that a key exists, so it answers whoever holds it and

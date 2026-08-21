@@ -9,6 +9,7 @@ use Magento\Framework\App\Request\Http as HttpRequest;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 use Siteation\DebugBar\Model\AccessKey;
+use Siteation\DebugBar\Model\ClientAddress;
 use Siteation\DebugBar\Model\Config;
 use Siteation\DebugBar\Model\RequestEligibility;
 
@@ -86,7 +87,8 @@ class RequestEligibilityTest extends TestCase
             $config,
             $request,
             $this->createStub(AreaList::class),
-            $accessKey
+            $accessKey,
+            new ClientAddress($request)
         );
     }
 }

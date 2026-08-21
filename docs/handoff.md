@@ -102,6 +102,14 @@ bind every handler twice. See `research.md` 13.3.
 **Only summaries are embedded** in the page, about 1.5 kB. Section payloads are fetched from
 `siteation_debugbar/profile/view` on first open.
 
+**The access key is a floor and a counter.** `Config::MIN_ACCESS_KEY_LENGTH` is 32; below
+it the bar refuses to run rather than treating the key as absent, which would widen access
+instead of narrowing it. `Model\Config\Backend\AccessKey` says so on save so the refusal is
+visible. `AccessAttempts` counts wrong keys per address in the cache and stops answering
+after ten inside fifteen minutes; only a request that presented something is counted, so
+customer traffic never fills the bucket, and it fails open because the comparison is the
+control.
+
 **One gate, two questions.** `RequestEligibility::allows()` decides whether a request is
 profiled; `allowsRead()` decides whether one may be read, and the three controllers call it
 rather than repeating the check. Both consult `Model\AccessKey`, which is what makes a live
@@ -184,12 +192,13 @@ interceptor before the exception ever happens. Delete it afterwards.
 
 ## Next
 
-1.1.0, from the backlog in `build-status.html`. The three audit items are the ones with a
-named defect behind them: nothing marks MCP tool output as recorded request data, the
-access key has no strength floor and no rate limit, and a profile read by id is never
-checked for age. After those, the Magento integration suite, message queue and cron
-profiling (parked until async work is what you are debugging), and MCP over HTTP (a network
-endpoint is a security question before it is a feature).
+1.1.0, from the backlog in `build-status.html`. The three audit items with a named defect
+behind them are done: MCP output says it is recorded data, the access key has a 32
+character floor and a per address lockout, and a profile read by id is checked for age.
+What is left is the Magento integration suite, message queue and cron profiling (parked
+until async work is what you are debugging), MCP over HTTP (a network endpoint is a
+security question before it is a feature), and the low and informational remainder of the
+two audits.
 
 Dropped, with the reasoning kept in `build-status.html`: Ignition integration and a browser
 extension.

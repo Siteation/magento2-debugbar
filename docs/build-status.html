@@ -1880,11 +1880,17 @@ const REMAINING = [
       + 'and a warning on every miss teaches an agent to skip the line that matters. SKILL.md '
       + 'leads its interpretation rules with it.' },
 
-  { name: 'The access key has no strength floor and no rate limit', phase: 'Audit, security', status: 'todo',
-    why: 'A key of one character is accepted, and the endpoints answer an unlimited number '
-      + 'of guesses at whatever length it is. The hour long cookie it can be traded for also '
-      + 'turns any storefront XSS into a full profile dump. A minimum length and a short '
-      + 'lockout are the two halves.' },
+  { name: 'The access key has no strength floor and no rate limit', phase: '1.1', status: 'done',
+    why: 'Closed. A key is at least 32 characters or empty, refused by a backend model on save '
+      + 'so the admin and the CLI both say why, and refused again when the config resolves so '
+      + 'a value written straight to the database or env.php is no way around it. Below the '
+      + 'floor the bar refuses to run at all rather than treating the key as absent, which '
+      + 'would have widened access instead of narrowing it. Ten wrong keys from one address '
+      + 'inside fifteen minutes and it stops being answered, so the endpoints are no longer an '
+      + 'oracle; only a request that presented something counts, so customer traffic cannot '
+      + 'lock a developer out of their own site and costs no cache read. The counter fails '
+      + 'open: the comparison is the control, and a cache hiccup is not a reason to lock '
+      + 'somebody out of a check that already happened.' },
 
   { name: 'Retention is activity triggered, and read by id never checks age', phase: '1.1', status: 'done',
     why: 'Closed. get() now refuses anything past the age bound, so the retention holds where '

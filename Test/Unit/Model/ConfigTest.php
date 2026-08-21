@@ -45,11 +45,37 @@ class ConfigTest extends TestCase
             $this->assertTrue(
                 $this->config($mode, [
                     'siteation_debugbar/general/enabled' => true,
-                    'siteation_debugbar/general/access_key' => 'a-secret',
+                    'siteation_debugbar/general/access_key' => str_repeat('a', 32),
                 ])->isEnabled(),
                 $mode . ' runs behind a key'
             );
         }
+    }
+
+    #[Test]
+    public function aKeyTooShortToBeAControlIsNotReadAsOne(): void
+    {
+        // The backend model refuses to save one this short, so a value that gets here was
+        // written straight to the database or to env.php. Refusing to run at all is the
+        // honest answer: treating it as absent would widen access rather than narrow it, and
+        // in developer mode that would turn a typo into a bar for every visitor.
+        foreach ([State::MODE_PRODUCTION, State::MODE_DEFAULT, State::MODE_DEVELOPER] as $mode) {
+            $this->assertFalse(
+                $this->config($mode, [
+                    'siteation_debugbar/general/enabled' => true,
+                    'siteation_debugbar/general/access_key' => str_repeat('a', 31),
+                ])->isEnabled(),
+                $mode . ' must not accept a key below the floor'
+            );
+        }
+
+        $this->assertTrue(
+            $this->config(State::MODE_PRODUCTION, [
+                'siteation_debugbar/general/enabled' => true,
+                'siteation_debugbar/general/access_key' => str_repeat('a', Config::MIN_ACCESS_KEY_LENGTH),
+            ])->isEnabled(),
+            'exactly the floor is long enough'
+        );
     }
 
     #[Test]

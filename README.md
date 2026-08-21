@@ -173,6 +173,19 @@ The second swaps the key for a cookie that lasts an hour, which is how long a pr
 so the key leaves the address bar after one request. The header suits curl, an agent and the
 REST client, since a browser is only one of the four areas this profiles.
 
+The key must be at least 32 characters, or empty. Anything shorter is refused when you save
+it, in the admin and from the CLI alike, and refused again when the configuration resolves,
+so a value written straight into the database or `env.php` is no way around it. Outside
+developer mode the key is the entire reason the bar may run, and "on for whoever holds the
+key" means nothing when the key is `x`.
+
+Wrong keys are counted per address. Ten from one address with less than fifteen minutes
+between them and that address stops being answered at all until fifteen minutes after the
+last one, so the endpoints cannot be used as an oracle. Only a request that presented
+something counts, so ordinary customer traffic never fills the bucket and costs nothing to
+serve. Behind a load balancer every client shares one bucket, which is a reason to keep the
+key long rather than to lean on the counter. `cache:flush` clears it.
+
 Two things follow from a key being set, both deliberate:
 
 * **Production and default mode are allowed, but only behind a key.** Developer mode is the
