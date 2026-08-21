@@ -16,6 +16,10 @@ over that profile, so AJAX, GraphQL and REST requests are captured too even thou
 can be injected into them. The same profiles are served read only over MCP, so an agent
 inspects exact data instead of guessing from a screenshot.
 
+![preview-overview]
+
+[preview-overview]: ./assets/overview.webp "The inspector open on a Hyva checkout, showing the request as stages"
+
 **1.1.1.** Verified against a running store: 202 unit tests, 67 for the bar's own
 JavaScript, 16 driving it in a browser, and a 30 assertion smoke suite across all four
 areas.
@@ -42,7 +46,12 @@ bin/magento config:set siteation_debugbar/general/enabled 1
 `--dev` on purpose. The module is a development tool, and a production build should not
 carry the plugins it registers.
 
-Settings live under **Stores > Configuration > Siteation > Debug Bar**.
+Settings live under **Stores > Configuration > Siteation > Debug Bar**, beside the other
+Siteation modules.
+
+![preview-admin]
+
+[preview-admin]: ./assets/admin-configuration.webp "The module's settings in the Magento admin, with the collapsed bar at the foot of the page"
 
 ## Documentation
 
@@ -61,6 +70,17 @@ Twelve sections over one request: findings, overview, a timeline waterfall, quer
 application frame each came from, block render times, observers that actually ran, every
 dispatched event, cache hit rates by key prefix, the plugins built for the request, the
 page's live Alpine and Magewire components, and the history of every profile still on disk.
+
+The last two read the live page rather than the stored profile, so they show what is in the
+browser now: every component with its state under the same redaction policy, and for
+Magewire the state it posts back and receives again on every update.
+
+| Alpine | Magewire |
+| ------ | -------- |
+| ![preview-alpine] | ![preview-magewire] |
+
+[preview-alpine]: ./assets/alpine.webp "The Alpine section listing every component on the page with its state"
+[preview-magewire]: ./assets/magewire.webp "The Magewire section, with the state each component posts back on every update"
 
 **Findings** are the module's own conclusions, worst first: errors and exceptions, slow
 requests, slow and repeated queries, N+1s built from interpolated ids, slow blocks and
