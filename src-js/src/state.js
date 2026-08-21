@@ -1,6 +1,6 @@
 import { watchRequests } from './requests.js'
 import { keepFocusWithin, lockHost, unlockHost } from './host.js'
-import { SECTIONS, countFor } from './sections.js'
+import { SECTIONS, countFor, enabledSections } from './sections.js'
 import { commandsFor, matchCommands } from './palette.js'
 import { policyName } from './redact.js'
 import { highlight as highlightCode } from './highlight.js'
@@ -165,7 +165,7 @@ export function debugBar() {
         ? preferences.theme
         : 'system'
       this.favourites = Array.isArray(preferences.favourites)
-        ? preferences.favourites.filter((id) => SECTIONS.some((s) => s.id === id))
+        ? preferences.favourites.filter((id) => SECTIONS.some((section) => section.id === id))
         : []
       this.watchColorScheme()
       this.valuePolicy = policyName(this.rootElement()?.dataset.valuePolicy)
@@ -781,7 +781,8 @@ export function debugBar() {
 
     /** @returns {Array<object>} every section with its count resolved */
     get sections() {
-      return SECTIONS.map((section) => ({ ...section, count: countFor(section.id, this) }))
+      return enabledSections(this.rootElement()?.dataset.sections)
+        .map((section) => ({ ...section, count: countFor(section.id, this) }))
     },
 
     /** @returns {Array<object>} pinned sections, in the order they were arranged */
@@ -1186,8 +1187,21 @@ export function debugBar() {
      * @param {string} section
      * @returns {boolean}
      */
+    /**
+     * Whether the store collects a section at all, which is not the same as it being empty.
+     *
+     * @param {string} id
+     * @returns {boolean}
+     */
+    collects(id) {
+      return this.sections.some((section) => section.id === id)
+    },
+
     isSection(section) {
-      return this.section === section
+      // Against the section actually in view, not the one remembered. A store can switch a
+      // section off after a developer last looked at it, and the remembered id would
+      // otherwise draw a panel the sidebar no longer offers.
+      return this.currentSection.id === section
     },
 
     persist() {

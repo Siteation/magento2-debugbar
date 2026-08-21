@@ -12,6 +12,26 @@
  *
  * @type {Array<{id: string, label: string, lead: string, graded?: boolean}>}
  */
+/**
+ * The sections a store can switch off, and the two it cannot.
+ *
+ * Findings and the overview are always drawn: one is the answer the rest of the bar is
+ * evidence for, and the other is how a profile says which request it belongs to.
+ *
+ * @param {string} wanted the comma separated list the server published, empty for all
+ * @returns {Array<object>}
+ */
+export function enabledSections(wanted) {
+  const chosen = String(wanted || '').split(',').map((id) => id.trim()).filter(Boolean)
+
+  if (chosen.length === 0) return SECTIONS
+
+  return SECTIONS.filter((section) => ALWAYS.includes(section.id) || chosen.includes(section.id))
+}
+
+/** @type {Array<string>} */
+const ALWAYS = ['findings', 'overview']
+
 export const SECTIONS = [
   {
     id: 'findings',

@@ -220,7 +220,11 @@ test.describe('the bar', () => {
 
     const sections = await state(page, (data) => data.sections.map((section) => section.id))
 
-    expect(sections.length).toBeGreaterThan(5)
+    // Whatever the store leaves on. Which sections exist is configuration now, so a count
+    // here would fail the suite on a perfectly valid instance; that the two which cannot be
+    // switched off are present is the part that is always true.
+    expect(sections).toContain('findings')
+    expect(sections).toContain('overview')
 
     for (const section of sections) {
       await page.evaluate((id) => {

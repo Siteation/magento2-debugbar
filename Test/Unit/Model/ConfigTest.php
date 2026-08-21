@@ -199,6 +199,46 @@ class ConfigTest extends TestCase
         $this->assertSame('/var/www/html', $config->editorRoot());
     }
 
+    #[Test]
+    public function noChosenSectionsMeansEverySection(): void
+    {
+        // Empty is all of them, so an instance that predates the setting behaves as it did.
+        $config = $this->config(State::MODE_DEVELOPER, ['dev/siteation_debugbar/enabled' => true]);
+
+        foreach (['queries', 'blocks', 'events', 'cache', 'plugins', 'timeline'] as $section) {
+            $this->assertTrue($config->collects($section), $section);
+        }
+    }
+
+    #[Test]
+    public function onlyTheChosenSectionsAreCollected(): void
+    {
+        $config = $this->config(State::MODE_DEVELOPER, [
+            'dev/siteation_debugbar/enabled' => true,
+            'dev/siteation_debugbar/sections' => 'queries,timeline',
+        ]);
+
+        $this->assertTrue($config->collects('queries'));
+        $this->assertTrue($config->collects('timeline'));
+        $this->assertFalse($config->collects('blocks'));
+        $this->assertFalse($config->collects('plugins'));
+    }
+
+    #[Test]
+    public function theTwoSectionsAProfileCannotDoWithoutIgnoreTheList(): void
+    {
+        // A profile that cannot say which request it belongs to is one the history, the
+        // report and the MCP tools cannot use, and the findings are what the bar is for.
+        // Neither is offered in the admin field, and neither is read from it.
+        $config = $this->config(State::MODE_DEVELOPER, [
+            'dev/siteation_debugbar/enabled' => true,
+            'dev/siteation_debugbar/sections' => 'queries',
+        ]);
+
+        $this->assertTrue($config->collects('overview'));
+        $this->assertTrue($config->collects('findings'));
+    }
+
     private function config(string $mode, array $values): Config
     {
         $scopeConfig = $this->createStub(ScopeConfigInterface::class);

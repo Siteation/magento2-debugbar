@@ -42,7 +42,7 @@ class ManagerPlugin
         try {
             return $proceed($eventName, $data);
         } finally {
-            $this->manager->quietly(fn () => $this->events->recordDispatch(
+            $this->manager->quietly('events', fn () => $this->events->recordDispatch(
                 $eventName,
                 (microtime(true) - $startedAt) * 1000
             ));

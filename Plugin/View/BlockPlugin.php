@@ -31,7 +31,7 @@ class BlockPlugin
         }
 
         $name = $subject->getNameInLayout() ?: get_class($subject);
-        $this->manager->quietly(fn () => $this->blocks->begin($name));
+        $this->manager->quietly('blocks', fn () => $this->blocks->begin($name));
 
         try {
             return $proceed();
@@ -39,7 +39,7 @@ class BlockPlugin
             // Only Template blocks have a template. On anything else getTemplate()
             // resolves through DataObject's magic __call, which happens to work and is
             // not something to depend on.
-            $this->manager->quietly(fn () => $this->blocks->finish(
+            $this->manager->quietly('blocks', fn () => $this->blocks->finish(
                 $name,
                 get_class($subject),
                 $subject instanceof Template ? ($subject->getTemplate() ?: null) : null

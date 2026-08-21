@@ -19,6 +19,13 @@
                     <comment>Which areas produce a profile. Select none to cover all of them.</comment>
                     <depends><field id="enabled">1</field></depends>
                 </field>
+                <field id="sections" translate="label comment" type="multiselect" sortOrder="17"
+                       showInDefault="1" showInWebsite="0" showInStore="0" canRestore="1">
+                    <label>Sections</label>
+                    <source_model>Siteation\DebugBar\Model\Config\Source\Sections</source_model>
+                    <comment><![CDATA[What the bar collects and shows. One setting for both: a section you turn off is not gathered either, so switching off Blocks on a page that renders four hundred of them makes the request cheaper as well as the panel quieter. Select none to keep all of them. Findings and Overview are always on, because a profile that cannot say which request it belongs to is one the history, the report and the MCP tools cannot use.]]></comment>
+                    <depends><field id="enabled">1</field></depends>
+                </field>
                 <field id="slow_query_ms" translate="label comment" type="text" sortOrder="20"
                        showInDefault="1" showInWebsite="0" showInStore="0" canRestore="1">
                     <label>Slow Query Threshold (ms)</label>

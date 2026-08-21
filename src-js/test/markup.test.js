@@ -5,7 +5,7 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 
-import { SECTIONS, countFor } from '../src/sections.js'
+import { SECTIONS, countFor, enabledSections } from '../src/sections.js'
 import { facts } from '../src/facts.js'
 import { header } from '../src/header.js'
 import { navigation } from '../src/nav.js'
@@ -31,6 +31,31 @@ function state(overrides = {}) {
     ...overrides,
   }
 }
+
+test('a store keeps every section until it says otherwise', () => {
+  // Empty is all of them, so adding a section later needs no upgrade step and an instance
+  // that predates the setting behaves as it did.
+  assert.equal(enabledSections('').length, SECTIONS.length)
+  assert.equal(enabledSections(null).length, SECTIONS.length)
+  assert.equal(enabledSections(undefined).length, SECTIONS.length)
+})
+
+test('the two sections a profile cannot do without are always drawn', () => {
+  // Findings is the answer the rest of the bar is evidence for, and the overview is how a
+  // profile says which request it belongs to.
+  const ids = enabledSections('queries').map((section) => section.id)
+
+  assert.deepEqual(ids, ['findings', 'overview', 'queries'])
+})
+
+test('a section the store switched off leaves the sidebar', () => {
+  const ids = enabledSections('queries, blocks ,history').map((section) => section.id)
+
+  assert.ok(!ids.includes('events'))
+  assert.ok(!ids.includes('alpine'))
+  assert.ok(ids.includes('blocks'), 'whitespace around a name is not part of it')
+  assert.ok(ids.includes('history'))
+})
 
 test('a section with nothing to count gets no badge rather than a zero', () => {
   SECTIONS.forEach((section) => {

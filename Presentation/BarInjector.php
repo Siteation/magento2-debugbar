@@ -186,7 +186,8 @@ class BarInjector
 
         $markup = sprintf(
             '<div id="%s" data-css="%s" data-profile-url="%s"'
-            . ' data-value-policy="%s" data-history-url="%s" data-compare-url="%s"'
+            . ' data-value-policy="%s" data-sections="%s"'
+            . ' data-history-url="%s" data-compare-url="%s"'
             . ' data-editor="%s" data-editor-root="%s"></div>'
             . '<script type="application/json" id="%s">%s</script>'
             . '<script type="module" src="%s" defer></script>',
@@ -194,6 +195,9 @@ class BarInjector
             $this->escape($this->assets->for('css/debugbar.css')),
             $this->escape($this->profileUrl(self::ID_PLACEHOLDER)),
             $this->escape($this->config->valuePolicy()),
+            // The same list that decided what was collected, so the panels the bar draws and
+            // the sections the profile holds cannot disagree. Empty means all of them.
+            $this->escape(implode(',', $this->config->sections())),
             $this->escape($this->url->getUrl('siteation_debugbar/profile/history', ['_secure' => true])),
             $this->escape($this->url->getUrl('siteation_debugbar/profile/compare', ['_secure' => true])),
             $this->escape($this->config->editor()),

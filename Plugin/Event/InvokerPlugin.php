@@ -42,14 +42,14 @@ class InvokerPlugin
         $name = (string) ($configuration['name'] ?? $instance);
         $eventName = (string) $observer->getEvent()->getName();
 
-        $this->manager->quietly(fn () => $this->events->recordObserved($eventName));
+        $this->manager->quietly('events', fn () => $this->events->recordObserved($eventName));
 
         $startedAt = microtime(true);
 
         try {
             return $proceed($configuration, $observer);
         } finally {
-            $this->manager->quietly(fn () => $this->observers->recordInvocation(
+            $this->manager->quietly('observers', fn () => $this->observers->recordInvocation(
                 $eventName,
                 $name,
                 $instance,

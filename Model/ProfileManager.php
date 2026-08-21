@@ -18,6 +18,16 @@ use Throwable;
  */
 class ProfileManager
 {
+    /**
+     * Where a collector's key differs from the panel it fills. The rest are the same word.
+     *
+     * 'request' is not here because the overview cannot be turned off: a profile that cannot
+     * say which request it belongs to is one nothing else can use.
+     *
+     * @var array<string, string>
+     */
+    private const SECTIONS = ['interception' => 'plugins', 'request' => 'overview'];
+
     public const VERSION = 1;
 
     private ?string $id = null;
@@ -33,6 +43,7 @@ class ProfileManager
         private readonly ProfileAnalyzer $analyzer,
         private readonly TimelineBuilder $timeline,
         private readonly Clock $clock,
+        private readonly Config $config,
         private readonly LoggerInterface $logger,
         private readonly array $collectors = []
     ) {
@@ -62,20 +73,30 @@ class ProfileManager
     }
 
     /**
-     * Runs a collector call so that it can only ever cost data, never the response.
+     * Runs a collector call so that it can only ever cost data, never the response, and
+     * only when the section it feeds is wanted.
      *
      * Three of the five plugins record from a finally block, where a throw would replace the
      * exception the application was already unwinding: the bar would break the page and
      * erase the real error on its way out. Nothing on these paths throws today, but
      * Bootstrap installs ErrorHandler before launch(), so one deprecation added to a
      * collector later is a throw rather than a log line.
+     *
+     * Every plugin already records through here, which makes it the one place a section can
+     * be switched off and actually stop costing anything.
+     *
+     * @param string $section the panel this feeds, as the setting names it
      */
-    public function quietly(callable $record): void
+    public function quietly(string $section, callable $record): void
     {
+        if (!$this->config->collects($section)) {
+            return;
+        }
+
         try {
             $record();
         } catch (Throwable $exception) {
-            $this->failed('collector', $exception);
+            $this->failed($section, $exception);
         }
     }
 
@@ -85,8 +106,8 @@ class ProfileManager
      */
     public function recordFailure(Throwable $thrown): void
     {
-        foreach ($this->collectors as $collector) {
-            $this->quietly(fn () => $collector->captureFailure($thrown));
+        foreach ($this->collectors as $key => $collector) {
+            $this->quietly(self::SECTIONS[$key] ?? $key, fn () => $collector->captureFailure($thrown));
         }
     }
 
@@ -103,8 +124,8 @@ class ProfileManager
     {
         $this->collecting = false;
 
-        foreach ($this->collectors as $collector) {
-            $this->quietly(fn () => $collector->finalize($response));
+        foreach ($this->collectors as $key => $collector) {
+            $this->quietly(self::SECTIONS[$key] ?? $key, fn () => $collector->finalize($response));
         }
 
         $sections = [];
@@ -114,6 +135,10 @@ class ProfileManager
         // failed says so, rather than disappearing and leaving "the bar stopped appearing"
         // as the only symptom.
         foreach ($this->collectors as $key => $collector) {
+            if (!$this->config->collects(self::SECTIONS[$key] ?? $key)) {
+                continue;
+            }
+
             try {
                 $sections[$key] = [
                     'label' => $collector->label(),
@@ -139,6 +164,21 @@ class ProfileManager
 
         // Built from the finished sections, so it must come before the analyzer sees the
         // profile and after every collector has stopped.
+        if ($this->config->collects('timeline')) {
+            $profile = $this->withTimeline($profile);
+        }
+
+        $profile['findings'] = $this->analyzer->analyze($profile);
+
+        return $profile;
+    }
+
+    /**
+     * @param array<string, mixed> $profile
+     * @return array<string, mixed>
+     */
+    private function withTimeline(array $profile): array
+    {
         try {
             $timeline = $this->timeline->build($profile);
             $profile['sections']['timeline'] = [
@@ -150,8 +190,6 @@ class ProfileManager
             $profile['sections']['timeline'] = $this->brokenSection('Timeline', $exception);
             $this->failed('timeline', $exception);
         }
-
-        $profile['findings'] = $this->analyzer->analyze($profile);
 
         return $profile;
     }

@@ -28,7 +28,7 @@ class LoggerPlugin
     public function beforeStartTimer(LoggerInterface $subject): array
     {
         if ($this->manager->isCollecting()) {
-            $this->manager->quietly(fn () => $this->queries->markStart());
+            $this->manager->quietly('queries', fn () => $this->queries->markStart());
         }
 
         return [];
@@ -46,7 +46,7 @@ class LoggerPlugin
         mixed $queryResult = null
     ): mixed {
         if ($this->manager->isCollecting()) {
-            $this->manager->quietly(fn () => $this->queries->recordQuery($type, $sql, $bind));
+            $this->manager->quietly('queries', fn () => $this->queries->recordQuery($type, $sql, $bind));
         }
 
         return $result;

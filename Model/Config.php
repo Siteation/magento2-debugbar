@@ -31,6 +31,10 @@ class Config
     private const XML_PATH_ALLOWED_IPS = 'dev/siteation_debugbar/allowed_ips';
     private const XML_PATH_VALUE_POLICY = 'dev/siteation_debugbar/value_policy';
     private const XML_PATH_AREAS = 'dev/siteation_debugbar/areas';
+    private const XML_PATH_SECTIONS = 'dev/siteation_debugbar/sections';
+
+    /** @var list<string> */
+    private const ALWAYS_COLLECTED = ['findings', 'overview'];
     private const XML_PATH_ACCESS_KEY = 'dev/siteation_debugbar/access_key';
     private const XML_PATH_EDITOR = 'dev/siteation_debugbar/editor';
     private const XML_PATH_EDITOR_TEMPLATE = 'dev/siteation_debugbar/editor_template';
@@ -54,6 +58,9 @@ class Config
 
     /** @var list<string> */
     private array $areas = [];
+
+    /** @var list<string> */
+    private array $sections = [];
 
     private string $accessKey = '';
 
@@ -153,6 +160,39 @@ class Config
     }
 
     /**
+     * Which sections are wanted, as the ids the bar names them by.
+     *
+     * One setting for two things on purpose. A section that is off is not collected and not
+     * drawn, so turning off blocks on a page that renders four hundred of them makes the
+     * request being debugged cheaper as well as the panel quieter. Half a switch, where the
+     * work still happened and only the tab was hidden, would be the worse half.
+     *
+     * Empty means all of them, so an instance that predates this setting behaves as it did.
+     *
+     * @return list<string>
+     */
+    public function sections(): array
+    {
+        $this->isEnabled();
+
+        return $this->sections;
+    }
+
+    /**
+     * Findings and the overview are not offered on the list and are not read from it either:
+     * a profile that cannot say which request it belongs to is one the history, the report
+     * and the MCP tools cannot use, and the findings are what the bar is for.
+     */
+    public function collects(string $section): bool
+    {
+        if (in_array($section, self::ALWAYS_COLLECTED, true)) {
+            return true;
+        }
+
+        return $this->sections() === [] || in_array($section, $this->sections(), true);
+    }
+
+    /**
      * The secret a request proves itself with, or an empty string when none is set.
      *
      * Empty is the developer machine: there is nobody to keep out. It cannot be empty in
@@ -240,6 +280,7 @@ class Config
         $this->allowedIps = $this->ipList($this->scopeConfig->getValue(self::XML_PATH_ALLOWED_IPS));
         $this->valuePolicy = $this->policy($this->scopeConfig->getValue(self::XML_PATH_VALUE_POLICY));
         $this->areas = $this->csv($this->scopeConfig->getValue(self::XML_PATH_AREAS));
+        $this->sections = $this->csv($this->scopeConfig->getValue(self::XML_PATH_SECTIONS));
         $this->editor = $this->editorTemplate();
         $this->editorRoot = $this->mappedRoot();
 

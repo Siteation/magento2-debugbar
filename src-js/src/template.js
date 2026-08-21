@@ -208,8 +208,10 @@ export const template = `
             ${facts([
               { label: 'Route', value: "request.route || 'unknown'", mono: true },
               { label: 'Action', value: "request.action || 'unknown'", mono: true },
-              { label: 'Intercepted types', value: "interception.plugin_count || 0" },
-              { label: 'Observers run', value: "observers.count || 0" },
+              { label: 'Intercepted types', value: "interception.plugin_count || 0",
+                when: "collects('plugins')" },
+              { label: 'Observers run', value: "observers.count || 0",
+                when: "collects('observers')" },
             ])}
           </li>
 
@@ -240,24 +242,28 @@ export const template = `
               { label: 'Memory peak', value: "number(metrics.memory_peak_mb, 1) + ' MB'" },
               {
                 label: 'Queries',
+                when: "collects('queries')",
                 raw: true,
                 value: '<span data-ndb-text="queries.count || 0"></span>'
                   + ' <small data-ndb-text="\'in \' + number(queries.duration_ms, 1) + \' ms\'"></small>',
               },
               {
                 label: 'Blocks',
+                when: "collects('blocks')",
                 raw: true,
                 value: '<span data-ndb-text="blocks.unique_count || 0"></span>'
                   + ' <small data-ndb-text="\'in \' + number(blocks.duration_ms, 1) + \' ms\'"></small>',
               },
               {
                 label: 'Events',
+                when: "collects('events')",
                 raw: true,
                 value: '<span data-ndb-text="events.count || 0"></span>'
                   + ' <small data-ndb-text="events.unique_count + \' unique\'"></small>',
               },
               {
                 label: 'Cache',
+                when: "collects('cache')",
                 value: "cache.hit_rate === null ? 'no reads' : number(cache.hit_rate, 1) + '% hit rate'",
                 tone: 'cacheTone',
               },

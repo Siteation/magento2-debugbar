@@ -32,7 +32,7 @@ class CachePlugin
         $startedAt = microtime(true);
         $result = $proceed($identifier);
 
-        $this->manager->quietly(fn () => $this->cache->recordOperation(
+        $this->manager->quietly('cache', fn () => $this->cache->recordOperation(
             'load',
             $identifier,
             (microtime(true) - $startedAt) * 1000,
@@ -62,7 +62,7 @@ class CachePlugin
         $startedAt = microtime(true);
         $result = $proceed($data, $identifier, $tags, $lifeTime);
 
-        $this->manager->quietly(fn () => $this->cache->recordOperation(
+        $this->manager->quietly('cache', fn () => $this->cache->recordOperation(
             'save',
             $identifier,
             (microtime(true) - $startedAt) * 1000,

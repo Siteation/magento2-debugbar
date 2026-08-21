@@ -14,6 +14,7 @@
  * @property {boolean} [mono] for paths, class names and anything else that is code
  * @property {boolean} [raw] value is markup to interpolate rather than an expression
  * @property {string} [tone] an expression resolving to ok, warn or bad
+ * @property {string} [when] an expression; the fact is left out entirely when it is false
  */
 
 /**
@@ -28,11 +29,16 @@ export function facts(items) {
       ? `<dd class="${classes}"${tone}>${item.value}</dd>`
       : `<dd class="${classes}"${tone} data-ndb-text="${item.value}"></dd>`
 
-    return `
+    // Left out rather than hidden. A fact about a section the store does not collect has no
+    // value to show, and "0" is a measurement rather than the absence of one.
+    const when = item.when ? ` data-ndb-if="${item.when}"` : ''
+    const fact = `
   <div class="ndb-fact">
     <dt>${item.label}</dt>
     ${value}
   </div>`
+
+    return item.when ? `\n  <template${when}>${fact}\n  </template>` : fact
   }).join('')
 
   return `<dl class="ndb-facts">${cells}\n</dl>`

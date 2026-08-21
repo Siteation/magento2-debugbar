@@ -15,6 +15,11 @@ entries for the work that led up to it.
 * Findings: eight rules producing ten kinds of finding, each saying what is wrong, why it
   matters, where it came from and what to check next, and linking to the evidence behind
   it.
+* One admin setting for what the bar collects and what it shows. A section switched off is
+  not gathered either, so turning off Blocks on a page that renders four hundred of them
+  makes the request being debugged cheaper as well as the panel quieter. Findings and the
+  overview are always on: a profile that cannot say which request it belongs to is one the
+  history, the report and the MCP tools cannot use.
 * Magewire updates are named by their component and what it was asked to do. Every
   component posts to one URL, so a page that uses it produced a request list of identical
   rows; the bar, the history, the markdown report and the MCP tools all say
