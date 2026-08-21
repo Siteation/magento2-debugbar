@@ -101,6 +101,84 @@ async function openBar(page) {
   await expect(page.locator('.ndb-sheet')).toBeVisible()
 }
 
+/**
+ * Serves every HTML document with a policy that forbids unsafe-eval.
+ *
+ * The store's own policy is report-only on most pages, so the violations the bar used to
+ * commit were reported and never blocked. Hyvä Checkout enforces, and the bar was dead
+ * there: no values, no controls, a console full of EvalError, and nothing in any suite
+ * went red. Injecting the header here means the guarantee does not depend on which
+ * modules a test store happens to have installed.
+ *
+ * @param {import('@playwright/test').Page} page
+ */
+/**
+ * Only the bar's own expression errors.
+ *
+ * The buffer watches every Alpine on the page, which is what the Alpine panel is for. Under
+ * an enforced policy the theme's standard-build Alpine fails on everything, so a test asking
+ * whether the bar is healthy has to say whose errors it means.
+ *
+ * @param {import('@playwright/test').Page} page
+ * @returns {Promise<Array<object>>}
+ */
+async function ourAlpineErrors(page) {
+  return (await alpineErrors(page)).filter((entry) => entry.own)
+}
+
+async function enforceCspWithoutEval(page) {
+  await page.route('**/*', async (route) => {
+    const response = await route.fetch()
+    const headers = { ...response.headers() }
+
+    if ((headers['content-type'] || '').includes('text/html')) {
+      headers['content-security-policy'] =
+        "default-src * data: blob: 'unsafe-inline'; script-src * data: blob: 'unsafe-inline'"
+    }
+
+    await route.fulfill({ response, headers })
+  })
+}
+
+test.describe('under a policy that forbids unsafe-eval', () => {
+  test('every section renders, and nothing evaluates a string', async ({ page }) => {
+    await enforceCspWithoutEval(page)
+    await openBar(page)
+
+    const sections = await state(page, (data) => data.sections.map((section) => section.id))
+
+    for (const section of sections) {
+      await page.evaluate((id) => {
+        document.getElementById('siteation-debugbar').shadowRoot
+          .querySelector('.ndb')._x_dataStack[0].section = id
+      }, section)
+
+      await expect(page.locator('.ndb-section-head h2')).not.toBeEmpty()
+
+      const errors = await ourAlpineErrors(page)
+
+      expect(errors, `${section} threw under CSP: ${JSON.stringify(errors)}`).toEqual([])
+    }
+
+    await page.unrouteAll({ behavior: 'ignoreErrors' })
+  })
+
+  test('highlighted SQL still reaches the panel', async ({ page }) => {
+    // x-html is banned outright by the CSP build, so the bar carries its own directive.
+    // Losing it would empty every code block without throwing anything.
+    await enforceCspWithoutEval(page)
+    await openBar(page)
+    await state(page, (data) => { data.section = 'queries' })
+
+    await expect(page.locator('.ndb-query-sql .hljs-keyword').first()).toBeVisible()
+    expect(await ourAlpineErrors(page)).toEqual([])
+
+    // The store keeps fetching after the assertions pass, and a route handler that outlives
+    // the test fails it on the way out.
+    await page.unrouteAll({ behavior: 'ignoreErrors' })
+  })
+})
+
 test.describe('the bar', () => {
   // First in the file on purpose. Every correctness assertion below reduces to
   // "alpineErrors is empty", and that buffer is filled by one string match on console.warn

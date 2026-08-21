@@ -13,7 +13,7 @@
  * engine and the effect that is running is module state inside it. Reading a component's
  * state therefore cannot subscribe the bar to it, and a refresh has to be asked for.
  */
-import ourAlpine from 'alpinejs'
+import ourAlpine from '@alpinejs/csp'
 import { hostAlpine } from './host-alpine.js'
 import { POLICY_NONE, clean, cleanExpression, cleanString, keysOf } from './redact.js'
 

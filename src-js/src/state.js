@@ -426,6 +426,22 @@ export function debugBar() {
     },
 
     /**
+     * Where a waterfall span sits and how wide it is.
+     *
+     * Arithmetic belongs here rather than in the attribute: the bar renders through Alpine's
+     * CSP evaluator, which resolves names from the component and knows nothing about globals
+     * like Math.
+     *
+     * @param {object} entry
+     * @returns {string}
+     */
+    waterfallBar(entry) {
+      const width = Math.max(Number(entry.duration_percent) || 0, 0.4)
+
+      return `left:${entry.start_percent}%;width:${width}%`
+    },
+
+    /**
      * @param {object} summary a request summary, or a history entry
      * @returns {string}
      */

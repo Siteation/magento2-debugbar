@@ -167,7 +167,7 @@ class ProfileComparer
     /**
      * @param array<string, mixed> $baseline
      * @param array<string, mixed> $subject
-     * @return array{new: list<array<string, mixed>>, resolved: list<array<string, mixed>>, unchanged: int}
+     * @return array{added: list<array<string, mixed>>, resolved: list<array<string, mixed>>, unchanged: int}
      */
     private function findings(array $baseline, array $subject): array
     {
@@ -175,7 +175,9 @@ class ProfileComparer
         $now = $this->keyFindings($subject);
 
         return [
-            'new' => array_values(array_diff_key($now, $was)),
+            // 'added', not 'new': the bar reads this through Alpine's CSP evaluator, whose
+            // parser sees a reserved keyword rather than a property name.
+            'added' => array_values(array_diff_key($now, $was)),
             'resolved' => array_values(array_diff_key($was, $now)),
             'unchanged' => count(array_intersect_key($now, $was)),
         ];

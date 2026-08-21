@@ -76,7 +76,7 @@ class ProfileComparerTest extends TestCase
             ]])
         );
 
-        $this->assertSame(['The same query ran 40 times'], array_column($result['findings']['new'], 'message'));
+        $this->assertSame(['The same query ran 40 times'], array_column($result['findings']['added'], 'message'));
         $this->assertSame(['A query took 400 ms'], array_column($result['findings']['resolved'], 'message'));
         $this->assertSame(1, $result['findings']['unchanged']);
     }
@@ -92,7 +92,7 @@ class ProfileComparerTest extends TestCase
             ]])
         );
 
-        $this->assertCount(1, $result['findings']['new']);
+        $this->assertCount(1, $result['findings']['added']);
         $this->assertSame(1, $result['findings']['unchanged']);
     }
 

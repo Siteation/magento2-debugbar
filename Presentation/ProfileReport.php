@@ -268,7 +268,7 @@ class ProfileReport
             );
         }
 
-        foreach ($diff['findings']['new'] as $finding) {
+        foreach ($diff['findings']['added'] as $finding) {
             $lines[] = '';
             $lines[] = '- New finding: ' . ($finding['message'] ?? '');
         }

@@ -65,6 +65,23 @@
       + (classes ? '.' + classes.split(/\s+/).slice(0, 2).join('.') : '')
   }
 
+  /**
+   * The bar lives in its own shadow root, which is the one thing that distinguishes its
+   * elements from the page's without knowing anything about either.
+   *
+   * @param {unknown} element
+   * @returns {boolean}
+   */
+  function isOurs(element) {
+    try {
+      const root = element && element.getRootNode && element.getRootNode()
+
+      return Boolean(root && root.host && root.host.id === 'siteation-debugbar')
+    } catch (error) {
+      return false
+    }
+  }
+
   // Alpine 3.14.3, which Hyva ships, has no setErrorHandler, so the warning it writes is
   // the only place an expression error surfaces. The original is always called.
   const nativeWarn = console.warn
@@ -78,6 +95,10 @@
           message: message,
           element: describe(arguments[1]),
           during_init: !state.alpineReady,
+          // Which Alpine reported it. The bar carries its own, so without this the panel
+          // that lists the page's expression errors also lists the bar's, and a test that
+          // asks whether the bar is healthy gets told about the theme instead.
+          own: isOurs(arguments[1]),
         })
       }
     } catch (error) {

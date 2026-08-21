@@ -11,6 +11,7 @@
     "test:browser": "playwright test"
   },
   "dependencies": {
+    "@alpinejs/csp": "^3.16.2",
     "alpinejs": "^3.14.9",
     "highlight.js": "^11.12.0"
   },

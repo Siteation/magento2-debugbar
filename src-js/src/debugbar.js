@@ -1,6 +1,6 @@
 import './debugbar.css'
 import { hostAlpine } from './host-alpine.js'
-import Alpine from 'alpinejs'
+import Alpine from '@alpinejs/csp'
 import { debugBar } from './state.js'
 import { template } from './template.js'
 
@@ -42,6 +42,17 @@ if (host && !host.shadowRoot) {
 
   Alpine.prefix(PREFIX)
   Alpine.data('debugBar', debugBar)
+
+  // The CSP build bans x-html outright, so the bar brings its own. The value is HTML the
+  // highlighter produced, and highlight() escapes what it is given; nothing here evaluates
+  // a string, which is what the policy is actually about.
+  Alpine.directive('code', (el, { expression }, { effect, evaluateLater }) => {
+    const read = evaluateLater(expression)
+
+    effect(() => read((html) => {
+      el.innerHTML = typeof html === 'string' ? html : ''
+    }))
+  })
 
   // Deliberately not Alpine.start(): a full start attaches a document wide mutation
   // observer that would also claim the host theme's @click and :class shorthands,

@@ -133,7 +133,7 @@ export const template = `
                             data-ndb-text="'ran ' + group.count + ' times'"></span>
                       <span class="ndb-dim"
                             data-ndb-text="number(group.duration_ms, 2) + ' ms'"></span>
-                      <code class="ndb-query-sql" data-ndb-html="highlight(group.sql, 'sql')"></code>
+                      <code class="ndb-query-sql" data-ndb-code="highlight(group.sql, 'sql')"></code>
                     </li>
                   </template>
                 </ol>
@@ -146,7 +146,7 @@ export const template = `
                     <span class="ndb-tag is-warn"
                           data-ndb-text="'ran ' + finding.evidence.count + ' times'"></span>
                     <code class="ndb-query-sql"
-                          data-ndb-html="highlight(finding.evidence.sql, 'sql')"></code>
+                          data-ndb-code="highlight(finding.evidence.sql, 'sql')"></code>
                   </li>
                 </ol>
               </template>
@@ -331,7 +331,7 @@ export const template = `
               <span class="ndb-wf-track">
                 <span class="ndb-wf-grid"></span>
                 <span class="ndb-wf-bar" data-ndb-show="entry.kind === 'span'"
-                      data-ndb-bind:style="'left:' + entry.start_percent + '%;width:' + Math.max(entry.duration_percent, 0.4) + '%'"></span>
+                      data-ndb-bind:style="waterfallBar(entry)"></span>
                 <span class="ndb-wf-dot" data-ndb-show="entry.kind !== 'span'"
                       data-ndb-bind:style="'left:' + entry.at_percent + '%'"></span>
               </span>
@@ -387,7 +387,7 @@ export const template = `
                       data-ndb-bind:class="query.repeat_count >= 3 && 'is-warn'"
                       data-ndb-text="'ran ' + query.repeat_count + ' times'"></span>
               </div>
-              <code class="ndb-query-sql" data-ndb-html="highlight(query.sql, 'sql')"></code>
+              <code class="ndb-query-sql" data-ndb-code="highlight(query.sql, 'sql')"></code>
 
               <p class="ndb-callsite" data-ndb-show="callSite(query)">
                 <template data-ndb-if="callSite(query)">
@@ -744,7 +744,7 @@ export const template = `
               </tbody>
             </table>
 
-            <div class="ndb-subhead" data-ndb-show="comparison.findings.new.length
+            <div class="ndb-subhead" data-ndb-show="comparison.findings.added.length
                  || comparison.findings.resolved.length">
               <div>
                 <h3>Findings</h3>
@@ -755,7 +755,7 @@ export const template = `
             </div>
 
             <ol class="ndb-list">
-              <template data-ndb-for="(finding, index) in comparison.findings.new"
+              <template data-ndb-for="(finding, index) in comparison.findings.added"
                         data-ndb-bind:key="'new' + index">
                 <li class="ndb-finding" data-ndb-bind:class="'is-' + finding.severity">
                   <div class="ndb-finding-head">
@@ -803,7 +803,7 @@ export const template = `
                           data-ndb-text="'+' + row.count"></span>
                     <span class="ndb-query-type">added</span>
                   </div>
-                  <code class="ndb-query-sql" data-ndb-html="highlight(row.sql, 'sql')"></code>
+                  <code class="ndb-query-sql" data-ndb-code="highlight(row.sql, 'sql')"></code>
                 </li>
               </template>
 
@@ -817,7 +817,7 @@ export const template = `
                     <span class="ndb-query-type"
                           data-ndb-text="row.baseline_count + ' to ' + row.count + ' runs'"></span>
                   </div>
-                  <code class="ndb-query-sql" data-ndb-html="highlight(row.sql, 'sql')"></code>
+                  <code class="ndb-query-sql" data-ndb-code="highlight(row.sql, 'sql')"></code>
                 </li>
               </template>
 
@@ -828,7 +828,7 @@ export const template = `
                     <span class="ndb-delta is-better" data-ndb-text="row.delta"></span>
                     <span class="ndb-query-type">gone</span>
                   </div>
-                  <code class="ndb-query-sql" data-ndb-html="highlight(row.sql, 'sql')"></code>
+                  <code class="ndb-query-sql" data-ndb-code="highlight(row.sql, 'sql')"></code>
                 </li>
               </template>
             </ol>
@@ -914,8 +914,8 @@ export const template = `
 
                   <div class="ndb-alpine-body" data-ndb-show="isAlpineExpanded(component.id)">
                     <code class="ndb-alpine-expression" data-ndb-show="component.expression"
-                          data-ndb-html="highlight(component.expression, 'javascript')"></code>
-                    <pre class="ndb-json" data-ndb-html="highlight(alpineStates[component.id], 'json')"></pre>
+                          data-ndb-code="highlight(component.expression, 'javascript')"></code>
+                    <pre class="ndb-json" data-ndb-code="highlight(alpineStates[component.id], 'json')"></pre>
                   </div>
                 </li>
               </template>
@@ -943,7 +943,7 @@ export const template = `
                           data-ndb-text="store.keys"></span>
                   </div>
                   <div class="ndb-alpine-body">
-                    <pre class="ndb-json" data-ndb-html="highlight(store.value, 'json')"></pre>
+                    <pre class="ndb-json" data-ndb-code="highlight(store.value, 'json')"></pre>
                   </div>
                 </li>
               </template>
