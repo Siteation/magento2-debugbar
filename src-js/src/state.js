@@ -236,7 +236,9 @@ export function debugBar() {
 
     /** @returns {HTMLElement|null} the host element, which carries the bar's settings */
     rootElement() {
-      return document.getElementById('siteation-debugbar')
+      // Through the shadow root rather than by tag name: the bar is inside its own host by
+      // definition, so there is no lookup to get wrong and no second copy to pick between.
+      return this.$root.getRootNode().host ?? null
     },
 
     /**

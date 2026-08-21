@@ -5,7 +5,7 @@ import { debugBar } from './state.js'
 import { template } from './template.js'
 
 const PREFIX = 'data-ndb-'
-const ROOT_ID = 'siteation-debugbar'
+const TAG = 'siteation-debugbar'
 
 /**
  * Build the shadow root and hand back the element Alpine should initialise.
@@ -35,11 +35,35 @@ function mount(host) {
   return shadow.querySelector('.ndb')
 }
 
-const host = document.getElementById(ROOT_ID)
+/**
+ * The element the injector writes before </body>.
+ *
+ * A custom element rather than a div with a known id: the element mounts itself when the
+ * browser upgrades it, so nothing has to find it and nothing depends on this script
+ * running after it. The tag name is then the only thing the injector, this bundle and the
+ * error capture in early.js have to agree on.
+ */
+class DebugBarElement extends HTMLElement {
+  connectedCallback() {
+    // Upgrading, moving and re-inserting all arrive here, and attachShadow throws the
+    // second time. The shadow root is the record of having mounted already.
+    if (this.shadowRoot) return
 
-if (host && !host.shadowRoot) {
-  const root = mount(host)
+    const root = mount(this)
 
+    // Deliberately not Alpine.start(): a full start attaches a document wide mutation
+    // observer that would also claim the host theme's @click and :class shorthands,
+    // binding every one of them a second time. Initialising our own root is enough,
+    // because x-for and x-if initialise the subtrees they create themselves.
+    if (root) {
+      Alpine.initTree(root)
+    }
+  }
+}
+
+// A second copy of this bundle on the page would throw on define() and take everything
+// after it down with it, which the id check this replaced also guarded against.
+if (!customElements.get(TAG)) {
   Alpine.prefix(PREFIX)
   Alpine.data('debugBar', debugBar)
 
@@ -54,15 +78,9 @@ if (host && !host.shadowRoot) {
     }))
   })
 
-  // Deliberately not Alpine.start(): a full start attaches a document wide mutation
-  // observer that would also claim the host theme's @click and :class shorthands,
-  // binding every one of them a second time. Initialising our own root is enough,
-  // because x-for and x-if initialise the subtrees they create themselves.
-  if (root) {
-    Alpine.initTree(root)
-  }
+  customElements.define(TAG, DebugBarElement)
+}
 
-  if (hostAlpine) {
-    window.Alpine = hostAlpine
-  }
+if (hostAlpine) {
+  window.Alpine = hostAlpine
 }

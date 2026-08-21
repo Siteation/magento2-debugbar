@@ -61,6 +61,9 @@ entries for the work that led up to it.
 * An Alpine section that reads the page's own instance: every component with its live
   state, the registered stores, which components Hyva deferred and whether they have
   started, and the version, build and expression errors behind it.
+* The bar hosts itself in a `<siteation-debugbar>` custom element, so it mounts on upgrade
+  rather than being found by id, and the tag name is the only thing the injector, the
+  bundle and the error capture have to agree on.
 
 ### For coding agents
 

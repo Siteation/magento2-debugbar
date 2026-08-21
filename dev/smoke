@@ -46,7 +46,7 @@ ID=$(profile_id "$HEAD")
 
 [ "$STATUS" = "200" ] && pass "responds 200" || fail "responds 200" "got $STATUS"
 [ -n "$ID" ] && pass "returns the profile header" || fail "returns the profile header" "no $HEADER"
-grep -q 'id="siteation-debugbar"' "$BODY" \
+grep -q '<siteation-debugbar data-css=' "$BODY" \
     && pass "injects the bar" || fail "injects the bar" "root element missing"
 grep -q 'debugbar-early.js' "$BODY" \
     && pass "loads the early request watcher in the head" || fail "loads the early request watcher" ""

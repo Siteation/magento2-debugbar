@@ -73,7 +73,7 @@ listener dies in `getPlugin()`. See `research.md` 13.1.
 **The Alpine section is the exception to all of this.** It reads the page's live Alpine
 instead of a stored profile, so it is client only, invisible to MCP, and applies the value
 policy itself in `redact.js`. The policy reaches the page as `data-value-policy` on the
-bar's root element.
+host element.
 
 **Collectors** implement `Api\CollectorInterface`, registered as a sorted `di.xml` array on
 `ProfileManager`. `AbstractCollector` does redaction, bounding and `at_ms` stamping once for
@@ -83,6 +83,12 @@ all of them. Seven: request, queries, events, observers, blocks, cache, intercep
 **Findings** are produced by rules behind `Api\RuleInterface`, also registered in `di.xml`.
 A rule that throws is skipped and logged. Eight rules ship, producing ten kinds of
 finding: `RequestErrorRule` and `RepeatedQueryRule` emit two each.
+
+**The bar's host is a custom element**, `<siteation-debugbar>`, written before `</body>`
+alongside the profile JSON and the module script. It mounts itself in `connectedCallback`,
+so the tag name is the only thing `BarInjector`, `debugbar.js` and `early.js` share. It
+carries the settings as data attributes, which is where `data-value-policy` reaches the
+page.
 
 **The bar** renders in a shadow root with its own bundled Alpine under a `data-ndb-` prefix
 and is started with `Alpine.initTree(root)`, never `Alpine.start()`. A full start installs
@@ -149,7 +155,7 @@ a length of time.
 Rutger's call: it needs the repository made public so Packagist can read it. Not an
 engineering task, and not something to push toward.
 
-**1.1**: 47 done, 3 closed by decision, none open. `docs/build-status.html` holds the live
+**1.1**: 48 done, 3 closed by decision, none open. `docs/build-status.html` holds the live
 count. The phase list below says what each one delivered; it does not repeat the numbers,
 because two places that count the same work only ever agree for a while.
 

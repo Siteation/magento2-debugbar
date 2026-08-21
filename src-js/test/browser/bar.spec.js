@@ -28,7 +28,7 @@ const PAGE = '/checkout/cart/'
 function state(page, read) {
   return page.evaluate(
     (source) => {
-      const root = document.getElementById('siteation-debugbar')?.shadowRoot?.querySelector('.ndb')
+      const root = document.querySelector('siteation-debugbar')?.shadowRoot?.querySelector('.ndb')
 
       // eslint-disable-next-line no-new-func
       return new Function(`return (${source})`)()(root._x_dataStack[0])
@@ -50,7 +50,7 @@ function state(page, read) {
 async function waitForState(page, until) {
   await page.waitForFunction(
     (source) => {
-      const root = document.getElementById('siteation-debugbar')?.shadowRoot?.querySelector('.ndb')
+      const root = document.querySelector('siteation-debugbar')?.shadowRoot?.querySelector('.ndb')
 
       // eslint-disable-next-line no-new-func
       return Boolean(new Function(`return (${source})`)()(root._x_dataStack[0]))
@@ -88,11 +88,11 @@ async function alpineErrors(page) {
 async function openBar(page) {
   await page.goto(PAGE)
   await page.waitForFunction(
-    () => document.getElementById('siteation-debugbar')?.shadowRoot?.querySelector('.ndb')
+    () => document.querySelector('siteation-debugbar')?.shadowRoot?.querySelector('.ndb')
       ?._x_dataStack !== undefined
   )
   await page.evaluate(() => {
-    const bar = document.getElementById('siteation-debugbar').shadowRoot.querySelector('.ndb')
+    const bar = document.querySelector('siteation-debugbar').shadowRoot.querySelector('.ndb')
     const data = bar._x_dataStack[0]
 
     data.openInspector()
@@ -149,7 +149,7 @@ test.describe('under a policy that forbids unsafe-eval', () => {
 
     for (const section of sections) {
       await page.evaluate((id) => {
-        document.getElementById('siteation-debugbar').shadowRoot
+        document.querySelector('siteation-debugbar').shadowRoot
           .querySelector('.ndb')._x_dataStack[0].section = id
       }, section)
 
@@ -215,6 +215,23 @@ test.describe('the bar', () => {
     expect(await alpineErrors(page)).toEqual([])
   })
 
+  test('the host is a defined custom element that mounted itself', async ({ page }) => {
+    await openBar(page)
+
+    // An upgraded element, not a div the script happened to find: if define() never ran
+    // the element is a plain HTMLElement and the constructor name says so.
+    expect(await page.evaluate(() => {
+      const host = document.querySelector('siteation-debugbar')
+
+      return {
+        defined: Boolean(customElements.get('siteation-debugbar')),
+        upgraded: host.constructor !== HTMLElement,
+        shadow: Boolean(host.shadowRoot),
+        display: getComputedStyle(host).display,
+      }
+    })).toEqual({ defined: true, upgraded: true, shadow: true, display: 'block' })
+  })
+
   test('every section and sub-tab renders without an expression throwing', async ({ page }) => {
     await openBar(page)
 
@@ -228,7 +245,7 @@ test.describe('the bar', () => {
 
     for (const section of sections) {
       await page.evaluate((id) => {
-        document.getElementById('siteation-debugbar').shadowRoot
+        document.querySelector('siteation-debugbar').shadowRoot
           .querySelector('.ndb')._x_dataStack[0].section = id
       }, section)
 
@@ -246,7 +263,7 @@ test.describe('the bar', () => {
     ]) {
       for (const tab of tabs) {
         await page.evaluate(([id, key, value]) => {
-          const data = document.getElementById('siteation-debugbar').shadowRoot
+          const data = document.querySelector('siteation-debugbar').shadowRoot
             .querySelector('.ndb')._x_dataStack[0]
 
           data.section = id

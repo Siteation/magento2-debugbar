@@ -42,7 +42,8 @@ class BarInjectorTest extends TestCase
         $this->injector->inject($response, $this->profile());
 
         $body = $response->getContent();
-        $this->assertStringContainsString('id="siteation-debugbar"', $body);
+        $this->assertStringContainsString('<siteation-debugbar data-css=', $body);
+        $this->assertStringContainsString('</siteation-debugbar>', $body);
         $this->assertStringContainsString('type="application/json"', $body);
         $this->assertStringContainsString('debugbar-early.js', $body);
         $this->assertStringContainsString(
@@ -128,7 +129,7 @@ class BarInjectorTest extends TestCase
 
         $this->injector->inject($response, $this->profile());
 
-        $this->assertStringNotContainsString('id="siteation-debugbar"', $response->getContent());
+        $this->assertStringNotContainsString('<siteation-debugbar', $response->getContent());
     }
 
     #[Test]

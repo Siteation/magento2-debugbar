@@ -47,7 +47,12 @@ class BarInjector
      */
     public const LABEL_HEADER = 'X-Siteation-DebugBar-Label';
 
-    private const ROOT_ID = 'siteation-debugbar';
+    /**
+     * The bar's host element is a custom element rather than a div with a known id, so the
+     * element owns its own mounting and the tag name is the only thing the injector, the
+     * bundle and the error capture have to agree on.
+     */
+    private const ROOT_TAG = 'siteation-debugbar';
     private const DATA_ID = 'siteation-debugbar-profile';
 
     /**
@@ -185,13 +190,13 @@ class BarInjector
         );
 
         $markup = sprintf(
-            '<div id="%s" data-css="%s" data-profile-url="%s"'
+            '<%s data-css="%s" data-profile-url="%s"'
             . ' data-value-policy="%s" data-sections="%s"'
             . ' data-history-url="%s" data-compare-url="%s"'
-            . ' data-editor="%s" data-editor-root="%s"></div>'
+            . ' data-editor="%s" data-editor-root="%s"></%s>'
             . '<script type="application/json" id="%s">%s</script>'
             . '<script type="module" src="%s" defer></script>',
-            self::ROOT_ID,
+            self::ROOT_TAG,
             $this->escape($this->assets->for('css/debugbar.css')),
             $this->escape($this->profileUrl(self::ID_PLACEHOLDER)),
             $this->escape($this->config->valuePolicy()),
@@ -202,6 +207,7 @@ class BarInjector
             $this->escape($this->url->getUrl('siteation_debugbar/profile/compare', ['_secure' => true])),
             $this->escape($this->config->editor()),
             $this->escape($this->config->editorRoot()),
+            self::ROOT_TAG,
             self::DATA_ID,
             $json === false ? '{}' : $json,
             $this->escape($this->assets->for('js/debugbar.js'))

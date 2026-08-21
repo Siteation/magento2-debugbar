@@ -1783,7 +1783,18 @@ inspect_debug_queries       slowest first, with call sites</code></pre>
             screen to bring the bar back.</p>
             <p>Hiding for real stays, because a screenshot or a sticky footer wants nothing
             on screen at all. It is a palette command, where a control that costs a reload
-            belongs, and it is still not remembered.</p>` }
+            belongs, and it is still not remembered.</p>` },
+      { t: 'The bar hosts itself in a custom element', s: 'done',
+        d: `<p><code>&lt;siteation-debugbar&gt;</code> instead of a div with a known id. The
+            element mounts itself in <code>connectedCallback</code>, so nothing has to find
+            it and nothing depends on the bundle running after it, and the tag name is the
+            one thing the injector, the bundle and early.js have to agree on. The id was a
+            contract in four places.</p>
+            <p>Nothing was broken before this, and it is filed as tidying rather than a fix.
+            Two details it does need: <code>define()</code> throws on a second call, which
+            the old id check guarded against for free, and <code>:host</code> says
+            <code>display: block</code> rather than relying on <code>position: fixed</code>
+            to blockify an element the page has never heard of.</p>` }
     ]
   }
 ];

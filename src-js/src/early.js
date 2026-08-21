@@ -76,7 +76,7 @@
     try {
       const root = element && element.getRootNode && element.getRootNode()
 
-      return Boolean(root && root.host && root.host.id === 'siteation-debugbar')
+      return Boolean(root && root.host && root.host.localName === 'siteation-debugbar')
     } catch (error) {
       return false
     }
