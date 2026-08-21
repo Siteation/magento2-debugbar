@@ -1,5 +1,14 @@
 # Siteation_DebugBar
 
+[![Packagist Version](https://img.shields.io/packagist/v/siteation/magento2-debugbar?style=for-the-badge)](https://packagist.org/packages/siteation/magento2-debugbar)
+![Supported Magento Versions](https://img.shields.io/badge/magento-%202.4-brightgreen.svg?logo=magento&longCache=true&style=for-the-badge)
+![Supported PHP Versions](https://img.shields.io/badge/php-%208.3_|_8.4-8892bf.svg?logo=php&logoColor=white&longCache=true&style=for-the-badge)
+[![Hyvä Themes Supported](https://img.shields.io/badge/Hyva_Themes-Supported-3df0af.svg?longCache=true&style=for-the-badge)](https://hyva.io/)
+[![Alpine.js Inspected](https://img.shields.io/badge/Alpine.js-Inspected-8bc0d0.svg?logo=alpinedotjs&logoColor=white&longCache=true&style=for-the-badge)](https://alpinejs.dev/)
+[![Magewire Inspected](https://img.shields.io/badge/Magewire-Inspected-5f3dc4.svg?longCache=true&style=for-the-badge)](https://github.com/magewirephp/magewire)
+[![MCP Server Included](https://img.shields.io/badge/MCP_Server-Included-1f1f1f.svg?longCache=true&style=for-the-badge)](https://modelcontextprotocol.io/)
+![License](https://img.shields.io/github/license/Siteation/magento2-debugbar?color=%23234&style=for-the-badge)
+
 A debug bar for Magento 2 built for developers **and** for coding agents.
 
 Every request writes one bounded, redacted JSON profile. The bar in the page is a viewer
@@ -14,9 +23,12 @@ areas.
 ## Requirements
 
 * PHP 8.3 or 8.4
-* Magento 2.4.8 or 2.4.9
+* Magento 2.4. Developed and verified against 2.4.8 and 2.4.9
 * Any deploy mode. Outside developer mode it needs an access key, and without one it stays
   off.
+* No frontend requirement. It renders in a shadow root with its own bundled Alpine, so it
+  works on Hyvä and on Luma alike. The Alpine and Magewire sections read whatever the page
+  has; a store with neither simply does not see them.
 
 ## Install
 
@@ -114,4 +126,4 @@ The developer guide has the full set of suites and how to run them.
 
 ## Licence
 
-MIT.
+MIT. See [LICENSE](LICENSE).
