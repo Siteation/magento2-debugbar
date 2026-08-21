@@ -1,5 +1,18 @@
 # Changelog
 
+## 1.1.1 - 2026-08-21
+
+Packaging only. No code changed.
+
+* **The development notes are gone from the package.** A handoff, two build plans, a
+  research log and a progress tracker were written to get the module built and shipped
+  inside every tarball with it. In their place, a user guide and a developer guide, in
+  Markdown with generated HTML, rendered by `dev/docs`.
+* **A LICENSE file.** `composer.json` said MIT and there was nothing for GitHub or a reader
+  to detect.
+* A maintainer in `composer.json`, compatibility badges in the README, and a README that is
+  a landing page rather than the manual.
+
 ## 1.1.0 - 2026-08-21
 
 Three defects the security audit named, closed. Nothing in the interface changed.

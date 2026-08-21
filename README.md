@@ -16,7 +16,7 @@ over that profile, so AJAX, GraphQL and REST requests are captured too even thou
 can be injected into them. The same profiles are served read only over MCP, so an agent
 inspects exact data instead of guessing from a screenshot.
 
-**1.1.0.** Verified against a running store: 202 unit tests, 67 for the bar's own
+**1.1.1.** Verified against a running store: 202 unit tests, 67 for the bar's own
 JavaScript, 16 driving it in a browser, and a 30 assertion smoke suite across all four
 areas.
 

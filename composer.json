@@ -3,6 +3,13 @@
     "description": "Developer debug bar for Magento 2, with findings and an MCP server",
     "type": "magento2-module",
     "license": "MIT",
+    "authors": [
+        {
+            "name": "Siteation",
+            "email": "info@siteation.dev",
+            "homepage": "https://siteation.dev/"
+        }
+    ],
     "require": {
         "php": "~8.3.0 || ~8.4.0",
         "magento/framework": "^103.0"
