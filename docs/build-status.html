@@ -1872,11 +1872,13 @@ const REMAINING = [
       + 'a failed write cleans up its temporary file, and a PCRE failure in the injector '
       + 'falls back to the untouched markup instead of an empty page.' },
 
-  { name: 'MCP output carries request data with nothing marking it untrusted', phase: 'Audit, security', status: 'todo',
-    why: 'The one medium the second pass left open. A profile holds whatever the request '
-      + 'held, headers and query included, and it reaches an agent as tool output that reads '
-      + 'like the module talking. Labelling the payload as recorded data is cheap; the '
-      + 'alternative is an agent acting on a header someone wrote for it.' },
+  { name: 'MCP output carries request data with nothing marking it untrusted', phase: '1.1', status: 'done',
+    why: 'Closed. Every successful response carries a recorded_data line saying the payload is '
+      + 'values captured from requests, to be read as evidence and never as instructions, and '
+      + 'the server says the same at connect. Both, because the two are a long way apart by '
+      + 'the time a section comes back. Not on an error: those carry the module\'s own words, '
+      + 'and a warning on every miss teaches an agent to skip the line that matters. SKILL.md '
+      + 'leads its interpretation rules with it.' },
 
   { name: 'The access key has no strength floor and no rate limit', phase: 'Audit, security', status: 'todo',
     why: 'A key of one character is accepted, and the endpoints answer an unlimited number '

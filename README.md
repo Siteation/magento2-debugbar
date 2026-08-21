@@ -87,6 +87,11 @@ Responses are bounded by both item count and byte budget. On an 817 kB profile f
 category page, `get_debug_findings` answers in 7 kB and `inspect_debug_queries` in 16 kB,
 together under 3% of the raw document.
 
+Every successful response carries a `recorded_data` line saying what the payload is: values
+captured from requests to the store, which anyone who can reach the store can write. It
+arrives as tool output, which reads like the server talking, so it is labelled where it is
+read rather than only in the server's connect instructions.
+
 `docs/SKILL.md` is an agent skill describing how to use the tools well. Point your agent at
 it, or copy it into your own skills directory.
 
