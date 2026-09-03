@@ -130,6 +130,12 @@
   color: var(--ndb-text);
 }
 
+.ndb-dock.is-dragging {
+  cursor: grabbing;
+  user-select: none;
+  transition: none;
+}
+
 .ndb.is-bottom .ndb-dock { bottom: 12px; }
 .ndb.is-top .ndb-dock { top: 12px; }
 
@@ -408,6 +414,13 @@
 .ndb-icon-button:hover { color: var(--ndb-text); }
 .ndb-icon-button.is-warn { color: var(--ndb-warn); }
 .ndb-icon-button.is-bad { color: var(--ndb-bad); }
+
+.ndb-drag-handle {
+  cursor: grab;
+  touch-action: none;
+}
+
+.ndb-drag-handle:active { cursor: grabbing; }
 
 .ndb-badge {
   position: absolute;

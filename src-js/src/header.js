@@ -34,6 +34,18 @@ import { icon } from './icons.js'
 export function header({ sheet }) {
   return `
 <div class="ndb-header">
+${sheet ? '' : `  <button type="button" class="ndb-icon-button ndb-drag-handle"
+          data-ndb-on:pointerdown="startDockDrag($event)"
+          data-ndb-on:pointermove="moveDockDrag($event)"
+          data-ndb-on:pointerup="endDockDrag($event)"
+          data-ndb-on:pointercancel="endDockDrag($event)"
+          data-ndb-on:keydown="moveDockWithKeyboard($event)"
+          aria-label="Move debug bar"
+          title="Drag to move the debug bar; arrow keys move it 10 pixels">
+    ${icon('grip')}
+  </button>
+
+`}
   <button type="button" class="ndb-request" data-ndb-on:click="select('overview')"
           data-ndb-bind:title="request.path">
     <span class="ndb-method" data-ndb-text="request.method || 'GET'"></span>

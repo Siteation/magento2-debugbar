@@ -23,9 +23,13 @@ import { icon } from './icons.js'
  */
 export const template = `
 <div class="ndb" data-ndb-data="debugBar" data-ndb-cloak
-     data-ndb-bind:class="'is-' + placement + ' is-theme-' + resolvedTheme">
+     data-ndb-bind:class="'is-' + placement + ' is-theme-' + resolvedTheme"
+     data-ndb-on:resize.window="constrainDock()">
 
-  <div class="ndb-dock" data-ndb-show="!open && !dismissed && !collapsed" data-ndb-cloak
+  <div class="ndb-dock" data-ndb-ref="dock"
+       data-ndb-show="!open && !dismissed && !collapsed" data-ndb-cloak
+       data-ndb-bind:class="draggingDock && 'is-dragging'"
+       data-ndb-bind:style="dockStyle"
        title="Open the inspector" data-ndb-on:click="openFromBar($event)">
     ${header({ sheet: false })}
   </div>

@@ -24,6 +24,7 @@ export const icons = {
   menu: '<path d="M4 7h16M4 12h16M4 17h16"/>',
   caret: '<path d="m6 9 6 6 6-6"/>',
   pulse: '<path d="M3 12h3.5l2.5-6 4 12 2.5-6H21"/>',
+  grip: '<circle cx="9" cy="6" r="1.5" fill="currentColor" stroke="none"/><circle cx="15" cy="6" r="1.5" fill="currentColor" stroke="none"/><circle cx="9" cy="12" r="1.5" fill="currentColor" stroke="none"/><circle cx="15" cy="12" r="1.5" fill="currentColor" stroke="none"/><circle cx="9" cy="18" r="1.5" fill="currentColor" stroke="none"/><circle cx="15" cy="18" r="1.5" fill="currentColor" stroke="none"/>',
 }
 
 /**

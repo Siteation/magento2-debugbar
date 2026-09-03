@@ -191,6 +191,21 @@ test('the metrics belong to the dock, not to the open sheet', () => {
   assert.ok(sheet.includes('ndb-request'), 'the sheet still says which request this is')
 })
 
+test('the dock has an accessible grip without turning the modal header into a drag target', () => {
+  const dock = header({ sheet: false })
+  const sheet = header({ sheet: true })
+  const controlsStart = dock.indexOf('<div class="ndb-controls-group">')
+  const leading = dock.slice(0, controlsStart)
+  const controls = dock.slice(controlsStart)
+
+  assert.ok(leading.includes('class="ndb-icon-button ndb-drag-handle"'))
+  assert.ok(leading.includes('data-ndb-on:pointerdown="startDockDrag($event)"'))
+  assert.ok(leading.includes('data-ndb-on:keydown="moveDockWithKeyboard($event)"'))
+  assert.ok(leading.includes('aria-label="Move debug bar"'))
+  assert.ok(!controls.includes('ndb-drag-handle'))
+  assert.ok(!sheet.includes('ndb-drag-handle'))
+})
+
 test('the theme can be flipped without opening anything', () => {
   // Naming a theme is a different act from flipping one, and this bar renders on a light
   // admin and a dark storefront. Placement is a preference set once, so it stays away.

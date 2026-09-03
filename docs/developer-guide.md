@@ -181,8 +181,8 @@ vendor/bin/phpcs  --standard=<pkg>/phpcs.xml.dist <pkg>
 vendor/bin/phpstan analyse -c <pkg>/phpstan.neon.dist
 vendor/bin/phpunit --configuration <pkg>/phpunit.xml.dist      # 202 tests
 <pkg>/dev/smoke https://your-store.test admin                  # 30 assertions over HTTP
-cd <pkg>/src-js && npm test                                    # 67, no dependency
-cd <pkg>/src-js && npm run test:browser                        # 16, needs the store up
+cd <pkg>/src-js && npm test                                    # 71, no dependency
+cd <pkg>/src-js && npm run test:browser                        # 17, needs the store up
 ```
 
 Magento's integration framework is deliberately not used. It needs its own database and

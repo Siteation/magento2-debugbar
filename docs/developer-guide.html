@@ -177,8 +177,8 @@ npm run build         # or npm run dev, which watches the main bundle</code></pr
 vendor/bin/phpstan analyse -c &lt;pkg&gt;/phpstan.neon.dist
 vendor/bin/phpunit --configuration &lt;pkg&gt;/phpunit.xml.dist      # 202 tests
 &lt;pkg&gt;/dev/smoke https://your-store.test admin                  # 30 assertions over HTTP
-cd &lt;pkg&gt;/src-js &amp;&amp; npm test                                    # 67, no dependency
-cd &lt;pkg&gt;/src-js &amp;&amp; npm run test:browser                        # 16, needs the store up</code></pre>
+cd &lt;pkg&gt;/src-js &amp;&amp; npm test                                    # 71, no dependency
+cd &lt;pkg&gt;/src-js &amp;&amp; npm run test:browser                        # 17, needs the store up</code></pre>
 <p>Magento&#039;s integration framework is deliberately not used. It needs its own database and install and runs in minutes; <code>dev/smoke</code> drives a real store over HTTP across all four areas in seconds and asserts the same regressions.</p>
 <p><strong>The browser suite is the one that catches a binding that throws.</strong> <code>early.js</code> watches <code>console.warn</code> for every Alpine on the page, including the bar&#039;s own, and the suite walks every section and sub-tab and asserts that buffer is empty. A throwing binding renders as an empty element and says nothing otherwise. Two of the tests run under an injected policy that forbids <code>unsafe-eval</code>, because the store&#039;s own policy is report-only on most pages and the violations the bar used to commit were reported and never blocked.</p>
 <p>Two habits that suite enforces: the header is built once and used twice, so a header selector without <code>.ndb-sheet</code> matches both; and selecting a section starts work, so wait for the state rather than for a length of time.</p>

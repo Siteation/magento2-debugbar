@@ -73,7 +73,7 @@ test('a section with a count shows it, and one without shows nothing', () => {
   assert.equal(byId(commands, 'section:blocks').hint, '')
 })
 
-test('the placement command is the only way to move the bar since it left the header', () => {
+test('the placement command still docks a freely moved bar at the opposite edge', () => {
   const bottom = byId(commandsFor(state({ placement: 'bottom' })), 'placement')
   const top = byId(commandsFor(state({ placement: 'top' })), 'placement')
 
