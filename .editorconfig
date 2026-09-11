@@ -1,0 +1,31 @@
+# EditorConfig helps developers define and maintain consistent
+# coding styles between different editors and IDEs
+# http://editorconfig.org
+root = true
+
+[*]
+indent_style = space
+indent_size = 2
+end_of_line = lf
+charset = utf-8
+trim_trailing_whitespace = true
+insert_final_newline = true
+
+# Magento's own coding standard, which phpcs enforces on every file here.
+[*.{php,phtml,xml,xsd,xml.dist}]
+indent_size = 4
+max_line_length = 120
+
+[*.{js,cjs,mjs,css,html}]
+max_line_length = 100
+
+[*.md]
+trim_trailing_whitespace = false
+max_line_length = 100
+
+[*.{neon,neon.dist}]
+indent_style = tab
+indent_size = 4
+
+[composer.{json,lock}]
+indent_size = 4

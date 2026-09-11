@@ -1,8 +1,20 @@
 {
     "name": "siteation/magento2-debugbar",
-    "description": "Developer debug bar for Magento 2, with findings and an MCP server",
-    "type": "magento2-module",
+    "version": "1.2.0",
     "license": "MIT",
+    "type": "magento2-module",
+    "description": "Developer debug bar for Magento 2, with findings and an MCP server",
+    "readme": "README.md",
+    "keywords": [
+        "magento",
+        "magento2",
+        "magento2-module",
+        "debug",
+        "debugbar",
+        "profiler",
+        "developer",
+        "mcp"
+    ],
     "authors": [
         {
             "name": "Siteation",
@@ -10,8 +22,13 @@
             "homepage": "https://siteation.dev/"
         }
     ],
+    "homepage": "https://github.com/Siteation/magento2-debugbar",
+    "support": {
+        "issues": "https://github.com/Siteation/magento2-debugbar/issues",
+        "source": "https://github.com/Siteation/magento2-debugbar"
+    },
     "require": {
-        "php": "~8.3.0 || ~8.4.0",
+        "php": "~8.2.0 || ~8.3.0 || ~8.4.0 || ~8.5.0",
         "magento/framework": "^103.0"
     },
     "autoload": {
@@ -21,19 +38,5 @@
         "psr-4": {
             "Siteation\\DebugBar\\": ""
         }
-    },
-    "keywords": [
-        "magento",
-        "magento2",
-        "debug",
-        "debugbar",
-        "profiler",
-        "developer",
-        "mcp"
-    ],
-    "homepage": "https://github.com/Siteation/magento2-debugbar",
-    "support": {
-        "issues": "https://github.com/Siteation/magento2-debugbar/issues",
-        "source": "https://github.com/Siteation/magento2-debugbar"
     }
 }

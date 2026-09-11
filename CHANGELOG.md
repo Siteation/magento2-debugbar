@@ -1,21 +1,90 @@
 # Changelog
 
-## 1.1.1 - 2026-08-21
+All notable changes to this project will be documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this
+project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [Unreleased]
+
+## [1.2.0] - 2026-09-11
+
+### Added
+
+* **The collapsed bar can be moved.** A dotted grip on the left of the pill drags it
+  anywhere the viewport allows, by pointer or by touch. Where it was left is remembered
+  across pages and kept inside the screen when the window is resized, so a bar parked at the
+  bottom of a tall window is still reachable in a short one. A press only becomes a drag
+  once the pointer has travelled three pixels, so clicking the grip never pins a bar that
+  was centring itself.
+* **The moved bar goes back.** Double click the grip, press Enter or Space while it is
+  focused, or run "Put the bar back on its edge" from the command palette. It returns to the
+  standard edge nearest where it stood rather than crossing the viewport.
+* **The grip answers the arrow keys**, moving the bar ten pixels at a time, so a control
+  labelled Move works without a pointing device.
+* **The inspector and the bubble follow the bar.** Both still open against an edge, and the
+  edge they choose is the one the moved bar is nearest, so opening the inspector never
+  travels to the opposite side of the screen.
+* Screenshots of the bar, the two live sections and the admin page, in the README and the
+  user guide.
+* **The supported range is checked, not asserted.** `phpstan-versions.neon.dist` layers the
+  range from `composer.json` onto the existing configuration, so a typed class constant or a
+  `json_validate()` is reported as unavailable on 8.2 rather than waiting for an install on
+  8.2 to find it at runtime. It is a separate file because the range form needs PHPStan 2.1
+  or newer, while `phpstan.neon.dist` has to keep working with the 1.x a Magento install
+  carries. The developer guide has the command.
+* **An `.editorconfig`**, so indentation, line endings and trailing whitespace are settled
+  by the repository rather than by whichever editor opened the file. It records what the
+  code already does: four spaces for PHP and XML, which is what phpcs enforces, and two
+  everywhere else. Existing files are not reformatted to match it, and whether to do that
+  is a separate decision.
+
+### Changed
+
+* **The supported PHP versions are 8.2 through 8.5.** The constraint was `~8.3.0 || ~8.4.0`
+  from the first commit of the skeleton, which was the range Magento 2.4.8 supported rather
+  than anything the module needs: nothing here uses syntax or a function newer than 8.1. The
+  floor is therefore a decision and not a requirement, and 8.2 is where it is drawn, because
+  8.1 reached the end of its security support on 31 December 2025. Composer still resolves
+  against whatever your Magento allows, so the module no longer narrows a 2.4.6 or 2.4.7
+  install to a PHP it never required.
+
+### Fixed
+
+* **A block that legitimately returns nothing no longer turns into a 500.**
+  `BlockPlugin::aroundToHtml()` declared a strict `string` return type while Magento's own
+  `AbstractBlock::toHtml()` declares none, and blocks that return `null` or `false` when
+  there is nothing to render (Mirasvit_SeoMarkup's card and search box blocks among them)
+  tripped a `TypeError` with the bar enabled. The plugin now matches core's untyped
+  signature exactly rather than guessing which falsy values are legitimate.
+
+Thanks to [@claudio-ferraro](https://github.com/claudio-ferraro) for finding and fixing the
+block plugin regression ([#1]), and to [@wpoortman](https://github.com/wpoortman) for the
+movable bar ([#2]).
+
+## [1.1.1] - 2026-08-21
 
 Packaging only. No code changed.
 
-* **The development notes are gone from the package.** A handoff, two build plans, a
-  research log and a progress tracker were written to get the module built and shipped
-  inside every tarball with it. In their place, a user guide and a developer guide, in
-  Markdown with generated HTML, rendered by `dev/docs`.
+### Added
+
 * **A LICENSE file.** `composer.json` said MIT and there was nothing for GitHub or a reader
   to detect.
 * A maintainer in `composer.json`, compatibility badges in the README, and a README that is
   a landing page rather than the manual.
 
-## 1.1.0 - 2026-08-21
+### Removed
+
+* **The development notes are gone from the package.** A handoff, two build plans, a
+  research log and a progress tracker were written to get the module built and shipped
+  inside every tarball with it. In their place, a user guide and a developer guide, in
+  Markdown with generated HTML, rendered by `dev/docs`.
+
+## [1.1.0] - 2026-08-21
 
 Three defects the security audit named, closed. Nothing in the interface changed.
+
+### Security
 
 * **A profile past the age bound is refused on read, not only swept.** Retention was
   enforced by deletion alone, and a sweep runs on a write or when the history endpoint is
@@ -38,13 +107,15 @@ Magento's integration test suite is closed by decision rather than deferred agai
 would assert is asserted by `dev/smoke` over HTTP, the browser suite under an enforced CSP,
 and 202 unit tests.
 
-## 1.0.0 - 2026-08-21
+## [1.0.0] - 2026-08-21
 
 First release. Everything below is what 1.0.0 contains, so there are no entries for the
 work that led up to it. The interface was built as a phase numbered 1.1 during
 development, which was a build order rather than a version: it ships here.
 
-### The bar
+### Added
+
+#### The bar
 
 * One JSON profile per request, stored under `var/siteation_debugbar/`, pruned to the last
   20 or 60 minutes, written `0600` in a `0700` directory.
@@ -104,7 +175,7 @@ development, which was a build order rather than a version: it ships here.
   rather than being found by id, and the tag name is the only thing the injector, the
   bundle and the error capture have to agree on.
 
-### For coding agents
+#### For coding agents
 
 * `bin/magento siteation:debugbar:mcp` serves stored profiles over MCP on stdio, with five
   read only tools.
@@ -112,7 +183,7 @@ development, which was a build order rather than a version: it ships here.
   answer in 7 kB.
 * `docs/SKILL.md` describes how to use the tools without drawing the wrong conclusions.
 
-### Settings
+#### Settings
 
 * Settings live at **Stores > Configuration > Siteation > Debug Bar**, beside the other
   Siteation modules, and the values are at `siteation_debugbar/general/*`. Deliberately not
@@ -121,7 +192,7 @@ development, which was a build order rather than a version: it ships here.
   unreachable in the one mode that has to be configured before it does anything. The ACL
   resource is still the developer one, so who may change them has not changed.
 
-### Safety
+#### Safety
 
 * Off by default. Production mode refuses unless a developer access key is set, and then
   the bar collects and answers only for requests presenting it: a store switch can never
@@ -138,3 +209,11 @@ development, which was a build order rather than a version: it ships here.
   same policy, the same key pattern and the same bounds in the browser.
 * No inline script and no inline style reach the page, so `Magento_Csp` needs no nonce and
   no `unsafe-inline`.
+
+[#1]: https://github.com/Siteation/magento2-debugbar/pull/1
+[#2]: https://github.com/Siteation/magento2-debugbar/pull/2
+[unreleased]: https://github.com/Siteation/magento2-debugbar/compare/1.2.0...HEAD
+[1.2.0]: https://github.com/Siteation/magento2-debugbar/compare/1.1.1...1.2.0
+[1.1.1]: https://github.com/Siteation/magento2-debugbar/compare/1.1.0...1.1.1
+[1.1.0]: https://github.com/Siteation/magento2-debugbar/compare/1.0.0...1.1.0
+[1.0.0]: https://github.com/Siteation/magento2-debugbar/releases/tag/1.0.0
