@@ -54,7 +54,10 @@ and it works on a page whose own JavaScript has failed.
 
 **Collapsed**, it is a floating pill carrying the request line, the deploy mode, the query
 count and time, the duration and the peak memory. Clicking anywhere on it opens the
-inspector.
+inspector. Drag the dotted grip to move the pill, mostly up and down, since the pill is as
+wide as the window allows. Its position is remembered across pages and kept inside the
+screen when the viewport changes. Double click the grip, or run "Put the bar back on its
+edge" from the palette, to hand it back to the nearest standard edge.
 
 **Open**, it is a modal sheet with a sidebar. The page behind it is made inert, so a click
 lands where you meant it rather than on the store.
@@ -76,6 +79,8 @@ nothing would be left on screen to undo it.
 | `Cmd/Ctrl Shift P` | Open the command palette |
 | `Escape` | Close the inspector, or the palette if it is open |
 | `Tab` | Cycles inside the sheet while it is open |
+| Arrow keys on the grip | Move the collapsed bar in 10 pixel steps |
+| `Enter` on the grip | Put the collapsed bar back on its edge |
 
 The palette holds everything: every section, the three themes, the top or bottom placement,
 pinning a section to favourites, the window controls, copying the report, and hiding the bar.

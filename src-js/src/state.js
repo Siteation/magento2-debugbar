@@ -1,5 +1,11 @@
 import { watchRequests } from './requests.js'
 import { keepFocusWithin, lockHost, unlockHost } from './host.js'
+import {
+  clampDockPosition,
+  exceedsDragThreshold,
+  isDockPosition,
+  placementForDock,
+} from './dock.js'
 import { SECTIONS, countFor, enabledSections } from './sections.js'
 import { commandsFor, matchCommands } from './palette.js'
 import { policyName } from './redact.js'
@@ -99,6 +105,10 @@ export function debugBar() {
     open: false,
     section: 'findings',
     placement: 'bottom',
+    dockPosition: null,
+    dockDrag: null,
+    dockDragMoved: false,
+    draggingDock: false,
     maximised: false,
     theme: 'system',
     resolvedTheme: 'dark',
@@ -183,6 +193,9 @@ export function debugBar() {
       this.open = preferences.open && !this.collapsed
       this.section = preferences.section
       this.placement = preferences.placement === 'top' ? 'top' : 'bottom'
+      this.dockPosition = isDockPosition(preferences.dockPosition)
+        ? preferences.dockPosition
+        : null
       this.maximised = Boolean(preferences.maximised)
       this.theme = ['system', 'light', 'dark'].includes(preferences.theme)
         ? preferences.theme
@@ -232,6 +245,8 @@ export function debugBar() {
       }).filter((entry) => entry.id !== this.profile.id)
 
       if (this.open) this.loadPayloads()
+
+      this.scheduleDockConstraint()
     },
 
     /** @returns {HTMLElement|null} the host element, which carries the bar's settings */
@@ -951,6 +966,204 @@ export function debugBar() {
       this.openInspector()
     },
 
+    /** @returns {Record<string, string>} inline positioning only after the dock has moved */
+    get dockStyle() {
+      // Property by property, because Alpine applies a string by replacing the whole style
+      // attribute, including the display value x-show uses while the inspector is open.
+      return {
+        left: this.dockPosition ? `${this.dockPosition.left}px` : '',
+        top: this.dockPosition ? `${this.dockPosition.top}px` : '',
+        right: this.dockPosition ? 'auto' : '',
+        bottom: this.dockPosition ? 'auto' : '',
+        transform: this.dockPosition ? 'none' : '',
+      }
+    },
+
+    /**
+     * Take the press, but stay a click until the pointer travels. A press that never moves
+     * has to reach the grip's own click and double click, and pinning the dock where it
+     * already sits would cost it the centring it has by default.
+     *
+     * Pointer capture keeps a drag alive after the pointer leaves the small handle or the
+     * shadow root. The press is not cancelled, so the grip still takes focus and the arrow
+     * keys are available straight after a drag.
+     *
+     * @param {PointerEvent} event
+     */
+    startDockDrag(event) {
+      if (event.button !== 0 || !event.isPrimary) return
+
+      // A fresh press ends the suppression the last drag armed, so a double click later is
+      // still a reset.
+      this.dockDragMoved = false
+
+      const dock = this.$refs.dock
+
+      if (!dock) return
+
+      const bounds = dock.getBoundingClientRect()
+
+      this.dockDrag = {
+        pointerId: event.pointerId,
+        pointerX: event.clientX,
+        pointerY: event.clientY,
+        left: bounds.left,
+        top: bounds.top,
+        width: bounds.width,
+        height: bounds.height,
+        moved: false,
+      }
+      event.currentTarget.setPointerCapture(event.pointerId)
+    },
+
+    /** @param {PointerEvent} event */
+    moveDockDrag(event) {
+      const drag = this.dockDrag
+
+      if (!drag || drag.pointerId !== event.pointerId) return
+
+      const dx = event.clientX - drag.pointerX
+      const dy = event.clientY - drag.pointerY
+
+      if (!drag.moved && !exceedsDragThreshold(dx, dy)) return
+
+      drag.moved = true
+      this.draggingDock = true
+      this.dockPosition = clampDockPosition(
+        { left: drag.left + dx, top: drag.top + dy },
+        drag,
+        { width: window.innerWidth, height: window.innerHeight }
+      )
+      event.preventDefault()
+    },
+
+    /** @param {PointerEvent} event */
+    endDockDrag(event) {
+      const drag = this.dockDrag
+
+      if (!drag || drag.pointerId !== event.pointerId) return
+
+      this.moveDockDrag(event)
+      this.draggingDock = false
+      this.dockDrag = null
+
+      if (!drag.moved) return
+
+      this.dockDragMoved = true
+      this.updatePlacementFromDock()
+      this.persist()
+    },
+
+    /**
+     * A button labelled "Move" must work without a pointing device too. Enter and Space are
+     * the keyboard's double click, so they reset rather than doing nothing.
+     *
+     * @param {KeyboardEvent} event
+     */
+    moveDockWithKeyboard(event) {
+      if (event.key === 'Enter' || event.key === ' ') {
+        this.resetDockPosition()
+        event.preventDefault()
+
+        return
+      }
+
+      const movement = {
+        ArrowLeft: [-10, 0],
+        ArrowRight: [10, 0],
+        ArrowUp: [0, -10],
+        ArrowDown: [0, 10],
+      }[event.key]
+
+      if (!movement) return
+
+      const dock = this.$refs.dock
+
+      if (!dock) return
+
+      const bounds = dock.getBoundingClientRect()
+
+      this.dockPosition = clampDockPosition(
+        { left: bounds.left + movement[0], top: bounds.top + movement[1] },
+        bounds,
+        { width: window.innerWidth, height: window.innerHeight }
+      )
+      this.updatePlacementFromDock()
+      this.persist()
+      event.preventDefault()
+    },
+
+    /** @param {MouseEvent} event */
+    resetDockFromGrip(event) {
+      event.preventDefault()
+
+      // Two short drags in the same spot are a double click to the browser, and that would
+      // undo the second one.
+      if (this.dockDragMoved) return
+
+      this.resetDockPosition()
+    },
+
+    /**
+     * Hand the dock back to the stylesheet, which centres it against the edge the placement
+     * names. That edge is the one the bar was last dragged nearest, so a reset returns it to
+     * the standard position closest to where it stood rather than across the viewport.
+     */
+    resetDockPosition() {
+      if (!this.dockPosition) return
+
+      this.dockPosition = null
+      this.persist()
+    },
+
+    /**
+     * x-show reveals the dock on a timer after its first display. Measure on the following
+     * frame, when its width and height exist again, rather than clamping a zero-sized box.
+     */
+    scheduleDockConstraint() {
+      this.$nextTick(() => requestAnimationFrame(() => this.constrainDock()))
+    },
+
+    /** Keep a restored or resized dock reachable. */
+    constrainDock() {
+      const dock = this.$refs.dock
+
+      if (!this.dockPosition || !dock || this.open || this.collapsed || this.dismissed) return
+
+      const bounds = dock.getBoundingClientRect()
+
+      if (bounds.width === 0 || bounds.height === 0) return
+
+      const previous = this.dockPosition
+      const previousPlacement = this.placement
+
+      this.dockPosition = clampDockPosition(
+        this.dockPosition,
+        bounds,
+        { width: window.innerWidth, height: window.innerHeight }
+      )
+      this.updatePlacementFromDock()
+
+      if (
+        previous.left !== this.dockPosition.left
+        || previous.top !== this.dockPosition.top
+        || previousPlacement !== this.placement
+      ) this.persist()
+    },
+
+    /** Keep the edge-bound inspector and bubble near the freely positioned dock. */
+    updatePlacementFromDock() {
+      const dock = this.$refs.dock
+
+      if (!this.dockPosition || !dock) return
+
+      this.placement = placementForDock(
+        this.dockPosition,
+        dock.getBoundingClientRect(),
+        window.innerHeight
+      )
+    },
+
     openInspector() {
       if (this.open) return
 
@@ -972,6 +1185,8 @@ export function debugBar() {
       if (this.returnFocusTo && typeof this.returnFocusTo.focus === 'function') {
         this.returnFocusTo.focus()
       }
+
+      this.scheduleDockConstraint()
     },
 
     toggle() {
@@ -985,6 +1200,7 @@ export function debugBar() {
 
     movePlacement() {
       this.placement = this.placement === 'bottom' ? 'top' : 'bottom'
+      this.dockPosition = null
       this.persist()
     },
 
@@ -1008,6 +1224,7 @@ export function debugBar() {
     expand() {
       this.collapsed = false
       this.persist()
+      this.scheduleDockConstraint()
     },
 
     toggleCollapsed() {
@@ -1292,6 +1509,7 @@ export function debugBar() {
         case 'section': this.select(command.arg); break
         case 'theme': this.setTheme(command.arg); break
         case 'placement': this.movePlacement(); break
+        case 'dock-reset': this.resetDockPosition(); break
         case 'favourite': this.toggleFavourite(command.arg); break
         case 'inspector': this.toggle(); break
         case 'maximise': this.toggleMaximised(); break
@@ -1330,6 +1548,7 @@ export function debugBar() {
           collapsed: this.collapsed,
           section: this.section,
           placement: this.placement,
+          dockPosition: this.dockPosition,
           maximised: this.maximised,
           theme: this.theme,
           favourites: this.favourites,
