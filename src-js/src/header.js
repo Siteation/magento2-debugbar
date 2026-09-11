@@ -39,9 +39,10 @@ ${sheet ? '' : `  <button type="button" class="ndb-icon-button ndb-drag-handle"
           data-ndb-on:pointermove="moveDockDrag($event)"
           data-ndb-on:pointerup="endDockDrag($event)"
           data-ndb-on:pointercancel="endDockDrag($event)"
+          data-ndb-on:dblclick="resetDockFromGrip($event)"
           data-ndb-on:keydown="moveDockWithKeyboard($event)"
           aria-label="Move debug bar"
-          title="Drag to move the debug bar; arrow keys move it 10 pixels">
+          title="Drag to move the debug bar, double click to put it back; arrow keys move it 10 pixels">
     ${icon('grip')}
   </button>
 

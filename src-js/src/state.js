@@ -1,6 +1,11 @@
 import { watchRequests } from './requests.js'
 import { keepFocusWithin, lockHost, unlockHost } from './host.js'
-import { clampDockPosition, isDockPosition, placementForDock } from './dock.js'
+import {
+  clampDockPosition,
+  exceedsDragThreshold,
+  isDockPosition,
+  placementForDock,
+} from './dock.js'
 import { SECTIONS, countFor, enabledSections } from './sections.js'
 import { commandsFor, matchCommands } from './palette.js'
 import { policyName } from './redact.js'
@@ -102,6 +107,7 @@ export function debugBar() {
     placement: 'bottom',
     dockPosition: null,
     dockDrag: null,
+    dockDragMoved: false,
     draggingDock: false,
     maximised: false,
     theme: 'system',
@@ -974,13 +980,22 @@ export function debugBar() {
     },
 
     /**
-     * Begin a pointer drag from the grip. Pointer capture keeps the drag alive after the
-     * pointer leaves the small handle or the shadow root.
+     * Take the press, but stay a click until the pointer travels. A press that never moves
+     * has to reach the grip's own click and double click, and pinning the dock where it
+     * already sits would cost it the centring it has by default.
+     *
+     * Pointer capture keeps a drag alive after the pointer leaves the small handle or the
+     * shadow root. The press is not cancelled, so the grip still takes focus and the arrow
+     * keys are available straight after a drag.
      *
      * @param {PointerEvent} event
      */
     startDockDrag(event) {
       if (event.button !== 0 || !event.isPrimary) return
+
+      // A fresh press ends the suppression the last drag armed, so a double click later is
+      // still a reset.
+      this.dockDragMoved = false
 
       const dock = this.$refs.dock
 
@@ -996,10 +1011,9 @@ export function debugBar() {
         top: bounds.top,
         width: bounds.width,
         height: bounds.height,
+        moved: false,
       }
-      this.draggingDock = true
       event.currentTarget.setPointerCapture(event.pointerId)
-      event.preventDefault()
     },
 
     /** @param {PointerEvent} event */
@@ -1008,11 +1022,15 @@ export function debugBar() {
 
       if (!drag || drag.pointerId !== event.pointerId) return
 
+      const dx = event.clientX - drag.pointerX
+      const dy = event.clientY - drag.pointerY
+
+      if (!drag.moved && !exceedsDragThreshold(dx, dy)) return
+
+      drag.moved = true
+      this.draggingDock = true
       this.dockPosition = clampDockPosition(
-        {
-          left: drag.left + event.clientX - drag.pointerX,
-          top: drag.top + event.clientY - drag.pointerY,
-        },
+        { left: drag.left + dx, top: drag.top + dy },
         drag,
         { width: window.innerWidth, height: window.innerHeight }
       )
@@ -1021,21 +1039,35 @@ export function debugBar() {
 
     /** @param {PointerEvent} event */
     endDockDrag(event) {
-      if (!this.dockDrag || this.dockDrag.pointerId !== event.pointerId) return
+      const drag = this.dockDrag
+
+      if (!drag || drag.pointerId !== event.pointerId) return
 
       this.moveDockDrag(event)
       this.draggingDock = false
       this.dockDrag = null
+
+      if (!drag.moved) return
+
+      this.dockDragMoved = true
       this.updatePlacementFromDock()
       this.persist()
     },
 
     /**
-     * A button labelled "Move" must work without a pointing device too.
+     * A button labelled "Move" must work without a pointing device too. Enter and Space are
+     * the keyboard's double click, so they reset rather than doing nothing.
      *
      * @param {KeyboardEvent} event
      */
     moveDockWithKeyboard(event) {
+      if (event.key === 'Enter' || event.key === ' ') {
+        this.resetDockPosition()
+        event.preventDefault()
+
+        return
+      }
+
       const movement = {
         ArrowLeft: [-10, 0],
         ArrowRight: [10, 0],
@@ -1059,6 +1091,29 @@ export function debugBar() {
       this.updatePlacementFromDock()
       this.persist()
       event.preventDefault()
+    },
+
+    /** @param {MouseEvent} event */
+    resetDockFromGrip(event) {
+      event.preventDefault()
+
+      // Two short drags in the same spot are a double click to the browser, and that would
+      // undo the second one.
+      if (this.dockDragMoved) return
+
+      this.resetDockPosition()
+    },
+
+    /**
+     * Hand the dock back to the stylesheet, which centres it against the edge the placement
+     * names. That edge is the one the bar was last dragged nearest, so a reset returns it to
+     * the standard position closest to where it stood rather than across the viewport.
+     */
+    resetDockPosition() {
+      if (!this.dockPosition) return
+
+      this.dockPosition = null
+      this.persist()
     },
 
     /**
@@ -1454,6 +1509,7 @@ export function debugBar() {
         case 'section': this.select(command.arg); break
         case 'theme': this.setTheme(command.arg); break
         case 'placement': this.movePlacement(); break
+        case 'dock-reset': this.resetDockPosition(); break
         case 'favourite': this.toggleFavourite(command.arg); break
         case 'inspector': this.toggle(); break
         case 'maximise': this.toggleMaximised(); break

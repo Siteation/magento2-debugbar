@@ -397,6 +397,37 @@ test.describe('the bar', () => {
     expect(await ourAlpineErrors(page)).toEqual([])
   })
 
+  test('a click on the grip leaves the dock alone, and a double click puts it back',
+    async ({ page }) => {
+      await openBar(page)
+      await state(page, (data) => { data.closeInspector() })
+
+      const dock = page.locator('.ndb-dock')
+      const grip = page.locator('.ndb-drag-handle')
+      const before = await dock.boundingBox()
+
+      await grip.click()
+
+      expect(await state(page, (data) => data.dockPosition)).toBe(null)
+      expect((await dock.boundingBox()).x).toBeCloseTo(before.x, 0)
+
+      const handle = await grip.boundingBox()
+
+      await page.mouse.move(handle.x + handle.width / 2, handle.y + handle.height / 2)
+      await page.mouse.down()
+      await page.mouse.move(handle.x + handle.width / 2, 300, { steps: 5 })
+      await page.mouse.up()
+
+      expect(await state(page, (data) => data.dockPosition)).not.toBe(null)
+
+      await grip.dblclick()
+
+      expect(await state(page, (data) => data.dockPosition)).toBe(null)
+      expect((await dock.boundingBox()).x).toBeCloseTo(before.x, 0)
+      expect((await dock.boundingBox()).y).toBeCloseTo(before.y, 0)
+      expect(await ourAlpineErrors(page)).toEqual([])
+    })
+
   test('closing the bar leaves a bubble behind, and the bubble is remembered',
     async ({ page }) => {
       await openBar(page)

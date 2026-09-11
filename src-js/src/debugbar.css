@@ -418,6 +418,7 @@
 .ndb-drag-handle {
   cursor: grab;
   touch-action: none;
+  user-select: none;
 }
 
 .ndb-drag-handle:active { cursor: grabbing; }

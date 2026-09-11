@@ -83,6 +83,15 @@ function appearanceCommands(state) {
       kind: 'placement',
       arg: '',
     },
+    ...(state.dockPosition ? [{
+      id: 'dock-reset',
+      group: 'Appearance',
+      label: 'Put the bar back on its edge',
+      hint: 'moved',
+      keywords: 'reset dock position centre center move drag restore default',
+      kind: 'dock-reset',
+      arg: '',
+    }] : []),
     {
       id: 'favourite',
       group: 'Appearance',

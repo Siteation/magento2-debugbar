@@ -3249,11 +3249,15 @@ function Sn(e, t, n) {
 function cc(e, t, n) {
   return e.top + t.height / 2 < n / 2 ? "top" : "bottom";
 }
-function dc(e) {
-  const t = String(e || "").split(",").map((n) => n.trim()).filter(Boolean);
-  return t.length === 0 ? Zt : Zt.filter((n) => uc.includes(n.id) || t.includes(n.id));
+const dc = 3;
+function uc(e, t) {
+  return Math.hypot(e, t) >= dc;
 }
-const uc = ["findings", "overview"], Zt = [
+function pc(e) {
+  const t = String(e || "").split(",").map((n) => n.trim()).filter(Boolean);
+  return t.length === 0 ? Zt : Zt.filter((n) => hc.includes(n.id) || t.includes(n.id));
+}
+const hc = ["findings", "overview"], Zt = [
   {
     id: "findings",
     label: "Findings",
@@ -3351,7 +3355,7 @@ function Pr(e, t) {
       return null;
   }
 }
-const pc = {
+const fc = {
   database: '<path d="M12 2.5c4.14 0 7.5 1.12 7.5 2.5S16.14 7.5 12 7.5 4.5 6.38 4.5 5 7.86 2.5 12 2.5Z"/><path d="M19.5 5v14c0 1.38-3.36 2.5-7.5 2.5S4.5 20.38 4.5 19V5"/><path d="M19.5 12c0 1.38-3.36 2.5-7.5 2.5S4.5 13.38 4.5 12"/>',
   clock: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
   chip: '<rect x="7" y="7" width="10" height="10" rx="2"/><path d="M10 2.5v3M14 2.5v3M10 18.5v3M14 18.5v3M2.5 10h3M2.5 14h3M18.5 10h3M18.5 14h3"/>',
@@ -3373,12 +3377,12 @@ const pc = {
 function H(e, t = "") {
   return `<svg class="ndb-icon ${t}" viewBox="0 0 24 24" fill="none" stroke="currentColor"
     stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"
-    aria-hidden="true">${pc[e] || ""}</svg>`;
+    aria-hidden="true">${fc[e] || ""}</svg>`;
 }
-function hc(e) {
-  return [...fc(e), ...bc(e), ...gc(e)];
+function bc(e) {
+  return [...gc(e), ...mc(e), ...yc(e)];
 }
-function fc(e) {
+function gc(e) {
   return Zt.map((t) => {
     const n = Pr(t.id, e);
     return {
@@ -3392,7 +3396,7 @@ function fc(e) {
     };
   });
 }
-function bc(e) {
+function mc(e) {
   const t = [
     { value: "system", label: "Follow the system theme" },
     { value: "light", label: "Use the light theme" },
@@ -3417,6 +3421,15 @@ function bc(e) {
       kind: "placement",
       arg: ""
     },
+    ...e.dockPosition ? [{
+      id: "dock-reset",
+      group: "Appearance",
+      label: "Put the bar back on its edge",
+      hint: "moved",
+      keywords: "reset dock position centre center move drag restore default",
+      kind: "dock-reset",
+      arg: ""
+    }] : [],
     {
       id: "favourite",
       group: "Appearance",
@@ -3428,7 +3441,7 @@ function bc(e) {
     }
   ];
 }
-function gc(e) {
+function yc(e) {
   return [
     {
       id: "copy",
@@ -3477,14 +3490,14 @@ function gc(e) {
     }
   ];
 }
-function mc(e, t) {
+function vc(e, t) {
   const n = String(t || "").trim().toLowerCase(), i = n ? e.filter((s) => `${s.group} ${s.label} ${s.keywords}`.toLowerCase().includes(n)) : e;
   return i.map((s, r) => ({
     ...s,
     leads: r === 0 || i[r - 1].group !== s.group
   }));
 }
-function yc() {
+function _c() {
   return `
 <div class="ndb-palette" data-ndb-bind:class="paletteOpen && 'is-open'"
      data-ndb-on:keydown="paletteKeys($event)">
@@ -3528,19 +3541,19 @@ function yc() {
   </div>
 </div>`;
 }
-const Ye = "full", $r = "masked", be = "none", vc = "[redacted]", _c = "[masked]", wc = "[maximum depth reached]", xc = "[circular]", Ec = /(pass|pwd|secret|token|api[_-]?key|authorization|cookie|session|csrf|form_key|credit|cc[_-]?number|cvv|iban|ssn|private[_-]?key)/i, kc = 5, Bt = 100, ss = 400;
-function Sc(e) {
+const Ye = "full", $r = "masked", be = "none", wc = "[redacted]", xc = "[masked]", Ec = "[maximum depth reached]", kc = "[circular]", Sc = /(pass|pwd|secret|token|api[_-]?key|authorization|cookie|session|csrf|form_key|credit|cc[_-]?number|cvv|iban|ssn|private[_-]?key)/i, Ac = 5, Bt = 100, ss = 400;
+function Oc(e) {
   return [Ye, $r, be].includes(e) ? e : Ye;
 }
-function Ac(e) {
-  return Ec.test(String(e));
+function Tc(e) {
+  return Sc.test(String(e));
 }
 function xi(e, t = Ye) {
   if (t !== be)
     return Ei(e, t, 0, /* @__PURE__ */ new WeakSet());
 }
 function Xt(e, t = Ye) {
-  return t === be ? "" : t === $r ? e === "" ? "" : _c : e.length <= ss ? e : `${e.slice(0, ss)}...`;
+  return t === be ? "" : t === $r ? e === "" ? "" : xc : e.length <= ss ? e : `${e.slice(0, ss)}...`;
 }
 function Dr(e, t = Ye) {
   if (t === be) return "";
@@ -3550,13 +3563,13 @@ function Dr(e, t = Ye) {
 function Ei(e, t, n, i) {
   if (e == null) return e;
   const s = typeof e;
-  return s === "string" ? Xt(e, t) : s === "number" || s === "boolean" ? e : s === "function" ? `ƒ ${e.name || "anonymous"}()` : s === "symbol" ? e.toString() : s === "bigint" ? `${e}n` : s !== "object" ? s : e instanceof Node ? Mc(e) : e instanceof Date ? e.toISOString() : e instanceof Error ? `${e.name}: ${Xt(e.message, t)}` : e instanceof Map ? `Map(${e.size})` : e instanceof Set ? `Set(${e.size})` : n >= kc ? wc : i.has(e) ? xc : (i.add(e), Array.isArray(e) ? Oc(e, t, n, i) : Tc(e, t, n, i));
+  return s === "string" ? Xt(e, t) : s === "number" || s === "boolean" ? e : s === "function" ? `ƒ ${e.name || "anonymous"}()` : s === "symbol" ? e.toString() : s === "bigint" ? `${e}n` : s !== "object" ? s : e instanceof Node ? Cc(e) : e instanceof Date ? e.toISOString() : e instanceof Error ? `${e.name}: ${Xt(e.message, t)}` : e instanceof Map ? `Map(${e.size})` : e instanceof Set ? `Set(${e.size})` : n >= Ac ? Ec : i.has(e) ? kc : (i.add(e), Array.isArray(e) ? Mc(e, t, n, i) : Nc(e, t, n, i));
 }
-function Oc(e, t, n, i) {
+function Mc(e, t, n, i) {
   const s = e.slice(0, Bt).map((r) => Ei(r, t, n + 1, i));
   return e.length > Bt && s.push(`[${e.length - Bt} more]`), s;
 }
-function Tc(e, t, n, i) {
+function Nc(e, t, n, i) {
   const s = sn(e), r = /* @__PURE__ */ Object.create(null);
   let a = 0;
   for (const o of s) {
@@ -3564,8 +3577,8 @@ function Tc(e, t, n, i) {
       r.__truncated__ = s.length - a;
       break;
     }
-    if (Ac(o)) {
-      r[o] = vc, a++;
+    if (Tc(o)) {
+      r[o] = wc, a++;
       continue;
     }
     try {
@@ -3585,16 +3598,16 @@ function sn(e) {
     return [];
   }
 }
-function Mc(e) {
+function Cc(e) {
   if (!(e instanceof Element)) return `<${e.nodeName.toLowerCase()}>`;
   const t = e.id ? `#${e.id}` : "", n = typeof e.className == "string" && e.className.trim() ? `.${e.className.trim().split(/\s+/).slice(0, 2).join(".")}` : "";
   return `<${e.tagName.toLowerCase()}${t}${n}>`;
 }
-function Nc(e) {
+function Rc(e) {
   return e && e.__esModule && Object.prototype.hasOwnProperty.call(e, "default") ? e.default : e;
 }
 var An, rs;
-function Cc() {
+function Ic() {
   if (rs) return An;
   rs = 1;
   function e(l) {
@@ -4666,8 +4679,8 @@ https://github.com/highlightjs/highlight.js/issues/2277`), W = h, $ = x), M === 
   }, ze = $i({});
   return ze.newInstance = () => $i({}), An = ze, ze.HighlightJS = ze, ze.default = ze, An;
 }
-var Rc = /* @__PURE__ */ Cc();
-const rn = /* @__PURE__ */ Nc(Rc), as = "[A-Za-z$_][0-9A-Za-z$_]*", Ic = [
+var Pc = /* @__PURE__ */ Ic();
+const rn = /* @__PURE__ */ Rc(Pc), as = "[A-Za-z$_][0-9A-Za-z$_]*", $c = [
   "as",
   // for exports
   "in",
@@ -4712,7 +4725,7 @@ const rn = /* @__PURE__ */ Nc(Rc), as = "[A-Za-z$_][0-9A-Za-z$_]*", Ic = [
   "extends",
   // It's reached stage 3, which is "recommended for implementation":
   "using"
-], Pc = [
+], Dc = [
   "true",
   "false",
   "null",
@@ -4796,7 +4809,7 @@ const rn = /* @__PURE__ */ Nc(Rc), as = "[A-Za-z$_][0-9A-Za-z$_]*", Ic = [
   "encodeURIComponent",
   "escape",
   "unescape"
-], $c = [
+], Lc = [
   "arguments",
   "this",
   "super",
@@ -4809,12 +4822,12 @@ const rn = /* @__PURE__ */ Nc(Rc), as = "[A-Za-z$_][0-9A-Za-z$_]*", Ic = [
   "self",
   "global"
   // Node.js
-], Dc = [].concat(
+], qc = [].concat(
   Ur,
   Lr,
   qr
 );
-function Lc(e) {
+function Uc(e) {
   const t = e.regex, n = (G, { after: me }) => {
     const ke = "</" + G[0].slice(1);
     return G.input.indexOf(ke, me) !== -1;
@@ -4855,10 +4868,10 @@ function Lc(e) {
     }
   }, o = {
     $pattern: as,
-    keyword: Ic,
-    literal: Pc,
-    built_in: Dc,
-    "variable.language": $c
+    keyword: $c,
+    literal: Dc,
+    built_in: qc,
+    "variable.language": Lc
   }, c = "[0-9](_?[0-9])*", d = `\\.(${c})`, p = "0|[1-9](_?[0-9])*|0[0-7]*[89][0-9]*", m = {
     className: "number",
     variants: [
@@ -5324,12 +5337,12 @@ function Lc(e) {
     ]
   };
 }
-const qc = "([-+]?)(\\b0[xX][a-fA-F0-9]+|(\\b\\d+(\\.\\d*)?|\\.\\d+)([eE][-+]?\\d+)?)|NaN|[-+]?Infinity", Uc = {
+const jc = "([-+]?)(\\b0[xX][a-fA-F0-9]+|(\\b\\d+(\\.\\d*)?|\\.\\d+)([eE][-+]?\\d+)?)|NaN|[-+]?Infinity", Bc = {
   scope: "number",
-  match: qc,
+  match: jc,
   relevance: 0
 };
-function jc(e) {
+function Fc(e) {
   const t = {
     className: "attr",
     begin: /(("(\\.|[^\\"\r\n])*")|('(\\.|[^\\'\r\n])*'))(?=\s*:)/,
@@ -5358,14 +5371,14 @@ function jc(e) {
       e.APOS_STRING_MODE,
       e.QUOTE_STRING_MODE,
       s,
-      Uc,
+      Bc,
       e.C_LINE_COMMENT_MODE,
       e.C_BLOCK_COMMENT_MODE
     ],
     illegal: "\\S"
   };
 }
-function Bc(e) {
+function Hc(e) {
   const t = e.regex, n = e.COMMENT("--", "$"), i = {
     scope: "string",
     variants: [
@@ -5977,17 +5990,17 @@ function Bc(e) {
     ]
   };
 }
-rn.registerLanguage("javascript", Lc);
-rn.registerLanguage("json", jc);
-rn.registerLanguage("sql", Bc);
-const qt = /* @__PURE__ */ new Map(), Fc = 400, Hc = 2e4;
+rn.registerLanguage("javascript", Uc);
+rn.registerLanguage("json", Fc);
+rn.registerLanguage("sql", Hc);
+const qt = /* @__PURE__ */ new Map(), Wc = 400, Kc = 2e4;
 function os(e) {
   return e.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
-function Wc(e, t) {
+function zc(e, t) {
   const n = String(e ?? "");
   if (n === "") return "";
-  if (n.length > Hc) return os(n);
+  if (n.length > Kc) return os(n);
   const i = `${t}:${n}`, s = qt.get(i);
   if (s !== void 0) return s;
   let r;
@@ -5996,7 +6009,7 @@ function Wc(e, t) {
   } catch {
     r = os(n);
   }
-  return qt.size >= Fc && qt.clear(), qt.set(i, r), r;
+  return qt.size >= Wc && qt.clear(), qt.set(i, r), r;
 }
 async function Jn(e) {
   const t = await fetch(e, { headers: { Accept: "application/json" } }), n = await t.json().catch(() => null);
@@ -6017,14 +6030,14 @@ function Si(e) {
   const t = Number(e || 0);
   return t < 1024 ? `${t} B` : t < 1048576 ? `${(t / 1024).toFixed(1)} kB` : `${(t / 1048576).toFixed(1)} MB`;
 }
-function Kc(e, t, n) {
+function Gc(e, t, n) {
   return `${e} ${Number(e) === 1 ? t : n}`;
 }
-function zc(e, t = Date.now() / 1e3) {
+function Vc(e, t = Date.now() / 1e3) {
   const n = Math.max(0, t - Number(e || 0));
   return n < 60 ? `${Math.round(n)}s ago` : n < 3600 ? `${Math.round(n / 60)}m ago` : `${Math.round(n / 3600)}h ago`;
 }
-function Gc(e, t) {
+function Jc(e, t) {
   let n = e;
   try {
     n = new URL(e, t).pathname;
@@ -6035,21 +6048,21 @@ function Gc(e, t) {
   const i = n.split("/").filter(Boolean);
   return i.length > 2 ? `…/${i.slice(-2).join("/")}` : n;
 }
-function Vc(e) {
+function Zc(e) {
   const t = e && e.magewire;
   return t && t.component ? `${t.component} ${t.action || ""}`.trim() : e && e.path || "/";
 }
-function Jc(e) {
+function Xc(e) {
   if (!e || e.delta === null || e.delta === void 0) return "not comparable";
   if (e.delta === 0) return "no change";
   const t = e.delta > 0 ? "+" : "-", n = e.unit === "B" ? Si(Math.abs(e.delta)) : `${ki(Math.abs(e.delta), e.decimals)}${e.unit ? ` ${e.unit}` : ""}`;
   return `${t}${n}`;
 }
-function Zc(e, t) {
+function Yc(e, t) {
   const n = e[t];
   return n == null ? "none" : e.unit === "B" ? Si(n) : `${ki(n, e.decimals)}${e.unit ? ` ${e.unit}` : ""}`;
 }
-function Xc(e) {
+function Qc(e) {
   return Object.entries(e.methods || {}).map(([t, n]) => `${n} ${t}`).join(", ");
 }
 function jr(e, t, n, i) {
@@ -6058,7 +6071,7 @@ function jr(e, t, n, i) {
   const s = n.startsWith("/") ? n : `${t}/${n}`;
   return e.replace("%f", () => encodeURI(s)).replace("%l", () => String(i || 1));
 }
-function Yc(e, t, n) {
+function ed(e, t, n) {
   const i = String(n || "").match(/^(.+\.php):(\d+)$/);
   return i ? jr(e, t, i[1], Number(i[2])) : "";
 }
@@ -6075,14 +6088,14 @@ function Oi() {
     return [];
   }
 }
-function Qc(e) {
+function td(e) {
   try {
     return JSON.stringify(e ?? {}).length;
   } catch {
     return 0;
   }
 }
-function ed(e) {
+function nd(e) {
   return Zn.clear(), Oi().map((t) => {
     const n = t.fingerprint ?? {}, i = t.serverMemo ?? {}, s = String(n.id ?? "");
     return t.el && Zn.set(s, t.el), {
@@ -6091,14 +6104,14 @@ function ed(e) {
       resolver: String(n.resolver ?? "unknown"),
       handle: String(n.handle ?? ""),
       keys: e === be ? 0 : sn(i.data ?? {}).length,
-      memo_bytes: Qc(i),
+      memo_bytes: td(i),
       listeners: (t.effects?.listeners ?? []).length,
       children: Object.keys(i.children ?? {}).length,
-      path: t.el ? td(t.el) : ""
+      path: t.el ? id(t.el) : ""
     };
   });
 }
-function td(e) {
+function id(e) {
   const t = e.tagName ? e.tagName.toLowerCase() : "?";
   return e.id ? `${t}#${e.id}` : t;
 }
@@ -6113,7 +6126,7 @@ function cs(e, t) {
     return `Could not read this component: ${i && i.message ? i.message : "threw"}`;
   }
 }
-function nd() {
+function sd() {
   return {
     present: Ai() !== null,
     components: Oi().length,
@@ -6156,7 +6169,7 @@ function us(e) {
   const n = t.payload ?? {}, i = (...s) => s.map((r) => n[r] ?? t[r]).find(Boolean) ?? "unknown";
   return t.type === "callMethod" ? `${i("method")}()` : t.type === "syncInput" ? `set ${i("name")}` : t.type === "fireEvent" ? `on ${i("event")}` : String(t.type || "update");
 }
-function id(e, t) {
+function rd(e, t) {
   const n = Zn.get(String(e));
   if (!n || !n.style) return;
   if (t) {
@@ -6193,7 +6206,7 @@ function Xn(e) {
     console.warn = t;
   }
 }
-function sd(e) {
+function ad(e) {
   if (typeof e.evaluate != "function") return null;
   const t = Xn(() => e.evaluate(document.body, "1"));
   return t === 1 ? !1 : t === void 0 ? !0 : null;
@@ -6201,7 +6214,7 @@ function sd(e) {
 function hs() {
   return Array.from(document.scripts).map((e) => e.src).filter((e) => /alpine/i.test(e)).map((e) => e.split("/").pop().split("?")[0]).join(", ");
 }
-function rd(e) {
+function od(e) {
   if (typeof e.injectMagics == "function") {
     const t = Xn(() => {
       const n = {};
@@ -6215,11 +6228,11 @@ function rd(e) {
   }
   return null;
 }
-function ad(e) {
+function ld(e) {
   const t = e.trim().match(/^([A-Za-z_$][\w$]*)\s*(\(|$)/);
   return t ? t[1] : "inline";
 }
-function od(e) {
+function cd(e) {
   if (e.id) return `#${e.id}`;
   const t = [];
   let n = e;
@@ -6238,7 +6251,7 @@ function od(e) {
   }
   return t.join(" > ");
 }
-function ld(e) {
+function dd(e) {
   return On.has(e) || (ps += 1, On.set(e, ps)), On.get(e);
 }
 function Fr(e, t) {
@@ -6251,17 +6264,17 @@ function Fr(e, t) {
     return null;
   }
 }
-function cd(e) {
+function ud(e) {
   const t = an();
   if (Yt.clear(), !t) return [];
   const n = Br(t), i = `${n.replace(/data$/, "")}defer`;
   return Array.from(document.querySelectorAll(`[${n}]`)).map((r) => {
-    const a = ld(r), o = (r.getAttribute(n) || "").trim(), c = (r.getAttribute(i) || "").trim(), d = Fr(t, r);
+    const a = dd(r), o = (r.getAttribute(n) || "").trim(), c = (r.getAttribute(i) || "").trim(), d = Fr(t, r);
     return Yt.set(a, r), {
       id: a,
-      name: ad(o),
+      name: ld(o),
       expression: Dr(o, e),
-      path: od(r),
+      path: cd(r),
       initialised: !!r._x_dataStack,
       deferred: r.hasAttribute(i),
       strategy: c || "none",
@@ -6283,10 +6296,10 @@ function fs(e, t) {
     return `Could not read this component: ${r && r.message ? r.message : "threw"}`;
   }
 }
-function dd(e) {
+function pd(e) {
   const t = an();
   if (!t) return [];
-  const n = rd(t);
+  const n = od(t);
   return n ? Object.keys(n).map((i) => {
     let s = n[i], r = 0;
     if (r = s && typeof s == "object" ? sn(s).length : 0, e === be)
@@ -6299,7 +6312,7 @@ function dd(e) {
     return { name: i, keys: r, value: s };
   }) : [];
 }
-function ud(e) {
+function hd(e) {
   const t = window.__siteationDebugBar;
   return !t || !Array.isArray(t.alpineErrors) ? [] : t.alpineErrors.map((n) => {
     const i = String(n.message || ""), s = i.match(/Expression: "([\s\S]*?)"/);
@@ -6315,17 +6328,17 @@ function ud(e) {
     };
   });
 }
-function pd() {
+function fd() {
   const e = an();
   return e ? {
     present: !0,
     version: String(e.version || "unknown"),
-    csp: sd(e),
+    csp: ad(e),
     source: hs(),
     prefix: Br(e)
   } : { present: !1, version: "", csp: null, source: hs(), prefix: "" };
 }
-function hd(e, t) {
+function bd(e, t) {
   const n = Yt.get(e);
   if (!n || !n.style) return;
   if (t) {
@@ -6339,8 +6352,8 @@ function hd(e, t) {
   const i = lt.get(e);
   n.style.outline = i.outline, n.style.outlineOffset = i.offset, lt.delete(e);
 }
-const fd = 1e3, Hr = "siteation.debugbar.v1", bd = "__PROFILE_ID__";
-function gd() {
+const gd = 1e3, Hr = "siteation.debugbar.v1", md = "__PROFILE_ID__";
+function yd() {
   const e = document.getElementById("siteation-debugbar-profile");
   if (!e) return {};
   try {
@@ -6349,7 +6362,7 @@ function gd() {
     return {};
   }
 }
-function md() {
+function vd() {
   const e = { open: !1, section: "overview" };
   try {
     return { ...e, ...JSON.parse(localStorage.getItem(Hr) || "{}") };
@@ -6363,7 +6376,7 @@ function Je(e, t, n) {
     (r) => String(s[r] ?? "").toLowerCase().includes(i)
   )) : e;
 }
-function yd() {
+function _d() {
   return {
     profile: {},
     open: !1,
@@ -6371,6 +6384,7 @@ function yd() {
     placement: "bottom",
     dockPosition: null,
     dockDrag: null,
+    dockDragMoved: !1,
     draggingDock: !1,
     maximised: !1,
     theme: "system",
@@ -6444,9 +6458,9 @@ function yd() {
     activeId: null,
     pageProfile: {},
     init() {
-      this.profile = gd(), this.pageProfile = this.profile, this.activeId = this.profile.id || null;
-      const e = md();
-      this.collapsed = !!e.collapsed, this.open = e.open && !this.collapsed, this.section = e.section, this.placement = e.placement === "top" ? "top" : "bottom", this.dockPosition = lc(e.dockPosition) ? e.dockPosition : null, this.maximised = !!e.maximised, this.theme = ["system", "light", "dark"].includes(e.theme) ? e.theme : "system", this.favourites = Array.isArray(e.favourites) ? e.favourites.filter((t) => Zt.some((n) => n.id === t)) : [], this.watchColorScheme(), this.valuePolicy = Sc(this.rootElement()?.dataset.valuePolicy), this.editorTemplate = this.rootElement()?.dataset.editor || "", this.editorRoot = this.rootElement()?.dataset.editorRoot || "", this.refreshAlpine(), this.refreshMagewire(), this.listenToMagewire(), this.$watch("alpineLiveWanted", () => this.syncAlpineLive()), this.syncAlpineLive(), this.$watch("paletteSearch", () => {
+      this.profile = yd(), this.pageProfile = this.profile, this.activeId = this.profile.id || null;
+      const e = vd();
+      this.collapsed = !!e.collapsed, this.open = e.open && !this.collapsed, this.section = e.section, this.placement = e.placement === "top" ? "top" : "bottom", this.dockPosition = lc(e.dockPosition) ? e.dockPosition : null, this.maximised = !!e.maximised, this.theme = ["system", "light", "dark"].includes(e.theme) ? e.theme : "system", this.favourites = Array.isArray(e.favourites) ? e.favourites.filter((t) => Zt.some((n) => n.id === t)) : [], this.watchColorScheme(), this.valuePolicy = Oc(this.rootElement()?.dataset.valuePolicy), this.editorTemplate = this.rootElement()?.dataset.editor || "", this.editorRoot = this.rootElement()?.dataset.editorRoot || "", this.refreshAlpine(), this.refreshMagewire(), this.listenToMagewire(), this.$watch("alpineLiveWanted", () => this.syncAlpineLive()), this.syncAlpineLive(), this.$watch("paletteSearch", () => {
         this.paletteIndex = 0;
       }), this.$watch("section", (t) => {
         t === "history" && this.loadHistory();
@@ -6466,7 +6480,7 @@ function yd() {
      */
     profileUrlFor(e) {
       const t = this.rootElement()?.dataset.profileUrl;
-      return t ? t.replace(bd, encodeURIComponent(e)) : null;
+      return t ? t.replace(md, encodeURIComponent(e)) : null;
     },
     /**
      * Swap the whole bar over to another profile the page has since produced.
@@ -6578,7 +6592,7 @@ function yd() {
      * @returns {string} the change, signed, in the metric's own unit
      */
     deltaLabel(e) {
-      return Jc(e);
+      return Xc(e);
     },
     /**
      * @param {object} metric
@@ -6586,7 +6600,7 @@ function yd() {
      * @returns {string}
      */
     metricValue(e, t) {
-      return Zc(e, t);
+      return Yc(e, t);
     },
     /**
      * Loading one from the history means looking at a different request, so it lands on
@@ -6602,7 +6616,7 @@ function yd() {
      * @returns {string}
      */
     ago(e) {
-      return zc(e);
+      return Vc(e);
     },
     /** Go back to the request that rendered the page. */
     showPageProfile() {
@@ -6627,14 +6641,14 @@ function yd() {
      * @returns {string}
      */
     requestLabel(e) {
-      return Vc(e);
+      return Zc(e);
     },
     /**
      * @param {string} url
      * @returns {string}
      */
     shortUrl(e) {
-      return Gc(e, window.location.origin);
+      return Jc(e, window.location.origin);
     },
     /**
      * Only summaries travel in the page. The items behind them are fetched once, the
@@ -6798,11 +6812,11 @@ function yd() {
     },
     /** @returns {Array<object>} */
     get commands() {
-      return hc(this);
+      return bc(this);
     },
     /** @returns {Array<object>} */
     get visibleCommands() {
-      return mc(this.commands, this.paletteSearch);
+      return vc(this.commands, this.paletteSearch);
     },
     /** @returns {boolean} whether the page should be re-read on a timer */
     get alpineLiveWanted() {
@@ -6860,7 +6874,7 @@ function yd() {
     },
     /** @returns {Array<object>} every section with its count resolved */
     get sections() {
-      return dc(this.rootElement()?.dataset.sections).map((e) => ({ ...e, count: Pr(e.id, this) }));
+      return pc(this.rootElement()?.dataset.sections).map((e) => ({ ...e, count: Pr(e.id, this) }));
     },
     /** @returns {Array<object>} pinned sections, in the order they were arranged */
     get favouriteSections() {
@@ -6966,13 +6980,19 @@ function yd() {
       };
     },
     /**
-     * Begin a pointer drag from the grip. Pointer capture keeps the drag alive after the
-     * pointer leaves the small handle or the shadow root.
+     * Take the press, but stay a click until the pointer travels. A press that never moves
+     * has to reach the grip's own click and double click, and pinning the dock where it
+     * already sits would cost it the centring it has by default.
+     *
+     * Pointer capture keeps a drag alive after the pointer leaves the small handle or the
+     * shadow root. The press is not cancelled, so the grip still takes focus and the arrow
+     * keys are available straight after a drag.
      *
      * @param {PointerEvent} event
      */
     startDockDrag(e) {
       if (e.button !== 0 || !e.isPrimary) return;
+      this.dockDragMoved = !1;
       const t = this.$refs.dock;
       if (!t) return;
       const n = t.getBoundingClientRect();
@@ -6983,31 +7003,37 @@ function yd() {
         left: n.left,
         top: n.top,
         width: n.width,
-        height: n.height
-      }, this.draggingDock = !0, e.currentTarget.setPointerCapture(e.pointerId), e.preventDefault();
+        height: n.height,
+        moved: !1
+      }, e.currentTarget.setPointerCapture(e.pointerId);
     },
     /** @param {PointerEvent} event */
     moveDockDrag(e) {
       const t = this.dockDrag;
-      !t || t.pointerId !== e.pointerId || (this.dockPosition = Sn(
-        {
-          left: t.left + e.clientX - t.pointerX,
-          top: t.top + e.clientY - t.pointerY
-        },
+      if (!t || t.pointerId !== e.pointerId) return;
+      const n = e.clientX - t.pointerX, i = e.clientY - t.pointerY;
+      !t.moved && !uc(n, i) || (t.moved = !0, this.draggingDock = !0, this.dockPosition = Sn(
+        { left: t.left + n, top: t.top + i },
         t,
         { width: window.innerWidth, height: window.innerHeight }
       ), e.preventDefault());
     },
     /** @param {PointerEvent} event */
     endDockDrag(e) {
-      !this.dockDrag || this.dockDrag.pointerId !== e.pointerId || (this.moveDockDrag(e), this.draggingDock = !1, this.dockDrag = null, this.updatePlacementFromDock(), this.persist());
+      const t = this.dockDrag;
+      !t || t.pointerId !== e.pointerId || (this.moveDockDrag(e), this.draggingDock = !1, this.dockDrag = null, t.moved && (this.dockDragMoved = !0, this.updatePlacementFromDock(), this.persist()));
     },
     /**
-     * A button labelled "Move" must work without a pointing device too.
+     * A button labelled "Move" must work without a pointing device too. Enter and Space are
+     * the keyboard's double click, so they reset rather than doing nothing.
      *
      * @param {KeyboardEvent} event
      */
     moveDockWithKeyboard(e) {
+      if (e.key === "Enter" || e.key === " ") {
+        this.resetDockPosition(), e.preventDefault();
+        return;
+      }
       const t = {
         ArrowLeft: [-10, 0],
         ArrowRight: [10, 0],
@@ -7023,6 +7049,18 @@ function yd() {
         i,
         { width: window.innerWidth, height: window.innerHeight }
       ), this.updatePlacementFromDock(), this.persist(), e.preventDefault();
+    },
+    /** @param {MouseEvent} event */
+    resetDockFromGrip(e) {
+      e.preventDefault(), !this.dockDragMoved && this.resetDockPosition();
+    },
+    /**
+     * Hand the dock back to the stylesheet, which centres it against the edge the placement
+     * names. That edge is the one the bar was last dragged nearest, so a reset returns it to
+     * the standard position closest to where it stood rather than across the viewport.
+     */
+    resetDockPosition() {
+      this.dockPosition && (this.dockPosition = null, this.persist());
     },
     /**
      * x-show reveals the dock on a timer after its first display. Measure on the following
@@ -7130,7 +7168,7 @@ function yd() {
      * Magewire update replaces components, and a list from before it is a list of ghosts.
      */
     refreshMagewire() {
-      this.magewireHealth = nd(), this.magewireComponents = ed(this.valuePolicy), this.magewireExpanded.forEach((e) => {
+      this.magewireHealth = sd(), this.magewireComponents = nd(this.valuePolicy), this.magewireExpanded.forEach((e) => {
         this.magewireStates[e] = cs(e, this.valuePolicy);
       });
     },
@@ -7164,10 +7202,10 @@ function yd() {
      * @param {boolean} on
      */
     highlightMagewire(e, t) {
-      id(e, t);
+      rd(e, t);
     },
     refreshAlpine() {
-      this.alpineHealth = pd(), this.alpineComponents = cd(this.valuePolicy), this.alpineStores = dd(this.valuePolicy), this.alpineErrors = ud(this.valuePolicy), this.alpineExpanded.forEach((e) => {
+      this.alpineHealth = fd(), this.alpineComponents = ud(this.valuePolicy), this.alpineStores = pd(this.valuePolicy), this.alpineErrors = hd(this.valuePolicy), this.alpineExpanded.forEach((e) => {
         this.alpineStates[e] = fs(e, this.valuePolicy);
       });
     },
@@ -7176,7 +7214,7 @@ function yd() {
       if (this.alpineLiveWanted && !this.alpineTimer) {
         this.alpineTimer = setInterval(() => {
           document.hidden || this.refreshAlpine();
-        }, fd);
+        }, gd);
         return;
       }
       !this.alpineLiveWanted && this.alpineTimer && (clearInterval(this.alpineTimer), this.alpineTimer = null);
@@ -7206,7 +7244,7 @@ function yd() {
      * @param {boolean} on
      */
     highlightAlpine(e, t) {
-      hd(e, t);
+      bd(e, t);
     },
     /**
      * The palette does not lock the host itself. When the inspector is open the page is
@@ -7270,6 +7308,9 @@ function yd() {
             break;
           case "placement":
             this.movePlacement();
+            break;
+          case "dock-reset":
+            this.resetDockPosition();
             break;
           case "favourite":
             this.toggleFavourite(e.arg);
@@ -7335,7 +7376,7 @@ function yd() {
      * @returns {string}
      */
     methodList(e) {
-      return Xc(e);
+      return Qc(e);
     },
     /**
      * @param {unknown} code
@@ -7343,7 +7384,7 @@ function yd() {
      * @returns {string} HTML for x-html, escaped by the highlighter
      */
     highlight(e, t) {
-      return Wc(e, t);
+      return zc(e, t);
     },
     /**
      * @param {string} file
@@ -7358,7 +7399,7 @@ function yd() {
      * @returns {string}
      */
     locationUrl(e) {
-      return Yc(this.editorTemplate, this.editorRoot, e);
+      return ed(this.editorTemplate, this.editorRoot, e);
     },
     /**
      * The frame a query came from. The resolver drops framework and generated code, so the
@@ -7378,7 +7419,7 @@ function yd() {
      * @returns {string}
      */
     plural(e, t, n) {
-      return Kc(e, t, n);
+      return Gc(e, t, n);
     },
     /**
      * @param {number} bytes
@@ -7410,9 +7451,10 @@ ${e ? "" : `  <button type="button" class="ndb-icon-button ndb-drag-handle"
           data-ndb-on:pointermove="moveDockDrag($event)"
           data-ndb-on:pointerup="endDockDrag($event)"
           data-ndb-on:pointercancel="endDockDrag($event)"
+          data-ndb-on:dblclick="resetDockFromGrip($event)"
           data-ndb-on:keydown="moveDockWithKeyboard($event)"
           aria-label="Move debug bar"
-          title="Drag to move the debug bar; arrow keys move it 10 pixels">
+          title="Drag to move the debug bar, double click to put it back; arrow keys move it 10 pixels">
     ${H("grip")}
   </button>
 
@@ -7542,7 +7584,7 @@ function gs(e, t) {
   </div>
 </template>`;
 }
-function vd() {
+function wd() {
   return `
 <nav class="ndb-nav" aria-label="Debug sections"
      data-ndb-bind:class="navOpen && 'is-open'">
@@ -7565,7 +7607,7 @@ function Tn(e, t) {
             data-ndb-text="${i.count}"></span>` : ""}
   </button>`).join("")}</div>`;
 }
-const _d = `
+const xd = `
 <div class="ndb" data-ndb-data="debugBar" data-ndb-cloak
      data-ndb-bind:class="'is-' + placement + ' is-theme-' + resolvedTheme"
      data-ndb-on:resize.window="constrainDock()">
@@ -7587,7 +7629,7 @@ const _d = `
           data-ndb-text="findings.length"></span>
   </button>
 
-  ${yc()}
+  ${_c()}
 
   <div class="ndb-overlay" data-ndb-show="open && !dismissed" data-ndb-cloak>
     <div class="ndb-backdrop" data-ndb-on:click="closeInspector()"></div>
@@ -7605,7 +7647,7 @@ const _d = `
           <span data-ndb-text="currentSection.label"></span>
         </button>
 
-        ${vd()}
+        ${wd()}
 
         <div class="ndb-nav-scrim" data-ndb-show="navOpen"
              data-ndb-on:click="navOpen = false"></div>
@@ -8666,27 +8708,27 @@ const _d = `
   </div>
 
 </div>
-`, wd = "data-ndb-", ms = "siteation-debugbar";
-function xd(e) {
+`, Ed = "data-ndb-", ms = "siteation-debugbar";
+function kd(e) {
   const t = e.attachShadow({ mode: "open" }), n = e.dataset.css;
   if (n) {
     const s = document.createElement("link");
     s.rel = "stylesheet", s.href = n, t.append(s);
   }
   const i = document.createElement("div");
-  return i.innerHTML = _d, t.append(...i.children), t.querySelector(".ndb");
+  return i.innerHTML = xd, t.append(...i.children), t.querySelector(".ndb");
 }
-class Ed extends HTMLElement {
+class Sd extends HTMLElement {
   connectedCallback() {
     if (this.shadowRoot) return;
-    const t = xd(this);
+    const t = kd(this);
     t && gt.initTree(t);
   }
 }
-customElements.get(ms) || (gt.prefix(wd), gt.data("debugBar", yd), gt.directive("code", (e, { expression: t }, { effect: n, evaluateLater: i }) => {
+customElements.get(ms) || (gt.prefix(Ed), gt.data("debugBar", _d), gt.directive("code", (e, { expression: t }, { effect: n, evaluateLater: i }) => {
   const s = i(t);
   n(() => s((r) => {
     e.innerHTML = typeof r == "string" ? r : "";
   }));
-}), customElements.define(ms, Ed));
+}), customElements.define(ms, Sd));
 Mn && (window.Alpine = Mn);

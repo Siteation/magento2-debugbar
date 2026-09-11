@@ -73,6 +73,18 @@ test('a section with a count shows it, and one without shows nothing', () => {
   assert.equal(byId(commands, 'section:blocks').hint, '')
 })
 
+test('the reset command appears only once the bar has been moved', () => {
+  // A double click on the grip resets too, but nothing on screen says so, and the palette
+  // is where the bar puts what it cannot label.
+  assert.equal(byId(commandsFor(state()), 'dock-reset'), undefined)
+
+  const moved = byId(commandsFor(state({ dockPosition: { left: 40, top: 300 } })), 'dock-reset')
+
+  assert.equal(moved.label, 'Put the bar back on its edge')
+  assert.equal(moved.kind, 'dock-reset')
+  assert.equal(moved.group, 'Appearance')
+})
+
 test('the placement command still docks a freely moved bar at the opposite edge', () => {
   const bottom = byId(commandsFor(state({ placement: 'bottom' })), 'placement')
   const top = byId(commandsFor(state({ placement: 'top' })), 'placement')

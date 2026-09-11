@@ -201,6 +201,7 @@ test('the dock has an accessible grip without turning the modal header into a dr
   assert.ok(leading.includes('class="ndb-icon-button ndb-drag-handle"'))
   assert.ok(leading.includes('data-ndb-on:pointerdown="startDockDrag($event)"'))
   assert.ok(leading.includes('data-ndb-on:keydown="moveDockWithKeyboard($event)"'))
+  assert.ok(leading.includes('data-ndb-on:dblclick="resetDockFromGrip($event)"'))
   assert.ok(leading.includes('aria-label="Move debug bar"'))
   assert.ok(!controls.includes('ndb-drag-handle'))
   assert.ok(!sheet.includes('ndb-drag-handle'))

@@ -47,3 +47,15 @@ export function clampDockPosition(position, dock, viewport) {
 export function placementForDock(position, dock, viewportHeight) {
   return position.top + (dock.height / 2) < viewportHeight / 2 ? 'top' : 'bottom'
 }
+
+/** Pointer travel before a press on the grip counts as a drag rather than a click. */
+export const DRAG_THRESHOLD = 3
+
+/**
+ * @param {number} dx
+ * @param {number} dy
+ * @returns {boolean}
+ */
+export function exceedsDragThreshold(dx, dy) {
+  return Math.hypot(dx, dy) >= DRAG_THRESHOLD
+}
