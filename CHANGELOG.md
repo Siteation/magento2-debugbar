@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 [Unreleased]: https://github.com/Siteation/magento2-debugbar/compare/1.2.0...main
 
-## [1.2.0] - 2026-09-11
+## [1.2.0] - 2026-09-12
 
 [1.2.0]: https://github.com/Siteation/magento2-debugbar/compare/1.1.1...1.2.0
 
@@ -26,17 +26,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   or from the new "Put the bar back on its edge" palette command.
 
 - Arrow keys on the grip move the bar ten pixels at a time.
-
-- Screenshots of the bar, the two live sections and the admin page,
-  in the README and the user guide.
-
-- `phpstan-versions.neon.dist`, which analyses the module against every PHP version
-  `composer.json` allows, rather than only the one you happen to run.
-  It is a separate file because the range needs PHPStan 2.1 or newer,
-  while `phpstan.neon.dist` has to keep working with the 1.x a Magento install carries.
-
-- An `.editorconfig`, recording the indentation the code already uses.
-  Nothing is reformatted to match it.
 
 ### Changed
 
