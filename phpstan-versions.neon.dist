@@ -1,0 +1,15 @@
+# The supported PHP range from composer.json, checked in one pass.
+#
+# Separate from phpstan.neon.dist because the range form needs PHPStan 2.1 or newer, and
+# the PHPStan a Magento install carries is pinned to 1.x by Magento and by rector. Run it
+# with a PHPStan of your own, from the Magento root so it finds the autoloader:
+#
+#   composer global require phpstan/phpstan:^2.2
+#   ~/.composer/vendor/bin/phpstan analyse -c <pkg>/phpstan-versions.neon.dist
+includes:
+	- phpstan.neon.dist
+
+parameters:
+	phpVersion:
+		min: 80200
+		max: 80599
