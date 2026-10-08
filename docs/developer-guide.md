@@ -185,6 +185,21 @@ cd <pkg>/src-js && npm test                                    # 73, no dependen
 cd <pkg>/src-js && npm run test:browser                        # 18, needs the store up
 ```
 
+**The supported PHP range is checked separately**, because `phpstan.neon.dist` has to keep
+working with the PHPStan a Magento install carries, and that one is pinned to 1.x by Magento
+and by rector. `phpstan-versions.neon.dist` layers the range from `composer.json` on top of
+it and needs PHPStan 2.1 or newer, so bring your own and run it from the Magento root, where
+it finds the autoloader:
+
+```
+composer global require phpstan/phpstan:^2.2
+~/.composer/vendor/bin/phpstan analyse -c <pkg>/phpstan-versions.neon.dist
+```
+
+That pass is what says the constraint is honest. It reports a typed class constant or a
+`json_validate()` as unavailable rather than waiting for a 8.2 install to find it at runtime.
+Change the constraint in `composer.json` and change the range beside it.
+
 Magento's integration framework is deliberately not used. It needs its own database and
 install and runs in minutes; `dev/smoke` drives a real store over HTTP across all four areas
 in seconds and asserts the same regressions.

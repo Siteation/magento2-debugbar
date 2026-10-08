@@ -2,7 +2,7 @@
 
 [![Packagist Version](https://img.shields.io/packagist/v/siteation/magento2-debugbar?style=for-the-badge)](https://packagist.org/packages/siteation/magento2-debugbar)
 ![Supported Magento Versions](https://img.shields.io/badge/magento-%202.4-brightgreen.svg?logo=magento&longCache=true&style=for-the-badge)
-![Supported PHP Versions](https://img.shields.io/badge/php-%208.3_|_8.4-8892bf.svg?logo=php&logoColor=white&longCache=true&style=for-the-badge)
+![Supported PHP Versions](https://img.shields.io/badge/php-%208.2_|_8.3_|_8.4_|_8.5-8892bf.svg?logo=php&logoColor=white&longCache=true&style=for-the-badge)
 [![Hyvä Themes Supported](https://img.shields.io/badge/Hyva_Themes-Supported-3df0af.svg?longCache=true&style=for-the-badge)](https://hyva.io/)
 [![Alpine.js Inspected](https://img.shields.io/badge/Alpine.js-Inspected-8bc0d0.svg?logo=alpinedotjs&logoColor=white&longCache=true&style=for-the-badge)](https://alpinejs.dev/)
 [![Magewire Inspected](https://img.shields.io/badge/Magewire-Inspected-5f3dc4.svg?longCache=true&style=for-the-badge)](https://github.com/magewirephp/magewire)
@@ -26,7 +26,7 @@ areas.
 
 ## Requirements
 
-* PHP 8.3 or 8.4
+* PHP 8.2 through 8.5, whatever your Magento allows
 * Magento 2.4. Developed and verified against 2.4.8 and 2.4.9
 * Any deploy mode. Outside developer mode it needs an access key, and without one it stays
   off.
