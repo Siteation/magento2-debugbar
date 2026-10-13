@@ -39,7 +39,12 @@ import {
   scanStores,
   stateJson,
 } from './alpine.js'
-import { outline as outlineSeo, readPage as readSeo, reveal as revealSeo } from './seo-page.js'
+import {
+  outline as outlineSeo,
+  readPage as readSeo,
+  reveal as revealSeo,
+  structuredMarkup,
+} from './seo-page.js'
 import { emptyModel as emptySeo } from './seo.js'
 
 /** How often the Alpine section re-reads the page while it is the one being looked at. */
@@ -160,6 +165,10 @@ export function debugBar() {
     seoProblemsOnly: true,
     seo: emptySeo(),
     seoError: '',
+    /** @type {Array<number>} */
+    schemaExpanded: [],
+    schemaCopyState: '',
+    schemaFallback: '',
     alpineTimer: null,
     // The Alpine section reads live objects instead of a redacted profile, so it has to
     // apply the policy itself. See Model/Redactor.php for the stored half.
@@ -1402,6 +1411,61 @@ export function debugBar() {
      */
     revealSeo(view, index) {
       revealSeo(view, index)
+    },
+
+    /**
+     * @param {number} index
+     * @returns {boolean}
+     */
+    isSchemaExpanded(index) {
+      return this.schemaExpanded.includes(index)
+    },
+
+    /**
+     * @param {object} entity
+     * @returns {number}
+     */
+    schemaRequired(entity) {
+      return (entity.findings || []).filter((finding) => finding.level === 'required').length
+    },
+
+    /** @param {number} index */
+    toggleSchemaEntity(index) {
+      this.schemaExpanded = this.isSchemaExpanded(index)
+        ? this.schemaExpanded.filter((open) => open !== index)
+        : [...this.schemaExpanded, index]
+    },
+
+    /**
+     * A microdata entity is an element on the page, so its row can point at it. A JSON-LD
+     * one is a script, which has nothing to point at.
+     *
+     * @param {object} entity
+     * @param {boolean} on
+     */
+    highlightSchema(entity, on) {
+      if (entity.source === 'microdata') outlineSeo('schema', entity.block, on)
+    },
+
+    /**
+     * The validators cannot fetch a dev shop, so what they need goes on the clipboard to be
+     * pasted into their code mode instead.
+     *
+     * @returns {Promise<void>}
+     */
+    async copySchemaMarkup() {
+      const markup = structuredMarkup()
+
+      this.schemaFallback = ''
+
+      try {
+        await navigator.clipboard.writeText(markup)
+        this.schemaCopyState = 'done'
+        setTimeout(() => { this.schemaCopyState = '' }, 2500)
+      } catch {
+        this.schemaCopyState = ''
+        this.schemaFallback = markup
+      }
     },
 
     /** @returns {string} the admin redirect for what this page shows, '' when it is not known */

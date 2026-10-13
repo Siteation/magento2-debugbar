@@ -109,7 +109,7 @@ is in the browser now. Everything else is the profile.
 
 ### SEO
 
-Five views, each with a count of what needs a look:
+Six views, each with a count of what needs a look:
 
 - **Overview**: the title and meta description with their length, the canonical URL and why
   it differs from this page when it does, the robots meta tag and the `X-Robots-Tag` header,
@@ -125,6 +125,17 @@ Five views, each with a count of what needs a look:
 - **Links**: internal, external and nofollow counts, and links with no text, links that go
   nowhere, `javascript:` links, internal links marked nofollow, and `http:` links on an
   `https:` page.
+- **Schema**: every JSON-LD block and every microdata item on the page, as one list of
+  entities, with `@graph` opened up. A block that does not parse says why and on which line.
+  Each entity is checked against what Google needs for a rich result: Product and Offer,
+  AggregateRating and Review, BreadcrumbList, Organization, WebSite, FAQPage and Article, with
+  a link to Google's page for each. Open an entity to see what it lacks and the entity itself.
+  The same entity described twice is flagged, including the common case of a theme marking up
+  its product inside the `<body itemtype="Product">` Magento already writes. Hover a microdata
+  row to outline its element on the page.
+  Google's Rich Results Test and the Schema Markup Validator cannot reach a `.test` or local
+  shop, so on one of those **Copy the markup** puts every block and item on the clipboard to
+  paste into the tool's code tab. On a public host the links open the tools on this URL.
 - **Social**: the Open Graph and X card tags, with each required one that is missing.
 
 Images and Links show only the rows with a problem until you switch **Problems only** off.

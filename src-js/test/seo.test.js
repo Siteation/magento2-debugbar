@@ -312,7 +312,7 @@ test('the page read keeps elements out of the model and counts every problem', (
   assert.doesNotThrow(() => JSON.stringify(model))
 
   // Missing og:title, og:type, og:image, og:url and twitter:card, one image, one link.
-  assert.deepEqual(model.counts, { overview: 0, headings: 0, images: 1, links: 1, social: 5 })
+  assert.deepEqual(model.counts, { overview: 0, headings: 0, images: 1, links: 1, schema: 0, social: 5 })
   assert.equal(model.warningCount, 7)
 })
 

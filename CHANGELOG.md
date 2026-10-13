@@ -15,6 +15,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   charset, word count and quick links), Headings, Images, Links and Social.
   Each view counts what needs a look, and the sidebar shows the total.
 
+- A **Schema** view in the SEO section
+  ([#6](https://github.com/Siteation/magento2-debugbar/issues/6)):
+  JSON-LD and microdata as one list of entities, parse errors with their line,
+  Google's rich result rules for the types a shop uses, a warning when one entity is
+  described twice, and the markup ready to paste into Google's tools when they cannot
+  reach the shop.
+
 - **Edit this page in the admin**, on product, category and CMS pages.
   It goes through a new admin route, `siteation_debugbar/entity/edit`,
   which checks the role for that kind of page and adds the secret key when the store uses one.

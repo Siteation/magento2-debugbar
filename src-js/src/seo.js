@@ -11,6 +11,7 @@
  * with nothing to say. The Alpine section is different because component state holds data
  * the page never draws.
  */
+import { emptySchema, schema } from './schema.js'
 
 /** Lengths past which a search result is cut, and below which it says too little. */
 export const TITLE_RANGE = { min: 30, max: 60 }
@@ -707,6 +708,7 @@ export function inspectPage(doc, { url, robotsHeader = '', env }) {
   const { elements: headingElements, ...headingView } = headings(doc, env)
   const { elements: imageElements, ...imageView } = images(doc, env)
   const { elements: linkElements, ...linkView } = links(doc, url)
+  const { elements: schemaElements, model: schemaView } = schema(doc, url)
   const flagged = (view) => view.items.filter((item) => item.warnings.length > 0).length
 
   const counts = {
@@ -714,6 +716,7 @@ export function inspectPage(doc, { url, robotsHeader = '', env }) {
     headings: headingView.warnings.length,
     images: flagged(imageView),
     links: flagged(linkView),
+    schema: schemaView.warnings.length,
     social: 0,
   }
   const model = {
@@ -721,6 +724,7 @@ export function inspectPage(doc, { url, robotsHeader = '', env }) {
     headings: headingView,
     images: imageView,
     links: linkView,
+    schema: schemaView,
     social: social(doc),
     quickLinks: quickLinks(url),
     counts,
@@ -732,7 +736,12 @@ export function inspectPage(doc, { url, robotsHeader = '', env }) {
 
   return {
     model,
-    elements: { headings: headingElements, images: imageElements, links: linkElements },
+    elements: {
+      headings: headingElements,
+      images: imageElements,
+      links: linkElements,
+      schema: schemaElements,
+    },
   }
 }
 
@@ -761,9 +770,10 @@ export function emptyModel() {
     headings: { items: [], warnings: [] },
     images: { items: [], warnings: [] },
     links: { items: [], counts: { internal: 0, external: 0, nofollow: 0 }, warnings: [] },
+    schema: emptySchema(),
     social: { openGraph: [], x: [], warnings: [] },
     quickLinks: [],
-    counts: { overview: 0, headings: 0, images: 0, links: 0, social: 0 },
+    counts: { overview: 0, headings: 0, images: 0, links: 0, schema: 0, social: 0 },
     warningCount: 0,
   }
 }

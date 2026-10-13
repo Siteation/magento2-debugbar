@@ -610,4 +610,81 @@ test.describe('the SEO section', () => {
       () => document.querySelector('h1, h2, h3, h4, h5, h6').style.outline
     )).toBe('')
   })
+
+  test('reads structured data the page gains, draws it, and points at a microdata item', async ({ page }) => {
+    await openBar(page)
+
+    // Added to the page rather than expected from the store, so the test does not depend on
+    // which theme or SEO module is installed. One block is broken on purpose.
+    await page.evaluate(() => {
+      const block = (text) => {
+        const script = document.createElement('script')
+
+        script.type = 'application/ld+json'
+        script.className = 'ndb-test-schema'
+        script.textContent = text
+        document.head.appendChild(script)
+      }
+
+      block(JSON.stringify({ '@context': 'https://schema.org', '@type': 'Product', name: 'Test Bag' }))
+      block('{"@type": "Product",}')
+
+      const item = document.createElement('div')
+
+      item.className = 'ndb-test-schema'
+      item.setAttribute('itemscope', '')
+      item.setAttribute('itemtype', 'https://schema.org/Organization')
+      item.innerHTML = '<span itemprop="name">Test Shop</span>'
+      document.body.appendChild(item)
+    })
+
+    await state(page, (data) => {
+      data.section = 'seo'
+      data.seoTab = 'schema'
+      data.refreshSeo()
+    })
+    await waitForState(page, (data) => data.seo.schema.entities.some((entity) => entity.name === 'Test Bag'))
+
+    const schema = await state(page, (data) => JSON.parse(JSON.stringify(data.seo.schema)))
+    const ours = schema.entities.filter((entity) => ['Test Bag', 'Test Shop'].includes(entity.name))
+
+    expect(ours.map((entity) => entity.source).sort()).toEqual(['json-ld', 'microdata'])
+    expect(schema.warnings).toContain('Product: Needs one of offers, review, aggregateRating.')
+    expect(schema.warnings.some((warning) => /^JSON-LD block \d+ does not parse/.test(warning))).toBe(true)
+    expect(await state(page, (data) => data.seo.counts.schema)).toBe(schema.warnings.length)
+
+    const bag = ours.find((entity) => entity.name === 'Test Bag')
+    const row = page.locator('.ndb-schema-entity').filter({ hasText: 'Test Bag' })
+
+    await row.locator('.ndb-alpine-head').click()
+    await expect(row.locator('.ndb-json')).toContainText('"Test Bag"')
+    await expect(row.locator('.ndb-schema-findings')).toContainText('Needs one of offers')
+    expect(bag.findings.length).toBeGreaterThan(0)
+
+    const shop = page.locator('.ndb-schema-entity').filter({ hasText: 'Test Shop' })
+
+    await shop.locator('.ndb-alpine-head').hover()
+    expect(await page.evaluate(
+      () => document.querySelector('div.ndb-test-schema[itemscope]').style.outline
+    ), 'hovering a microdata row outlines its element').toContain('solid')
+
+    await page.locator('.ndb-section-head h2').hover()
+    expect(await page.evaluate(
+      () => document.querySelector('div.ndb-test-schema[itemscope]').style.outline
+    )).toBe('')
+
+    // A .test host is not one Google can fetch, so the tools open empty and the markup is
+    // what gets carried over.
+    expect(schema.links.public).toBe(false)
+    await page.locator('.ndb-chip', { hasText: 'Copy the markup' }).click()
+
+    const copied = await page.evaluate(() => navigator.clipboard.readText())
+
+    expect(copied).toContain('"Test Bag"')
+    expect(copied).toContain('itemtype="https://schema.org/Organization"')
+
+    const errors = await ourAlpineErrors(page)
+
+    expect(errors, `the schema view threw: ${JSON.stringify(errors)}`).toEqual([])
+  })
 })

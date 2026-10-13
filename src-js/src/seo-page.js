@@ -6,9 +6,10 @@
  * the Alpine section does: the inline style is put back exactly as it was found.
  */
 import { browserEnvironment, inspectPage } from './seo.js'
+import { markupOf } from './schema.js'
 
 /** @type {Record<string, Array<Element>>} */
-let found = { headings: [], images: [], links: [] }
+let found = { headings: [], images: [], links: [], schema: [] }
 
 /** @type {Map<Element, {outline: string, offset: string}>} */
 const outlines = new Map()
@@ -47,7 +48,17 @@ function restore(element) {
 }
 
 /**
- * @param {string} view headings, images or links
+ * The page's structured data as it is now, for pasting into a validator that cannot reach
+ * this host.
+ *
+ * @returns {string}
+ */
+export function structuredMarkup() {
+  return markupOf(document)
+}
+
+/**
+ * @param {string} view headings, images, links or schema
  * @param {number} index
  * @param {boolean} on
  */

@@ -726,6 +726,7 @@ export const template = `
           { id: 'headings', label: 'Headings', count: 'seo.counts.headings', tone: "'warn'" },
           { id: 'images', label: 'Images', count: 'seo.counts.images', tone: "'warn'" },
           { id: 'links', label: 'Links', count: 'seo.counts.links', tone: "'warn'" },
+          { id: 'schema', label: 'Schema', count: 'seo.counts.schema', tone: "'warn'" },
           { id: 'social', label: 'Social', count: 'seo.counts.social', tone: "'warn'" },
         ])}
 
@@ -924,6 +925,99 @@ export const template = `
             <span data-ndb-show="seoProblemsOnly && !seoSearch">No link has a problem.</span>
             <span data-ndb-show="!seoProblemsOnly || seoSearch">No links match.</span>
           </p>
+        </div>
+
+        <div data-ndb-show="seoTab === 'schema'">
+          <div class="ndb-callout is-warn" data-ndb-show="seo.schema.warnings.length > 0">
+            <template data-ndb-for="(warning, index) in seo.schema.warnings" data-ndb-bind:key="index">
+              <p data-ndb-text="warning"></p>
+            </template>
+          </div>
+
+          <p class="ndb-empty" data-ndb-show="seo.schema.entities.length === 0 && seo.schema.blocks.length === 0">
+            No structured data on this page: no JSON-LD and no microdata.
+          </p>
+
+          <template data-ndb-for="block in seo.schema.blocks" data-ndb-bind:key="block.index">
+            <div class="ndb-note" data-ndb-show="block.error">
+              <p>
+                JSON-LD block <span data-ndb-text="block.index + 1"></span> does not parse<span
+                  data-ndb-show="block.at"
+                  data-ndb-text="block.at ? ' at line ' + block.at.line + ', column ' + block.at.column : ''"></span>:
+                <span data-ndb-text="block.error"></span>
+              </p>
+              <code class="ndb-mono" data-ndb-show="block.excerpt" data-ndb-text="block.excerpt"></code>
+            </div>
+          </template>
+
+          <ol class="ndb-list">
+            <template data-ndb-for="entity in seo.schema.entities" data-ndb-bind:key="entity.index">
+              <li class="ndb-alpine ndb-schema-entity">
+                <button type="button" class="ndb-alpine-head"
+                        data-ndb-on:click="toggleSchemaEntity(entity.index)"
+                        data-ndb-on:mouseenter="highlightSchema(entity, true)"
+                        data-ndb-on:mouseleave="highlightSchema(entity, false)"
+                        data-ndb-on:focus="highlightSchema(entity, true)"
+                        data-ndb-on:blur="highlightSchema(entity, false)">
+                  ${icon('caret', 'ndb-alpine-caret')}
+                  <span class="ndb-alpine-name" data-ndb-text="entity.type"></span>
+                  <span class="ndb-tag"
+                        data-ndb-text="entity.source === 'json-ld' ? 'JSON-LD ' + (entity.block + 1) : 'microdata'"></span>
+                  <span class="ndb-tag is-warn" data-ndb-show="entity.wrapper">declared twice</span>
+                  <span class="ndb-alpine-path ndb-dim ndb-truncate"
+                        data-ndb-text="entity.name || entity.where"></span>
+                  <span class="ndb-pill is-warn"
+                        data-ndb-show="schemaRequired(entity) > 0"
+                        data-ndb-text="schemaRequired(entity) + ' required'"></span>
+                </button>
+
+                <div class="ndb-alpine-body" data-ndb-show="isSchemaExpanded(entity.index)">
+                  <ul class="ndb-schema-findings" data-ndb-show="entity.findings.length > 0">
+                    <template data-ndb-for="(finding, index) in entity.findings" data-ndb-bind:key="index">
+                      <li>
+                        <span class="ndb-tag"
+                              data-ndb-bind:class="finding.level === 'required' ? 'is-warn' : ''"
+                              data-ndb-text="finding.level"></span>
+                        <span class="ndb-mono ndb-dim" data-ndb-text="finding.path"></span>
+                        <span data-ndb-text="finding.message"></span>
+                        <a data-ndb-bind:href="finding.docs" target="_blank" rel="noopener">Google's rules</a>
+                      </li>
+                    </template>
+                  </ul>
+                  <p class="ndb-dim" data-ndb-show="entity.source === 'microdata'">
+                    Declared on <span class="ndb-mono" data-ndb-text="entity.where"></span>.
+                  </p>
+                  <pre class="ndb-json" data-ndb-code="highlight(entity.json, 'json')"></pre>
+                </div>
+              </li>
+            </template>
+          </ol>
+
+          <div class="ndb-subhead">
+            <div>
+              <h3>Check it elsewhere</h3>
+              <p data-ndb-show="seo.schema.links.public">These tools fetch this page by its URL.</p>
+              <p data-ndb-show="!seo.schema.links.public">
+                Google's tools cannot reach this host. Copy the markup and paste it into the
+                tool's code tab.
+              </p>
+            </div>
+          </div>
+          <div class="ndb-controls">
+            <button type="button" class="ndb-chip"
+                    data-ndb-bind:class="schemaCopyState && 'is-active'"
+                    data-ndb-on:click="copySchemaMarkup()"
+                    data-ndb-text="schemaCopyState === 'done' ? 'Copied' : 'Copy the markup'"></button>
+            <template data-ndb-for="(tool, index) in seo.schema.links.tools" data-ndb-bind:key="index">
+              <a class="ndb-chip" data-ndb-bind:href="tool.href" target="_blank" rel="noopener"
+                 data-ndb-text="tool.label"></a>
+            </template>
+          </div>
+          <div class="ndb-note" data-ndb-show="schemaFallback">
+            <p>This browser would not take the clipboard. Select this and copy it by hand.</p>
+            <textarea class="ndb-copy-fallback" readonly rows="6" data-ndb-model="schemaFallback"
+                      data-ndb-on:focus="$event.target.select()"></textarea>
+          </div>
         </div>
 
         <div data-ndb-show="seoTab === 'social'">

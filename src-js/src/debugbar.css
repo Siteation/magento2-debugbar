@@ -1950,3 +1950,33 @@ select.ndb-search {
 
 /* A chip that goes somewhere is a link, and a link is underlined unless told otherwise. */
 a.ndb-chip { text-decoration: none; }
+
+/* What one schema entity lacks, one line each, above the entity itself. */
+.ndb-schema-findings {
+  list-style: none;
+  margin: 0 0 10px;
+  padding: 0;
+  display: grid;
+  gap: 6px;
+}
+
+.ndb-schema-findings li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 8px;
+  overflow-wrap: anywhere;
+}
+
+.ndb-schema-findings .ndb-tag {
+  min-width: 7.5em;
+  text-align: center;
+}
+
+.ndb-schema-findings a {
+  color: var(--ndb-accent);
+  text-decoration: none;
+  border-bottom: 1px dotted currentColor;
+}
+
+.ndb-schema-findings a:hover { border-bottom-style: solid; }
