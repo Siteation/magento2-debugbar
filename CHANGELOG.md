@@ -9,6 +9,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 [Unreleased]: https://github.com/Siteation/magento2-debugbar/compare/1.5.1...main
 
+### Changed
+
+- Repeated queries from known core code that only runs outside production mode are reported as one info
+  finding that says so, instead of an N+1 warning. The first is Magento's theme registration plugin, which saves
+  every theme before each admin request in developer mode. Real N+1 detection is unchanged, and more sources can
+  be added through the `sources` argument of `Siteation\DebugBar\Analysis\KnownQuerySources` in di.xml.
+
 ## [1.5.1] - 2026-10-31
 
 [1.5.1]: https://github.com/Siteation/magento2-debugbar/compare/1.5.0...1.5.1

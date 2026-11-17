@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Siteation\DebugBar\Analysis\Rule;
 
 use Siteation\DebugBar\Analysis\Finding;
+use Siteation\DebugBar\Analysis\KnownQuerySources;
 use Siteation\DebugBar\Analysis\QueryAnalyzer;
 use Siteation\DebugBar\Api\RuleInterface;
 
@@ -16,10 +17,14 @@ class RepeatedQueryRule implements RuleInterface
 {
     private const MIN_REPEATS = 3;
 
+    private readonly KnownQuerySources $knownSources;
+
     public function __construct(
         private readonly QueryAnalyzer $analyzer,
-        private readonly int $minRepeats = self::MIN_REPEATS
+        private readonly int $minRepeats = self::MIN_REPEATS,
+        ?KnownQuerySources $knownSources = null
     ) {
+        $this->knownSources = $knownSources ?? new KnownQuerySources();
     }
 
     public function apply(array $profile): array
@@ -30,7 +35,26 @@ class RepeatedQueryRule implements RuleInterface
             return [];
         }
 
-        $groups = $this->analyzer->analyze(array_values($items))['groups'];
+        $known = [];
+        $unknown = [];
+
+        foreach ($items as $item) {
+            $source = is_array($item) ? $this->knownSources->match($item['callsite'] ?? null) : null;
+
+            if ($source === null) {
+                $unknown[] = $item;
+            } else {
+                $known[$source][] = $item;
+            }
+        }
+
+        $findings = $this->knownSourceFindings($known);
+
+        if ($unknown === []) {
+            return $findings;
+        }
+
+        $groups = $this->analyzer->analyze($unknown)['groups'];
         $nPlusOne = [];
         $repeated = [];
 
@@ -47,8 +71,6 @@ class RepeatedQueryRule implements RuleInterface
 
             $repeated[] = $group;
         }
-
-        $findings = [];
 
         foreach (array_slice($nPlusOne, 0, 3) as $group) {
             $findings[] = new Finding(
@@ -101,6 +123,61 @@ class RepeatedQueryRule implements RuleInterface
                     'group_count' => count($repeated),
                     'extra_executions' => $extra,
                     'duration_ms' => $wasted,
+                    'groups' => array_map(
+                        static fn (array $group): array => [
+                            'sql' => $group['sql'],
+                            'count' => $group['count'],
+                            'duration_ms' => $group['duration_ms'],
+                        ],
+                        array_slice($repeated, 0, 5)
+                    ),
+                ],
+                ['label' => 'Review queries', 'section' => 'queries', 'filter' => 'repeated']
+            );
+        }
+
+        return $findings;
+    }
+
+    /**
+     * One info finding per known source that repeats, so the reader still sees where the
+     * queries went without being told to fix code they do not own.
+     *
+     * @param array<string, list<mixed>> $known
+     * @return list<Finding>
+     */
+    private function knownSourceFindings(array $known): array
+    {
+        $findings = [];
+
+        foreach ($known as $key => $items) {
+            $source = $this->knownSources->get($key);
+            $repeated = array_values(array_filter(
+                $this->analyzer->analyze($items)['groups'],
+                fn (array $group): bool => $group['count'] >= $this->minRepeats
+            ));
+
+            if ($source === null || $repeated === []) {
+                continue;
+            }
+
+            $findings[] = new Finding(
+                'query.known_source',
+                Finding::SEVERITY_INFO,
+                'queries',
+                sprintf(
+                    '%s repeated %d %s, %d executions in all.',
+                    $source['label'],
+                    count($repeated),
+                    count($repeated) === 1 ? 'query' : 'queries',
+                    array_sum(array_column($repeated, 'count'))
+                ),
+                $source['explanation'],
+                'Nothing to change. Measure in production mode to see the request without it.',
+                [
+                    'source' => $key,
+                    'group_count' => count($repeated),
+                    'duration_ms' => round(array_sum(array_column($repeated, 'duration_ms')), 1),
                     'groups' => array_map(
                         static fn (array $group): array => [
                             'sql' => $group['sql'],
