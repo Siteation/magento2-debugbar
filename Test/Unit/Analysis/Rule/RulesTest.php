@@ -149,6 +149,75 @@ class RulesTest extends TestCase
     }
 
     #[Test]
+    public function coreThemeRegistrationIsInfoAndARealNPlusOneStillWarns(): void
+    {
+        $items = [];
+        $registration = [
+            'file' => 'vendor/magento/module-theme/Model/Theme/Plugin/Registration.php',
+            'line' => 116,
+            'call' => 'Magento\Theme\Model\Theme\Plugin\Registration::updateThemeData()',
+        ];
+
+        for ($i = 1; $i <= 5; $i++) {
+            $items[] = [
+                'sql' => 'UPDATE `theme` SET `theme_title` = ? WHERE (theme_id=?)',
+                'bindings' => ['Theme', $i],
+                'duration_ms' => 0.2,
+                'callsite' => [$registration],
+            ];
+            $items[] = [
+                'sql' => 'BEGIN',
+                'bindings' => [],
+                'duration_ms' => 0.1,
+                'callsite' => [
+                    ['file' => 'Model/ResourceModel/Theme.php', 'line' => 3, 'call' => 'y()'],
+                    $registration,
+                ],
+            ];
+            $items[] = [
+                'sql' => 'SELECT * FROM product WHERE id = ?',
+                'bindings' => [$i],
+                'duration_ms' => 1.0,
+                'callsite' => [['file' => 'Loader.php', 'line' => 10, 'call' => 'x()']],
+            ];
+        }
+
+        $findings = (new RepeatedQueryRule(new QueryAnalyzer()))->apply(
+            $this->profile(['queries' => ['payload' => ['items' => $items]]])
+        );
+
+        $byId = [];
+
+        foreach ($findings as $finding) {
+            $byId[$finding->toArray()['id']] = $finding->toArray();
+        }
+
+        $this->assertSame(['query.known_source', 'query.n_plus_one'], array_keys($byId));
+        $this->assertSame('info', $byId['query.known_source']['severity']);
+        $this->assertStringContainsString('production', $byId['query.known_source']['why']);
+        $this->assertSame(2, $byId['query.known_source']['evidence']['group_count'], 'UPDATE and BEGIN');
+        $this->assertSame('warning', $byId['query.n_plus_one']['severity']);
+        $this->assertStringContainsString('product', $byId['query.n_plus_one']['evidence']['sql']);
+    }
+
+    #[Test]
+    public function aKnownSourceBelowTheRepeatThresholdSaysNothing(): void
+    {
+        $items = [[
+            'sql' => 'BEGIN',
+            'bindings' => [],
+            'duration_ms' => 0.1,
+            'callsite' => [['file' => 'R.php', 'line' => 1, 'call' => 'Magento\Theme\Model\Theme\Plugin\Registration::beforeExecute()']],
+        ]];
+
+        $findings = (new RepeatedQueryRule(new QueryAnalyzer()))->apply(
+            $this->profile(['queries' => ['payload' => ['items' => $items]]])
+        );
+
+        $this->assertSame([], $findings);
+    }
+
+    #[Test]
     public function repeatedQueriesFromManyPlacesAreOneFindingNotMany(): void
     {
         // A different query each time, each run from two call sites, so none of them is a
