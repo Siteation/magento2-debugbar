@@ -50,10 +50,15 @@ class QueryAnalyzer
 
         foreach ($queries as $query) {
             $sql = (string) ($query['sql'] ?? '');
-            $normalized = $this->normalize($sql);
-            $fingerprint = $this->fingerprint($sql);
             $durationMs = (float) ($query['duration_ms'] ?? 0);
             $totalMs += $durationMs;
+
+            if ($this->isCacheLock($sql)) {
+                continue;
+            }
+
+            $normalized = $this->normalize($sql);
+            $fingerprint = $this->fingerprint($sql);
 
             if (!isset($groups[$fingerprint])) {
                 $groups[$fingerprint] = [
@@ -114,6 +119,16 @@ class QueryAnalyzer
                 && $bindingsVary
                 && $sharedCallSite,
         ];
+    }
+
+    /**
+     * Magento's block cache lock (LockGuardedCacheLoader with the db lock provider) takes a
+     * GET_LOCK and RELEASE_LOCK pair for every uncached block. Matched on the SQL because
+     * the call site resolves to the logger proxy. Repeating is how it works, not a defect.
+     */
+    private function isCacheLock(string $sql): bool
+    {
+        return preg_match('/^\s*SELECT\s+(GET_LOCK|RELEASE_LOCK)\s*\(/i', $sql) === 1;
     }
 
     /**
