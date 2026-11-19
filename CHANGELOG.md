@@ -7,11 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-[Unreleased]: https://github.com/Siteation/magento2-debugbar/compare/1.5.1...main
+[Unreleased]: https://github.com/Siteation/magento2-debugbar/compare/1.5.3...main
+
+## [1.5.3] - 2026-11-19
+
+[1.5.3]: https://github.com/Siteation/magento2-debugbar/compare/1.5.2...1.5.3
 
 ### Changed
 
 - Query findings and repeat counts ignore Magento's block cache lock pairs (`GET_LOCK` and `RELEASE_LOCK`). They stay in the Queries tab.
+
+## [1.5.2] - 2026-11-17
+
+[1.5.2]: https://github.com/Siteation/magento2-debugbar/compare/1.5.1...1.5.2
+
+### Changed
+
 - Repeated queries from known core code that only runs outside production mode are reported as one info
   finding that says so, instead of an N+1 warning. The first is Magento's theme registration plugin, which saves
   every theme before each admin request in developer mode. Real N+1 detection is unchanged, and more sources can
