@@ -201,6 +201,53 @@ class RulesTest extends TestCase
     }
 
     #[Test]
+    public function blockCacheLockPairsAreNeitherNPlusOneNorRepeated(): void
+    {
+        $items = [];
+        $callsite = [['file' => 'Logger/LoggerProxy.php', 'line' => 184, 'call' => 'proxy()']];
+
+        for ($i = 1; $i <= 20; $i++) {
+            $items[] = [
+                'sql' => 'SELECT GET_LOCK(?, ?)',
+                'bindings' => ['lock_' . $i, 10],
+                'duration_ms' => 0.1,
+                'callsite' => $callsite,
+            ];
+            $items[] = [
+                'sql' => 'SELECT RELEASE_LOCK(?)',
+                'bindings' => ['lock_' . $i],
+                'duration_ms' => 0.1,
+                'callsite' => $callsite,
+            ];
+        }
+
+        $findings = (new RepeatedQueryRule(new QueryAnalyzer()))->apply(
+            $this->profile(['queries' => ['payload' => ['items' => $items]]])
+        );
+
+        $this->assertSame([], $findings);
+    }
+
+    #[Test]
+    public function aRealRepeatedSelectIsStillFlaggedBesideLockPairs(): void
+    {
+        $items = [];
+        $callsite = [['file' => 'Loader.php', 'line' => 10, 'call' => 'x()']];
+
+        for ($i = 1; $i <= 4; $i++) {
+            $items[] = ['sql' => 'SELECT GET_LOCK(?, ?)', 'bindings' => ['l' . $i, 10], 'duration_ms' => 0.1, 'callsite' => $callsite];
+            $items[] = ['sql' => 'SELECT * FROM product WHERE id = ?', 'bindings' => [$i], 'duration_ms' => 1.0, 'callsite' => $callsite];
+        }
+
+        $findings = (new RepeatedQueryRule(new QueryAnalyzer()))->apply(
+            $this->profile(['queries' => ['payload' => ['items' => $items]]])
+        );
+
+        $this->assertCount(1, $findings);
+        $this->assertStringContainsString('product', $findings[0]->toArray()['evidence']['sql']);
+    }
+
+    #[Test]
     public function aKnownSourceBelowTheRepeatThresholdSaysNothing(): void
     {
         $items = [[

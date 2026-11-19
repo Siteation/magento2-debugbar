@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Query findings and repeat counts ignore Magento's block cache lock pairs (`GET_LOCK` and `RELEASE_LOCK`). They stay in the Queries tab.
 - Repeated queries from known core code that only runs outside production mode are reported as one info
   finding that says so, instead of an N+1 warning. The first is Magento's theme registration plugin, which saves
   every theme before each admin request in developer mode. Real N+1 detection is unchanged, and more sources can
