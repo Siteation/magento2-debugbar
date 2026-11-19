@@ -6,6 +6,7 @@ namespace Siteation\DebugBar\Plugin\Db;
 
 use Magento\Framework\DB\LoggerInterface;
 use Siteation\DebugBar\Collector\QueryCollector;
+use Siteation\DebugBar\Model\CollectionState;
 use Siteation\DebugBar\Model\ProfileManager;
 
 /**
@@ -17,6 +18,7 @@ use Siteation\DebugBar\Model\ProfileManager;
 class LoggerPlugin
 {
     public function __construct(
+        private readonly CollectionState $state,
         private readonly ProfileManager $manager,
         private readonly QueryCollector $queries
     ) {
@@ -27,7 +29,7 @@ class LoggerPlugin
      */
     public function beforeStartTimer(LoggerInterface $subject): array
     {
-        if ($this->manager->isCollecting()) {
+        if ($this->state->isCollecting()) {
             $this->manager->quietly('queries', fn () => $this->queries->markStart());
         }
 
@@ -45,7 +47,7 @@ class LoggerPlugin
         array $bind = [],
         mixed $queryResult = null
     ): mixed {
-        if ($this->manager->isCollecting()) {
+        if ($this->state->isCollecting()) {
             $this->manager->quietly('queries', fn () => $this->queries->recordQuery($type, $sql, $bind));
         }
 

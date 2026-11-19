@@ -7,6 +7,7 @@ namespace Siteation\DebugBar\Plugin\Event;
 use Closure;
 use Magento\Framework\Event\ManagerInterface;
 use Siteation\DebugBar\Collector\EventCollector;
+use Siteation\DebugBar\Model\CollectionState;
 use Siteation\DebugBar\Model\ProfileManager;
 
 /**
@@ -19,6 +20,7 @@ use Siteation\DebugBar\Model\ProfileManager;
 class ManagerPlugin
 {
     public function __construct(
+        private readonly CollectionState $state,
         private readonly ProfileManager $manager,
         private readonly EventCollector $events
     ) {
@@ -33,7 +35,7 @@ class ManagerPlugin
         string $eventName,
         array $data = []
     ): mixed {
-        if (!$this->manager->isCollecting()) {
+        if (!$this->state->isCollecting()) {
             return $proceed($eventName, $data);
         }
 

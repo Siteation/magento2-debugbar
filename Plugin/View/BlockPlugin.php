@@ -8,6 +8,7 @@ use Closure;
 use Magento\Framework\View\Element\AbstractBlock;
 use Magento\Framework\View\Element\Template;
 use Siteation\DebugBar\Collector\BlockCollector;
+use Siteation\DebugBar\Model\CollectionState;
 use Siteation\DebugBar\Model\ProfileManager;
 
 /**
@@ -19,6 +20,7 @@ use Siteation\DebugBar\Model\ProfileManager;
 class BlockPlugin
 {
     public function __construct(
+        private readonly CollectionState $state,
         private readonly ProfileManager $manager,
         private readonly BlockCollector $blocks
     ) {
@@ -33,7 +35,7 @@ class BlockPlugin
      */
     public function aroundToHtml(AbstractBlock $subject, Closure $proceed)
     {
-        if (!$this->manager->isCollecting()) {
+        if (!$this->state->isCollecting()) {
             return $proceed();
         }
 

@@ -7,6 +7,7 @@ namespace Siteation\DebugBar\Plugin\App;
 use Magento\Framework\App\PageCache\Kernel;
 use Magento\Framework\App\Response\Http as HttpResponse;
 use Siteation\DebugBar\Collector\PageCacheCollector;
+use Siteation\DebugBar\Model\CollectionState;
 use Siteation\DebugBar\Model\ProfileManager;
 
 /**
@@ -21,6 +22,7 @@ use Siteation\DebugBar\Model\ProfileManager;
 class PageCacheKernelPlugin
 {
     public function __construct(
+        private readonly CollectionState $state,
         private readonly ProfileManager $manager,
         private readonly PageCacheCollector $pageCache
     ) {
@@ -33,7 +35,7 @@ class PageCacheKernelPlugin
      */
     public function afterLoad(Kernel $subject, $result)
     {
-        if ($result !== false && $this->manager->isCollecting()) {
+        if ($result !== false && $this->state->isCollecting()) {
             $this->manager->quietly('pagecache', fn () => $this->pageCache->servedFromCache());
         }
 
@@ -45,7 +47,7 @@ class PageCacheKernelPlugin
      */
     public function beforeProcess(Kernel $subject, HttpResponse $response)
     {
-        if ($this->manager->isCollecting()) {
+        if ($this->state->isCollecting()) {
             $this->manager->quietly('pagecache', fn () => $this->pageCache->offered($response, $this->sentCookies()));
         }
 

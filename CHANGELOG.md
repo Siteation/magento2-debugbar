@@ -9,6 +9,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 [Unreleased]: https://github.com/Siteation/magento2-debugbar/compare/1.5.3...main
 
+Breaking in production mode, so the next release is a minor: 1.6.0.
+
+### Security
+
+- **Breaking in production mode:** the bar now runs on tighter terms when Magento's deploy mode is `production`.
+  Developer and default mode are unchanged.
+  - `allowed_ips` must list at least one address. An empty list no longer allows everyone, it turns the bar off.
+  - The access key is no longer read from the URL (`?siteation_debugbar_key=`), so a link carrying the key no longer
+    works and nothing is traded for a cookie. Send the `X-Siteation-DebugBar-Key` header or set the
+    `siteation_debugbar_key` cookie.
+  - The `enabled` switch only counts when it is set in `app/etc/env.php` or `app/etc/config.php`
+    (`bin/magento config:set --lock-env`, or `app:config:dump`). A value saved in the admin or the database is ignored.
+  - A profile taken in production carries a warning finding saying so.
+- The profile manager and the collectors are no longer built on every request while the bar is off. Plugins ask a new
+  dependency free `CollectionState` whether the request is collected, and hold the manager and the collectors behind
+  proxies in `etc/di.xml`. A module that constructs one of these plugins directly needs to pass the state as the first
+  argument. The same goes for `ProfileManager` (new `CollectionState` argument before `$collectors`) and `Config`
+  (new `DeploymentConfig` argument before `$maxProfiles`, so positional callers break).
+
 ## [1.5.3] - 2026-11-19
 
 [1.5.3]: https://github.com/Siteation/magento2-debugbar/compare/1.5.2...1.5.3

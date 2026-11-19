@@ -10,6 +10,7 @@ use Magento\Framework\Event\InvokerInterface;
 use Magento\Framework\Event\Observer;
 use Siteation\DebugBar\Collector\EventCollector;
 use Siteation\DebugBar\Collector\ObserverCollector;
+use Siteation\DebugBar\Model\CollectionState;
 use Siteation\DebugBar\Model\ProfileManager;
 
 /**
@@ -20,6 +21,7 @@ use Siteation\DebugBar\Model\ProfileManager;
 class InvokerPlugin
 {
     public function __construct(
+        private readonly CollectionState $state,
         private readonly ProfileManager $manager,
         private readonly ObserverCollector $observers,
         private readonly EventCollector $events
@@ -35,7 +37,7 @@ class InvokerPlugin
         array $configuration,
         Observer $observer
     ): mixed {
-        if (!$this->manager->isCollecting() || ($configuration['disabled'] ?? false) === true) {
+        if (!$this->state->isCollecting() || ($configuration['disabled'] ?? false) === true) {
             return $proceed($configuration, $observer);
         }
 

@@ -7,6 +7,7 @@ namespace Siteation\DebugBar\Plugin\View;
 use Magento\Framework\View\Layout;
 use Siteation\DebugBar\Collector\LayoutCollector;
 use Siteation\DebugBar\Collector\PageCacheCollector;
+use Siteation\DebugBar\Model\CollectionState;
 use Siteation\DebugBar\Model\ProfileManager;
 use Siteation\DebugBar\Model\UncacheableBlocks;
 
@@ -20,6 +21,7 @@ use Siteation\DebugBar\Model\UncacheableBlocks;
 class LayoutPlugin
 {
     public function __construct(
+        private readonly CollectionState $state,
         private readonly ProfileManager $manager,
         private readonly PageCacheCollector $pageCache,
         private readonly UncacheableBlocks $uncacheable,
@@ -34,7 +36,7 @@ class LayoutPlugin
      */
     public function afterGenerateElements(Layout $subject, $result)
     {
-        if ($this->manager->isCollecting()) {
+        if ($this->state->isCollecting()) {
             $this->manager->quietly('layout', fn () => $this->layout->generated($subject));
             $this->manager->quietly('pagecache', fn () => $this->pageCache->layout(
                 (bool) $subject->isCacheable(),

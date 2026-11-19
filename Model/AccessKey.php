@@ -97,6 +97,10 @@ class AccessKey
         $key = $this->request->getParam(self::PARAM);
         $expected = $this->config->accessKey();
 
+        if ($this->config->isProduction()) {
+            return false;
+        }
+
         return $expected !== '' && is_string($key) && $key !== '' && hash_equals($expected, $key);
     }
 
@@ -148,8 +152,13 @@ class AccessKey
         $candidates = [
             $this->request->getHeader(self::HEADER),
             $this->cookies->getCookie(self::COOKIE),
-            $this->request->getParam(self::PARAM),
         ];
+
+        // A URL ends up in access logs, proxies and browser history. On a live shop the key
+        // does not go there, so it is not read from there either.
+        if (!$this->config->isProduction()) {
+            $candidates[] = $this->request->getParam(self::PARAM);
+        }
 
         return array_values(array_filter(
             $candidates,

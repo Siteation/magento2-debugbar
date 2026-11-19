@@ -16,6 +16,7 @@ use Siteation\DebugBar\Analysis\TimelineBuilder;
 use Siteation\DebugBar\Collector\EventCollector;
 use Siteation\DebugBar\Collector\ObserverCollector;
 use Siteation\DebugBar\Model\Clock;
+use Siteation\DebugBar\Model\CollectionState;
 use Siteation\DebugBar\Model\Config;
 use Siteation\DebugBar\Model\ProfileManager;
 use Siteation\DebugBar\Model\Redactor;
@@ -30,6 +31,13 @@ use stdClass;
  */
 class InvokerPluginTest extends TestCase
 {
+    private CollectionState $state;
+
+    protected function setUp(): void
+    {
+        $this->state = new CollectionState();
+    }
+
     #[Test]
     public function anObserverIsTimedUnderItsEvent(): void
     {
@@ -53,7 +61,7 @@ class InvokerPluginTest extends TestCase
     {
         $events = new EventCollector(new Redactor(), new Clock());
         $manager = $this->manager();
-        $dispatch = new ManagerPlugin($manager, $events);
+        $dispatch = new ManagerPlugin($this->state, $manager, $events);
         $subject = $this->createStub(ManagerInterface::class);
 
         $dispatch->aroundDispatch($subject, function () use ($dispatch, $subject, $events): void {
@@ -77,10 +85,10 @@ class InvokerPluginTest extends TestCase
             }
         );
 
-        $invoker = new InvokerPlugin($manager, $observers, $events);
+        $invoker = new InvokerPlugin($this->state, $manager, $observers, $events);
         $observer = new Observer(['event' => $event]);
 
-        (new ManagerPlugin($manager, $events))->aroundDispatch(
+        (new ManagerPlugin($this->state, $manager, $events))->aroundDispatch(
             $this->createStub(ManagerInterface::class),
             fn () => $invoker->aroundDispatch(
                 $this->createStub(InvokerInterface::class),
@@ -104,7 +112,8 @@ class InvokerPluginTest extends TestCase
             $this->createStub(TimelineBuilder::class),
             new Clock(),
             $config,
-            $this->createStub(LoggerInterface::class)
+            $this->createStub(LoggerInterface::class),
+            $this->state
         );
         $manager->begin();
 
