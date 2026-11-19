@@ -12,6 +12,7 @@ use Siteation\DebugBar\Analysis\ProfileAnalyzer;
 use Siteation\DebugBar\Analysis\TimelineBuilder;
 use Siteation\DebugBar\Api\CollectorInterface;
 use Siteation\DebugBar\Model\Clock;
+use Siteation\DebugBar\Model\CollectionState;
 use Siteation\DebugBar\Model\Config;
 use Siteation\DebugBar\Model\ProfileManager;
 
@@ -123,6 +124,7 @@ class ProfileManagerTest extends TestCase
             new Clock(),
             $config,
             $this->createStub(LoggerInterface::class),
+            new CollectionState(),
             $collectors
         );
     }

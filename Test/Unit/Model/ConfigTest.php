@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Siteation\DebugBar\Test\Unit\Model;
 
 use Magento\Framework\App\Config\ScopeConfigInterface;
+use Magento\Framework\App\DeploymentConfig;
 use Magento\Framework\App\Filesystem\DirectoryList;
 use Magento\Framework\App\State;
 use PHPUnit\Framework\Attributes\Test;
@@ -38,18 +39,109 @@ class ConfigTest extends TestCase
         // live sites actually run. Keying the rule off production alone left those open.
         foreach ([State::MODE_PRODUCTION, State::MODE_DEFAULT] as $mode) {
             $this->assertFalse(
-                $this->config($mode, ['siteation_debugbar/general/enabled' => true])->isEnabled(),
+                $this->production($mode, [])->isEnabled(),
                 $mode . ' must not run keyless'
             );
 
             $this->assertTrue(
-                $this->config($mode, [
-                    'siteation_debugbar/general/enabled' => true,
-                    'siteation_debugbar/general/access_key' => str_repeat('a', 32),
-                ])->isEnabled(),
+                $this->production($mode, ['siteation_debugbar/general/access_key' => str_repeat('a', 32)])->isEnabled(),
                 $mode . ' runs behind a key'
             );
         }
+    }
+
+    #[Test]
+    public function productionNeedsANonEmptyAddressList(): void
+    {
+        $key = ['siteation_debugbar/general/access_key' => str_repeat('a', 32)];
+
+        $this->assertFalse($this->production(State::MODE_PRODUCTION, $key, false)->isEnabled());
+        $this->assertFalse(
+            $this->production(State::MODE_PRODUCTION, $key + ['siteation_debugbar/general/allowed_ips' => ' , '], false)
+                ->isEnabled()
+        );
+        $this->assertTrue($this->production(State::MODE_PRODUCTION, $key)->isEnabled());
+    }
+
+    #[Test]
+    public function otherModesStillRunWithoutAnAddressList(): void
+    {
+        $values = [
+            'siteation_debugbar/general/enabled' => true,
+            'siteation_debugbar/general/access_key' => str_repeat('a', 32),
+        ];
+
+        $this->assertTrue($this->config(State::MODE_DEFAULT, $values)->isEnabled());
+        $this->assertTrue($this->config(State::MODE_DEVELOPER, $values)->isEnabled());
+    }
+
+    #[Test]
+    public function productionIgnoresTheSwitchSavedInTheAdmin(): void
+    {
+        $values = [
+            'siteation_debugbar/general/enabled' => true,
+            'siteation_debugbar/general/access_key' => str_repeat('a', 32),
+            'siteation_debugbar/general/allowed_ips' => '203.0.113.9',
+        ];
+
+        $this->assertFalse($this->config(State::MODE_PRODUCTION, $values)->isEnabled());
+        $this->assertFalse(
+            $this->config(
+                State::MODE_PRODUCTION,
+                $values,
+                ['system/default/siteation_debugbar/general/enabled' => '0']
+            )->isEnabled()
+        );
+    }
+
+    #[Test]
+    public function productionRunsOnASwitchFromTheDeploymentConfig(): void
+    {
+        $values = [
+            'siteation_debugbar/general/access_key' => str_repeat('a', 32),
+            'siteation_debugbar/general/allowed_ips' => '203.0.113.9',
+        ];
+
+        foreach ([true, 1, '1'] as $deployed) {
+            $this->assertTrue(
+                $this->config(
+                    State::MODE_PRODUCTION,
+                    $values,
+                    ['system/default/siteation_debugbar/general/enabled' => $deployed]
+                )->isEnabled(),
+                var_export($deployed, true)
+            );
+        }
+    }
+
+    #[Test]
+    public function onlyProductionReportsAsProduction(): void
+    {
+        $this->assertTrue($this->production(State::MODE_PRODUCTION, [
+            'siteation_debugbar/general/access_key' => str_repeat('a', 32),
+        ])->isProduction());
+        $this->assertFalse($this->production(State::MODE_DEFAULT, [
+            'siteation_debugbar/general/access_key' => str_repeat('a', 32),
+        ])->isProduction());
+        $this->assertFalse(
+            $this->config(State::MODE_DEVELOPER, ['siteation_debugbar/general/enabled' => true])->isProduction()
+        );
+    }
+
+    /**
+     * A shop that is set up the way production now requires: the switch in the deployment
+     * config and an address on the list.
+     *
+     * @param array<string, mixed> $values
+     */
+    private function production(string $mode, array $values, bool $withIps = true): Config
+    {
+        return $this->config(
+            $mode,
+            $values + ($withIps ? ['siteation_debugbar/general/allowed_ips' => '203.0.113.9'] : [])
+                + ['siteation_debugbar/general/enabled' => true],
+            ['system/default/siteation_debugbar/general/enabled' => true]
+        );
     }
 
     #[Test]
@@ -61,8 +153,7 @@ class ConfigTest extends TestCase
         // in developer mode that would turn a typo into a bar for every visitor.
         foreach ([State::MODE_PRODUCTION, State::MODE_DEFAULT, State::MODE_DEVELOPER] as $mode) {
             $this->assertFalse(
-                $this->config($mode, [
-                    'siteation_debugbar/general/enabled' => true,
+                $this->production($mode, [
                     'siteation_debugbar/general/access_key' => str_repeat('a', 31),
                 ])->isEnabled(),
                 $mode . ' must not accept a key below the floor'
@@ -70,8 +161,7 @@ class ConfigTest extends TestCase
         }
 
         $this->assertTrue(
-            $this->config(State::MODE_PRODUCTION, [
-                'siteation_debugbar/general/enabled' => true,
+            $this->production(State::MODE_PRODUCTION, [
                 'siteation_debugbar/general/access_key' => str_repeat('a', Config::MIN_ACCESS_KEY_LENGTH),
             ])->isEnabled(),
             'exactly the floor is long enough'
@@ -289,7 +379,7 @@ class ConfigTest extends TestCase
         $this->assertTrue($config->collects('findings'));
     }
 
-    private function config(string $mode, array $values): Config
+    private function config(string $mode, array $values, array $deployed = []): Config
     {
         $scopeConfig = $this->createStub(ScopeConfigInterface::class);
         $scopeConfig->method('isSetFlag')
@@ -303,6 +393,10 @@ class ConfigTest extends TestCase
         $directoryList = $this->createStub(DirectoryList::class);
         $directoryList->method('getRoot')->willReturn('/var/www/html');
 
-        return new Config($scopeConfig, $state, $directoryList);
+        $deployment = $this->createStub(DeploymentConfig::class);
+        $deployment->method('get')
+            ->willReturnCallback(static fn (string $path): mixed => $deployed[$path] ?? null);
+
+        return new Config($scopeConfig, $state, $directoryList, $deployment);
     }
 }

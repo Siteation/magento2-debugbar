@@ -33,6 +33,64 @@
         </arguments>
     </type>
 
+    <!--
+        The same for every other plugin. They are built on every request, wherever the thing they
+        wrap is built, and they only ever use the manager and the collectors after asking
+        CollectionState, which has no dependencies and is false unless the gate said yes. The
+        manager and the collectors are therefore not constructed at all while the bar is off.
+    -->
+    <type name="Siteation\DebugBar\Plugin\Db\LoggerPlugin">
+        <arguments>
+            <argument name="manager" xsi:type="object">Siteation\DebugBar\Model\ProfileManager\Proxy</argument>
+            <argument name="queries" xsi:type="object">Siteation\DebugBar\Collector\QueryCollector\Proxy</argument>
+        </arguments>
+    </type>
+
+    <type name="Siteation\DebugBar\Plugin\Event\ManagerPlugin">
+        <arguments>
+            <argument name="manager" xsi:type="object">Siteation\DebugBar\Model\ProfileManager\Proxy</argument>
+            <argument name="events" xsi:type="object">Siteation\DebugBar\Collector\EventCollector\Proxy</argument>
+        </arguments>
+    </type>
+
+    <type name="Siteation\DebugBar\Plugin\Event\InvokerPlugin">
+        <arguments>
+            <argument name="manager" xsi:type="object">Siteation\DebugBar\Model\ProfileManager\Proxy</argument>
+            <argument name="observers" xsi:type="object">Siteation\DebugBar\Collector\ObserverCollector\Proxy</argument>
+            <argument name="events" xsi:type="object">Siteation\DebugBar\Collector\EventCollector\Proxy</argument>
+        </arguments>
+    </type>
+
+    <type name="Siteation\DebugBar\Plugin\View\BlockPlugin">
+        <arguments>
+            <argument name="manager" xsi:type="object">Siteation\DebugBar\Model\ProfileManager\Proxy</argument>
+            <argument name="blocks" xsi:type="object">Siteation\DebugBar\Collector\BlockCollector\Proxy</argument>
+        </arguments>
+    </type>
+
+    <type name="Siteation\DebugBar\Plugin\View\LayoutPlugin">
+        <arguments>
+            <argument name="manager" xsi:type="object">Siteation\DebugBar\Model\ProfileManager\Proxy</argument>
+            <argument name="pageCache" xsi:type="object">Siteation\DebugBar\Collector\PageCacheCollector\Proxy</argument>
+            <argument name="uncacheable" xsi:type="object">Siteation\DebugBar\Model\UncacheableBlocks\Proxy</argument>
+            <argument name="layout" xsi:type="object">Siteation\DebugBar\Collector\LayoutCollector\Proxy</argument>
+        </arguments>
+    </type>
+
+    <type name="Siteation\DebugBar\Plugin\App\PageCacheKernelPlugin">
+        <arguments>
+            <argument name="manager" xsi:type="object">Siteation\DebugBar\Model\ProfileManager\Proxy</argument>
+            <argument name="pageCache" xsi:type="object">Siteation\DebugBar\Collector\PageCacheCollector\Proxy</argument>
+        </arguments>
+    </type>
+
+    <type name="Siteation\DebugBar\Plugin\App\CachePlugin">
+        <arguments>
+            <argument name="manager" xsi:type="object">Siteation\DebugBar\Model\ProfileManager\Proxy</argument>
+            <argument name="cache" xsi:type="object">Siteation\DebugBar\Collector\CacheCollector\Proxy</argument>
+        </arguments>
+    </type>
+
     <!-- The PDO adapter brackets every query with these two calls -->
     <type name="Magento\Framework\DB\LoggerInterface">
         <plugin name="siteation_debugbar_query"
@@ -120,6 +178,7 @@
                 <item name="seo_noindex" xsi:type="object">Siteation\DebugBar\Analysis\Rule\SeoNoindexRule</item>
                 <item name="seo_heading" xsi:type="object">Siteation\DebugBar\Analysis\Rule\SeoHeadingRule</item>
                 <item name="seo_schema_offer" xsi:type="object">Siteation\DebugBar\Analysis\Rule\SeoSchemaOfferRule</item>
+                <item name="production_mode" xsi:type="object">Siteation\DebugBar\Analysis\Rule\ProductionModeRule</item>
                 <item name="collector_truncated" xsi:type="object">Siteation\DebugBar\Analysis\Rule\TruncatedCollectorRule</item>
             </argument>
         </arguments>

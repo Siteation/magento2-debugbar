@@ -623,7 +623,7 @@ address without the key, keeping every other parameter. The page you land on is 
 with the cookie, and the profile of the first request is still kept in the history. Only a plain GET is
 redirected: a POST, an AJAX call, GraphQL and REST keep their response, and if the cookie
 could not be set there is no redirect either, so you are never sent somewhere the bar cannot
-follow.
+follow. None of this applies in production mode, which ignores the parameter (see below).
 
 The redirect clears the address bar, not the past. The first request carried the key, so it
 still leaves one line in the access log, and anything between the browser and Magento has
@@ -676,6 +676,40 @@ narrow that to the user Magento runs as; they do not narrow it further.
 Rotate the key with the same command when you are done, or empty it to close production
 again.
 
+### Production mode
+
+When Magento runs in `production` deploy mode the bar runs on tighter terms still. Developer
+mode and default mode are not affected. A live shop is the one place where a mistake is seen
+by customers, so each of these is a requirement rather than a recommendation:
+
+- **`allowed_ips` must list at least one address.** Empty means off, not everyone. A key that
+  leaks is then useless from any other address. Behind a load balancer, list the balancer in
+  `trusted_proxies` so the list sees the client.
+- **The key is not read from the URL.** `?siteation_debugbar_key=` does nothing, and there is
+  no cookie swap and no redirect, because a URL ends up in access logs, proxies and browser
+  history. Send the key as the `X-Siteation-DebugBar-Key` header, or put it in the
+  `siteation_debugbar_key` cookie yourself, for example with a browser extension that sets
+  request headers or the developer tools.
+- **The `enabled` switch must be set in `app/etc/env.php` or `app/etc/config.php`.** A value
+  saved in the admin or written to the database is ignored, so nobody who can save
+  configuration can start profiling a live shop. The switch is read from the default scope of
+  the deployment configuration.
+- **The bar says so.** Every profile taken in production has a warning finding, "The debug bar
+  is running in production mode", at the top of Findings.
+
+Set it up from the shop root. The last command takes it down again:
+
+```
+bin/magento config:set --lock-env siteation_debugbar/general/enabled 1
+bin/magento config:set --lock-env siteation_debugbar/general/allowed_ips "203.0.113.9"
+bin/magento config:set siteation_debugbar/general/access_key "$(openssl rand -hex 32)"
+bin/magento config:set --lock-env siteation_debugbar/general/enabled 0
+```
+
+Anything that does not meet these means the bar stays off and nothing is written. A shop that
+relied on the URL key or an empty `allowed_ips` in production stops being profiled after the
+upgrade, which is the point.
+
 ## Settings
 
 All under `siteation_debugbar/general/`, shown in the admin under **Stores > Configuration >
@@ -685,12 +719,12 @@ Siteation > Debug Bar**.
 
 | Setting | Default | |
 | --- | --- | --- |
-| `enabled` | `0` | Off until asked for |
+| `enabled` | `0` | Off until asked for. In production it must be set in `env.php` or `config.php` |
 | `areas` | all four | Which of storefront, admin, GraphQL, REST produce a profile |
 | `sections` | all | What is collected and shown; off means not gathered either |
 | `slow_query_ms` | `100` | Threshold behind `query.slow` |
 | `slow_request_ms` | `1000` | Threshold behind `request.slow` |
-| `allowed_ips` | empty | Comma separated; empty allows every address |
+| `allowed_ips` | empty | Comma separated; empty allows every address, except in production, where it must not be empty |
 | `trusted_proxies` | empty | Comma separated proxies whose `X-Forwarded-For` is believed; empty reads `REMOTE_ADDR` only |
 | `value_policy` | `full` | `full`, `masked` or `none` for captured values |
 | `access_key` | empty | 32 characters or more; required outside developer mode |

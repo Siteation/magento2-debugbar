@@ -9,6 +9,7 @@ use PHPUnit\Framework\TestCase;
 use Siteation\DebugBar\Analysis\QueryAnalyzer;
 use Siteation\DebugBar\Analysis\Rule\CacheMissRule;
 use Siteation\DebugBar\Analysis\Rule\PageNotCachedRule;
+use Siteation\DebugBar\Analysis\Rule\ProductionModeRule;
 use Siteation\DebugBar\Analysis\Rule\RepeatedQueryRule;
 use Siteation\DebugBar\Analysis\Rule\RequestErrorRule;
 use Siteation\DebugBar\Analysis\Rule\SlowBlockRule;
@@ -39,6 +40,30 @@ class RulesTest extends TestCase
         );
 
         $this->assertSame('warning', $findings[0]->toArray()['severity']);
+    }
+
+    #[Test]
+    public function productionModeIsWorthAWarningEveryTime(): void
+    {
+        $findings = (new ProductionModeRule())->apply(
+            $this->profile(['request' => ['summary' => ['mode' => 'production']]])
+        );
+
+        $this->assertCount(1, $findings);
+        $this->assertSame('warning', $findings[0]->toArray()['severity']);
+        $this->assertSame('overview.production_mode', $findings[0]->id());
+    }
+
+    #[Test]
+    public function productionModeRuleIsQuietElsewhere(): void
+    {
+        foreach (['developer', 'default', 'unknown'] as $mode) {
+            $this->assertSame([], (new ProductionModeRule())->apply(
+                $this->profile(['request' => ['summary' => ['mode' => $mode]]])
+            ), $mode);
+        }
+
+        $this->assertSame([], (new ProductionModeRule())->apply($this->profile([])));
     }
 
     #[Test]

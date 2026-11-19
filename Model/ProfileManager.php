@@ -34,8 +34,6 @@ class ProfileManager
 
     private float $startedAt = 0.0;
 
-    private bool $collecting = false;
-
     /**
      * @param array<string, CollectorInterface> $collectors
      */
@@ -45,6 +43,7 @@ class ProfileManager
         private readonly Clock $clock,
         private readonly Config $config,
         private readonly LoggerInterface $logger,
+        private readonly CollectionState $state,
         private readonly array $collectors = []
     ) {
     }
@@ -59,12 +58,12 @@ class ProfileManager
 
         $this->id = ProfileStore::generateId();
         $this->startedAt = microtime(true);
-        $this->collecting = true;
+        $this->state->start();
     }
 
     public function isCollecting(): bool
     {
-        return $this->collecting;
+        return $this->state->isCollecting();
     }
 
     public function id(): ?string
@@ -113,7 +112,7 @@ class ProfileManager
 
     public function discard(): void
     {
-        $this->collecting = false;
+        $this->state->stop();
         $this->id = null;
     }
 
@@ -122,7 +121,7 @@ class ProfileManager
      */
     public function finalize(ResponseInterface $response): array
     {
-        $this->collecting = false;
+        $this->state->stop();
 
         foreach ($this->collectors as $key => $collector) {
             $this->quietly(self::SECTIONS[$key] ?? $key, fn () => $collector->finalize($response));

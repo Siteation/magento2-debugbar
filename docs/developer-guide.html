@@ -138,7 +138,7 @@
 <p>In order:</p>
 <ol>
 <li><code>RequestEligibility::allows()</code> decides whether to profile at all. It reads the config flag, the area list, the IP allowlist, the access key, and whether this is one of the bar&#039;s own endpoints.</li>
-<li><code>ProfileManager</code> starts collecting. Every plugin records through it, and it holds a single boolean that the plugins branch on, so an unprofiled request pays a plugin hop and no config read.</li>
+<li><code>ProfileManager</code> starts collecting. Every plugin records through it, but branches on <code>CollectionState</code>, a dependency free object holding a single boolean, so an unprofiled request pays a plugin hop and no config read. The plugins hold the manager and their collectors behind proxies in <code>etc/di.xml</code>, which are only built once the state says yes: a request that is not profiled constructs none of them. A new plugin follows the same rule (<code>LazyPluginsTest</code> checks it), and one that is built by hand takes the state first.</li>
 <li><code>proceed()</code> runs the application. The query, event, observer, block, cache, layout and page cache plugins record as they fire.</li>
 <li><code>finalize()</code> asks each enabled collector for its section, builds the timeline, runs the rules, and hands the result to <code>ProfileStore</code>.</li>
 <li><code>BarInjector</code> sets the profile header, marks the response unshareable, and injects the bar if the response can carry one.</li>

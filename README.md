@@ -162,7 +162,10 @@ The developer guide explains how, under
   internet needs a key too.
 * **Admin profiles stay in the admin.** They are readable behind the admin login, never from
   the storefront endpoints.
-* **The key leaves the URL.** A key given as a query parameter is traded for an HttpOnly
+* **Stricter in production mode.** Deploy mode `production` also needs a non empty `allowed_ips`, takes
+  the key from the header or cookie only, and ignores an `enabled` switch that was not set in `env.php` or
+  `config.php`. Every profile there carries a warning. See the user guide.
+* **The key leaves the URL.** Outside production, a key given as a query parameter is traded for an HttpOnly
   cookie and the browser is sent to the same address without it.
 * **Redacted at record time**, never stored: values behind a sensitive or personal data key,
   literals in SQL according to the value policy, and request headers and cookies are not

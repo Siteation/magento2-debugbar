@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Siteation\DebugBar\Model;
 
 use Magento\Framework\App\Config\ScopeConfigInterface;
+use Magento\Framework\App\DeploymentConfig;
 use Magento\Framework\App\Filesystem\DirectoryList;
 use Magento\Framework\App\State;
 use Siteation\DebugBar\Model\Config\Source\Editor;
@@ -58,6 +59,8 @@ class Config
 
     private bool $resolving = false;
 
+    private bool $production = false;
+
     private float $slowQueryMs = self::DEFAULT_SLOW_QUERY_MS;
 
     private float $slowRequestMs = self::DEFAULT_SLOW_REQUEST_MS;
@@ -86,6 +89,7 @@ class Config
         private readonly ScopeConfigInterface $scopeConfig,
         private readonly State $appState,
         private readonly DirectoryList $directoryList,
+        private readonly DeploymentConfig $deploymentConfig,
         private readonly int $maxProfiles = 20,
         private readonly int $maxAgeMinutes = 60
     ) {
@@ -266,6 +270,18 @@ class Config
         return $area !== null && in_array($area, $this->areas, true);
     }
 
+    /**
+     * Whether the bar resolved on a production deploy, where it runs on tighter terms: only
+     * an address on the list, only the cookie or the header for the key, and only a switch
+     * written to env.php or config.php.
+     */
+    public function isProduction(): bool
+    {
+        $this->isEnabled();
+
+        return $this->production;
+    }
+
     public function allowsIp(?string $ip): bool
     {
         if ($this->allowedIps() === []) {
@@ -280,7 +296,16 @@ class Config
      */
     private function resolve(): bool
     {
-        if (!$this->scopeConfig->isSetFlag(self::XML_PATH_ENABLED)) {
+        $production = $this->appState->getMode() === State::MODE_PRODUCTION;
+
+        if (!$production && !$this->scopeConfig->isSetFlag(self::XML_PATH_ENABLED)) {
+            return false;
+        }
+
+        // The admin writes the database, and a database row is not a decision a deploy made.
+        // On a live shop whoever can save configuration could otherwise switch a profiler on
+        // for everyone's requests, so the switch has to be in a file a deploy owns.
+        if ($production && !$this->enabledInDeploymentConfig()) {
             return false;
         }
 
@@ -315,6 +340,14 @@ class Config
             self::DEFAULT_SLOW_REQUEST_MS
         );
         $this->allowedIps = $this->ipList($this->scopeConfig->getValue(self::XML_PATH_ALLOWED_IPS));
+
+        // An empty list allows every address, which a key alone is not meant to mean on a
+        // live shop: a leaked key would then work from anywhere.
+        if ($production && $this->allowedIps === []) {
+            return false;
+        }
+
+        $this->production = $production;
         $this->trustedProxies = $this->ipList($this->scopeConfig->getValue(self::XML_PATH_TRUSTED_PROXIES));
         $this->valuePolicy = $this->policy($this->scopeConfig->getValue(self::XML_PATH_VALUE_POLICY));
         $this->areas = $this->csv($this->scopeConfig->getValue(self::XML_PATH_AREAS));
@@ -323,6 +356,17 @@ class Config
         $this->editorRoot = $this->mappedRoot();
 
         return true;
+    }
+
+    /**
+     * Read from the deployment configuration, which holds what app:config:dump wrote to
+     * config.php and what env.php carries, and never from the database.
+     */
+    private function enabledInDeploymentConfig(): bool
+    {
+        $value = $this->deploymentConfig->get('system/default/' . self::XML_PATH_ENABLED);
+
+        return $value === true || $value === 1 || $value === '1';
     }
 
     private function editorTemplate(): string

@@ -64,6 +64,33 @@ class AccessKeyTest extends TestCase
     }
 
     #[Test]
+    public function productionNeverReadsTheKeyFromTheUrl(): void
+    {
+        $this->assertFalse($this->key('secret', ['param' => 'secret'], production: true)->allows());
+        $this->assertFalse($this->key('secret', ['param' => 'secret'], production: true)->wasPresentedInUrl());
+    }
+
+    #[Test]
+    public function productionStillTakesTheCookieAndTheHeader(): void
+    {
+        $this->assertTrue($this->key('secret', ['cookie' => 'secret'], production: true)->allows());
+        $this->assertTrue($this->key('secret', ['header' => 'secret'], production: true)->allows());
+    }
+
+    #[Test]
+    public function aWrongKeyInTheUrlIsNotCountedInProduction(): void
+    {
+        $attempts = $this->attempts();
+        $key = $this->key('secret', ['param' => 'wrong'], attempts: $attempts, production: true);
+
+        for ($i = 0; $i < 20; $i++) {
+            $this->assertFalse($key->allows());
+        }
+
+        $this->assertSame([], $this->cached, 'nothing was presented, so nothing was counted');
+    }
+
+    #[Test]
     public function theCookieIsBoundedAndOutOfReachOfJavaScript(): void
     {
         $metadata = $this->createMock(PublicCookieMetadata::class);
@@ -210,10 +237,12 @@ class AccessKeyTest extends TestCase
         array $presented,
         ?CookieManagerInterface $cookies = null,
         ?CookieMetadataFactory $factory = null,
-        ?AccessAttempts $attempts = null
+        ?AccessAttempts $attempts = null,
+        bool $production = false
     ): AccessKey {
         $config = $this->createStub(Config::class);
         $config->method('accessKey')->willReturn($configured);
+        $config->method('isProduction')->willReturn($production);
 
         $request = $this->createStub(HttpRequest::class);
         $request->method('getHeader')->willReturn($presented['header'] ?? false);

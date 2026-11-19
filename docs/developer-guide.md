@@ -38,9 +38,12 @@ In order:
 1. `RequestEligibility::allows()` decides whether to profile at all. It reads the config
    flag, the area list, the IP allowlist, the access key, and whether this is one of the
    bar's own endpoints.
-2. `ProfileManager` starts collecting. Every plugin records through it, and it holds a
-   single boolean that the plugins branch on, so an unprofiled request pays a plugin hop and
-   no config read.
+2. `ProfileManager` starts collecting. Every plugin records through it, but branches on
+   `CollectionState`, a dependency free object holding a single boolean, so an unprofiled
+   request pays a plugin hop and no config read. The plugins hold the manager and their
+   collectors behind proxies in `etc/di.xml`, which are only built once the state says yes: a
+   request that is not profiled constructs none of them. A new plugin follows the same rule
+   (`LazyPluginsTest` checks it), and one that is built by hand takes the state first.
 3. `proceed()` runs the application. The query, event, observer, block, cache, layout and
    page cache plugins record as they fire.
 4. `finalize()` asks each enabled collector for its section, builds the timeline, runs the

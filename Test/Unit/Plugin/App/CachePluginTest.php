@@ -13,6 +13,7 @@ use Siteation\DebugBar\Analysis\ProfileAnalyzer;
 use Siteation\DebugBar\Analysis\TimelineBuilder;
 use Siteation\DebugBar\Collector\CacheCollector;
 use Siteation\DebugBar\Model\Clock;
+use Siteation\DebugBar\Model\CollectionState;
 use Siteation\DebugBar\Model\Config;
 use Siteation\DebugBar\Model\ProfileManager;
 use Siteation\DebugBar\Plugin\App\CachePlugin;
@@ -23,13 +24,20 @@ use Siteation\DebugBar\Plugin\App\CachePlugin;
  */
 class CachePluginTest extends TestCase
 {
+    private CollectionState $state;
+
+    protected function setUp(): void
+    {
+        $this->state = new CollectionState();
+    }
+
     #[Test]
     public function aRemovalSurvivesARecorderThatThrows(): void
     {
         $cache = $this->createStub(CacheCollector::class);
         $cache->method('recordOperation')->willThrowException(new RuntimeException('collector broke'));
 
-        $removed = (new CachePlugin($this->manager(['cache']), $cache))->aroundRemove(
+        $removed = (new CachePlugin($this->state, $this->manager(['cache']), $cache))->aroundRemove(
             $this->createStub(CacheInterface::class),
             static fn (string $identifier): bool => true,
             'config_scopes'
@@ -44,7 +52,7 @@ class CachePluginTest extends TestCase
         $cache = $this->createMock(CacheCollector::class);
         $cache->expects($this->never())->method('recordOperation');
 
-        (new CachePlugin($this->manager(['queries']), $cache))->aroundRemove(
+        (new CachePlugin($this->state, $this->manager(['queries']), $cache))->aroundRemove(
             $this->createStub(CacheInterface::class),
             static fn (string $identifier): bool => true,
             'config_scopes'
@@ -58,7 +66,7 @@ class CachePluginTest extends TestCase
         $cache->expects($this->once())->method('recordOperation')
             ->with('remove', 'config_scopes', $this->isFloat());
 
-        (new CachePlugin($this->manager(['cache']), $cache))->aroundRemove(
+        (new CachePlugin($this->state, $this->manager(['cache']), $cache))->aroundRemove(
             $this->createStub(CacheInterface::class),
             static fn (string $identifier): bool => true,
             'config_scopes'
@@ -80,7 +88,8 @@ class CachePluginTest extends TestCase
             $this->createStub(TimelineBuilder::class),
             new Clock(),
             $config,
-            $this->createStub(LoggerInterface::class)
+            $this->createStub(LoggerInterface::class),
+            $this->state
         );
         $manager->begin();
 

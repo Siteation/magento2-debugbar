@@ -7,6 +7,7 @@ namespace Siteation\DebugBar\Plugin\App;
 use Closure;
 use Magento\Framework\App\CacheInterface;
 use Siteation\DebugBar\Collector\CacheCollector;
+use Siteation\DebugBar\Model\CollectionState;
 use Siteation\DebugBar\Model\ProfileManager;
 
 /**
@@ -18,6 +19,7 @@ use Siteation\DebugBar\Model\ProfileManager;
 class CachePlugin
 {
     public function __construct(
+        private readonly CollectionState $state,
         private readonly ProfileManager $manager,
         private readonly CacheCollector $cache
     ) {
@@ -25,7 +27,7 @@ class CachePlugin
 
     public function aroundLoad(CacheInterface $subject, Closure $proceed, string $identifier): mixed
     {
-        if (!$this->manager->isCollecting()) {
+        if (!$this->state->isCollecting()) {
             return $proceed($identifier);
         }
 
@@ -55,7 +57,7 @@ class CachePlugin
         array $tags = [],
         $lifeTime = null
     ): bool {
-        if (!$this->manager->isCollecting()) {
+        if (!$this->state->isCollecting()) {
             return $proceed($data, $identifier, $tags, $lifeTime);
         }
 
@@ -74,7 +76,7 @@ class CachePlugin
 
     public function aroundRemove(CacheInterface $subject, Closure $proceed, string $identifier): bool
     {
-        if (!$this->manager->isCollecting()) {
+        if (!$this->state->isCollecting()) {
             return $proceed($identifier);
         }
 
