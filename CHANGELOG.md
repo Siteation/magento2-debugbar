@@ -7,9 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-[Unreleased]: https://github.com/Siteation/magento2-debugbar/compare/1.5.3...main
+[Unreleased]: https://github.com/Siteation/magento2-debugbar/compare/1.6.0...main
 
-Breaking in production mode, so the next release is a minor: 1.6.0.
+## [1.6.0] - 2026-11-20
+
+[1.6.0]: https://github.com/Siteation/magento2-debugbar/compare/1.5.3...1.6.0
+
+Breaking in production mode.
 
 ### Security
 
